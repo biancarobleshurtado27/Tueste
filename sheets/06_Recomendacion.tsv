@@ -1,19 +1,18 @@
-RECOMENDACIÓN EJECUTIVA PARA DIEGO (TUESTE)			
+MEMORANDO DE RECOMENDACIÓN PARA DIEGO — CASO TUESTE (NIVEL 1)			
+Para: Diego (Fundador de Tueste) | De: Análisis de Negocio y Retención | Asunto: Decisión sobre propuesta de agencia y plan de adquisición			
 			
-1. Diagnóstico del Escenario Actual ($8.000/mes en Meta Ads)			
-Actualmente invertimos $8.000 en Meta Ads más $1.000 de fee de agencia ($9.000 totales) para adquirir 165 clientes nuevos reales.			
-Eso significa un CAC real de $54,55 por cliente (`=9000/165`). Como cada cliente genera en promedio $54,80 de contribución acumulada en 12 meses (`=Calculadora!B20`), tardamos exactamente 12 meses en empatar el costo de adquirirlo (ganancia neta de adquisición de apenas $0,25 por cliente al año, antes de costos fijos).			
+1. DIAGNÓSTICO DEL ESCENARIO ACTUAL ($8.000/MES EN META ADS)	Valor Vinculado	Unidad	Explicación Sencilla de Marketing
+CAC Real Actual (Meta $8.000 + Fee Agencia $1.000 / 165 clientes nuevos)	=Calculadora!B16	USD / cliente	Cada cliente nuevo real nos cuesta $54,55 una vez incluido el fee fijo de la agencia.
+LTV de Contribución Ponderado a 12 Meses	=Calculadora!B20	USD / cliente	En promedio, un cliente genera $54,80 de contribución acumulada entre el mes 0 y el mes 12.
+Mes de Recuperación (Payback Discreto)	=Calculadora!B22	Meses	Recién en el mes 12 recuperamos el CAC (ganancia neta de adquisición de solo $0,25 por cliente antes de costos fijos).
 			
-2. Por qué debemos RECHAZAR la propuesta de la agencia ($16.000/mes + 30% descuento Black Friday)			
-- Rendimientos decrecientes severos (CAC Marginal): Duplicar el presupuesto de $8.000 a $16.000 no duplica los clientes nuevos reales debido a la saturación del canal. Cada cliente adicional en ese tramo cuesta mucho más que el promedio actual (`=Calculadora!C23`).			
-- Destrucción de contribución en el primer pedido: Aplicar un 30% de descuento en el primer pedido suelto reduce el dinero cobrado y la comisión de pasarela, pero el costo del café, empaque y envío sigue siendo exactamente el mismo. La contribución del primer pedido suelto cae a `=Calculadora!C8`, reduciendo el LTV ponderado a 12 meses a `=Calculadora!C20`.			
-- Resultado: Con un CAC real mayor (`=Calculadora!C16`) y un LTV menor (`=Calculadora!C20`), el cliente promedio no recupera su costo de adquisición en 12 meses (`=Calculadora!C22`).			
+2. POR QUÉ DEBEMOS RECHAZAR LA PROPUESTA DE LA AGENCIA ($16.000 + 30% DESCUENTO BF)	Valor Vinculado	Unidad	Por qué destruye valor
+CAC Marginal del tramo $8.000 -> $16.000	=Calculadora!C23	USD / cliente extra	Duplicar el presupuesto en Meta satura la audiencia: cada cliente adicional cuesta $177,78 en anuncios.
+Contribución del 1er Pedido Suelto con 30% Descuento Black Friday	=Calculadora!C8	USD / pedido	El descuento baja el cobro y la comisión, pero el café ($4,50), empaque y envío cuestan lo mismo: la contribución cae de $15,89 a $8,94.
+CAC Real con Agencia vs LTV a 12 Meses con Agencia	=Calculadora!C20-Calculadora!C16	USD / cliente (Pérdida)	Perdemos dinero en cada cohorte: el CAC real sube a $80,95 y el LTV baja a $49,93. No recupera el CAC en 12 meses.
 			
-3. Dos cambios propuestos (evaluados por separado)			
-Cambio 1 (Acción inmediata y cuantificable): Reducir la inversión en Meta Ads a $4.000/mes manteniendo precios llenos.			
-- Efecto numérico: Operamos en el tramo más eficiente de la curva de adquisición. El CAC real baja a `=Calculadora!D16`, el LTV a 12 meses se mantiene en `=Calculadora!D20`, el ratio LTV:CAC sube a `=Calculadora!D21` y el Payback baja al mes `=Calculadora!D22`.			
-- Supuesto necesario: Que la curva histórica de respuesta de Meta Ads en el tramo de $4.000 se mantenga estable.			
-			
-Cambio 2 (Prueba controlada / Sensibilidad): Probar el Pack de 3 bolsas a $48 ($16/bolsa) solo cuando se definan sus reglas operativas.			
-- Efecto numérico unitario: Un pack de 3 bolsas a $48 genera una contribución por transacción de `=Verificación!B17` asumiendo 1 solo envío y 1 empaque para las 3 bolsas.			
-- Supuestos críticos pendientes antes de escalarlo: (a) Qué porcentaje de compradores sueltos lo adopta, (b) si espacia la recompra a cada 3 meses en vez de mensual, (c) si incluye o no cobro de envío, y (d) cómo evitar que canibalice a los clientes de suscripción mensual.			
+3. DOS CAMBIOS PROPUESTOS (EVALUADOS POR SEPARADO)	Efecto Numérico	Unidad	Supuestos Necesarios y Condiciones
+CAMBIO 1 (Inmediato): Reducir Meta Ads de $8.000 a $4.000/mes sin descuentos	=Calculadora!D16	USD / cliente (CAC Real)	Al operar en el tramo menos saturado ($4.000 -> 110 clientes nuevos), el CAC real baja de $54,55 a $45,45.
+Efecto del Cambio 1 en Payback y Contribución Neta de Cohorte a 12M	=Calculadora!D24	USD netos / cohorte 12M	El Payback mejora del Mes 12 al Mes 7 y la cohorte deja +$1.027,59 netos de adquisición (vs +$41,36 actuales).
+CAMBIO 2 (Piloto separado): Probar Pack de 3 bolsas a $48 en compradores sueltos	=Supuestos!B63	USD contribución / pack	Con 1 solo envío y 1 empaque, el pack deja $30,05 de contribución inicial (vs $15,89 de 1 bolsa suelta).
+Efecto combinado (Cambio 1 + Cambio 2 con supuesto de 20% adopción del pack)	=Calculadora!E24	USD netos / cohorte 12M	Sube la contribución neta a +$1.246,66 y baja el Payback al Mes 6, sujeto a validar que no reduzca recompras ni canibalice suscripciones.
