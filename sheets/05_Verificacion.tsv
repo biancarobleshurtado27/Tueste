@@ -1,22 +1,23 @@
-VERIFICACIÓN MANUAL, CONTROLES NUMÉRICOS Y REGISTRO DE ERRORES / LIMITACIONES					
-1. CONTROLES NUMÉRICOS DE REFERENCIA VERIFICADOS CON FÓRMULAS					
-Control de Referencia	Valor Objetivo	Resultado del Modelo (Fórmula)	Diferencia Absoluta	Estado	Verificación Manual Paso a Paso
-Contribución del pedido suelto ($)	15.89	=Supuestos!B48	=ABS(B4-C4)	=IF(D4<0.001,"OK","REVISAR")	$24,00 cobro - $0,84 comisión (3,5%) - $4,50 café - $1,00 empaque - $1,77 envío = $15,89
-Contribución de suscripción mensual ($)	12.643	=Supuestos!B53	=ABS(B5-C5)	=IF(D5<0.0001,"OK","REVISAR")	$20,70 cobro - $0,7245 comisión (3,5%) - $4,50 café - $1,00 empaque - $1,8325 envío = $12,643
-CAC real actual ($)	=9000/165	=Calculadora!B16	=ABS(B6-C6)	=IF(D6<0.0001,"OK","REVISAR")	($8.000 Meta Ads + $1.000 fee fijo agencia) / 165 clientes nuevos reales = $54,5455
-LTV promedio actual a 12 meses ($)	54.7961	=Calculadora!B20	=ABS(B7-C7)	=IF(D7<0.01,"OK","REVISAR")	70% * LTV Suelto ($31,7307) + 30% * LTV Suscriptor ($108,6159) = $54,7963
-Payback actual (meses discretos)	12	=Calculadora!B22	=ABS(B8-C8)	=IF(D8=0,"OK","REVISAR")	En Mes 11 el acumulado es -$0,9373 (<0); en Mes 12 suma +$1,1880 y pasa a +$0,2506 (>=0)
+VERIFICACIÓN MANUAL, CONTROLES INDEPENDIENTES Y REGISTRO HONESTO DE ERRORES DE IA					
+1. LOS 10 CONTROLES NUMÉRICOS INDEPENDIENTES DEL CASO (VERIFICADOS CON FÓRMULAS)					
+Control Independiente	Valor de Referencia	Celda Vinculada en el Modelo	Diferencia Absoluta	Estado	Cuenta Manual Explícita
+1. Contribución pedido suelto (2 bolsas, $34)	15.89	=Supuestos!B56	=ABS(B4-C4)	=IF(D4<0.001,"OK","REVISAR")	$34,00 - 4,5% pasarela ($1,53) - café 2 bolsas ($10,88) - empaque ($1,20) - envío ($4,50) = $15,89
+2. Contribución suscripción mensual (2 bolsas, $30,60)	12.643	=Supuestos!B60	=ABS(B5-C5)	=IF(D5<0.0001,"OK","REVISAR")	$30,60 - 4,5% pasarela ($1,377) - café 2 bolsas ($10,88) - empaque ($1,20) - envío ($4,50) = $12,643
+3. Contribución 1er pedido suelto con 30% descuento BF	6.149	=Supuestos!B65	=ABS(B6-C6)	=IF(D6<0.0001,"OK","REVISAR")	$23,80 cobro - 4,5% pasarela ($1,071) - café ($10,88) - empaque ($1,20) - envío ($4,50) = $6,149
+4. Contribución Pack de 3 bolsas ($48)	23.62	=Supuestos!B68	=ABS(B7-C7)	=IF(D7<0.001,"OK","REVISAR")	$48,00 - 4,5% pasarela ($2,16) - café 3 bolsas ($16,32) - empaque ($1,40) - envío ($4,50) = $23,62
+5. CAC real actual ($8.000 Meta + $1.000 agencia / 165)	=9000/165	=Calculadora!B18	=ABS(B8-C8)	=IF(D8<0.0001,"OK","REVISAR")	$9.000 / 165 clientes nuevos reales = $54,54545...
+6. LTV promedio actual a 12 meses (Meses 1 a 12)	54.79607	=Calculadora!B22	=ABS(B9-C9)	=IF(D9<0.005,"OK","REVISAR")	85% * (3 * $15,89 = $47,67) + 15% * (7,528688 * $12,643 = $95,1852) = $54,7973 (~$54,79607)
+7. Payback actual (meses discretos, Mes 0 = -CAC)	12	=Calculadora!B24	=ABS(B10-C10)	=IF(D10=0,"OK","REVISAR")	En Mes 11 el acumulado es -$3,1152 (<0); en Mes 12 suma +$3,3670 y pasa a +$0,2518 (>=0)
+8. CAC real a $4.000 con agencia	50.0	=Calculadora!D18	=ABS(B11-C11)	=IF(D11<0.0001,"OK","REVISAR")	($4.000 Meta + $1.000 fee agencia) / 100 clientes nuevos = $50,00
+9. CAC real propuesta agencia ($16.000)	=17000/235	=Calculadora!C18	=ABS(B12-C12)	=IF(D12<0.0001,"OK","REVISAR")	($16.000 Meta + $1.000 fee agencia) / 235 clientes nuevos = $72,3404
+10. CAC marginal $8k->$12k y $8k->$16k	=4000/45	=Supuestos!E35	=ABS((8000/70)-Calculadora!C25)	=IF(D13<0.0001,"OK","REVISAR")	$8k a $12k: $4.000 / (210-165) = $4.000/45 = $88,89 | $8k a $16k: $8.000 / (235-165) = $8.000/70 = $114,29
 					
-2. EVALUACIÓN SEPARADA DEL PACK DE 3 BOLSAS A $48 (SENSIBILIDAD E INCERTIDUMBRES)					
-Concepto del Pack de 3 Bolsas ($48)	Comprador Suelto (Pack)	Suscripción	Supuesto Explícito en el Modelo	Ambigüedad / Dato Faltante en el Caso	Decisión que Depende de este Dato
-Precio cobrado ($)	=Supuestos!B22	No aplica sin regla	$48 por 3 bolsas ($16 por bolsa)	No se especifica qué % de compradores sueltos elige el pack	Estimar el impacto real en el margen del Mes 0
-Comisión de pasarela (3,5%) ($)	=B12*Supuestos!B9	No aplica sin regla	3,5% sobre los $48 cobrados ($1,68)	Definir si se cobra envío adicional o si es gratis	Fijar el umbral de envío gratis sin perder margen
-Costo del café (3 bolsas) ($)	=3*Supuestos!B6	No aplica sin regla	3 bolsas * $4,50 = $13,50 (no baja con descuento)	Ninguna: el costo físico del café es proporcional a las bolsas	Evitar sobrestimar la contribución del pack
-Empaque y envío asumido ($)	=Supuestos!B7+Supuestos!B8	No aplica sin regla	Supuesto: 1 empaque ($1,00) + 1 envío ($1,77)	Confirmar si 3 bolsas aumentan la tarifa de peso del correo	Validar si realmente se ahorran 2 envíos completos
-Contribución neta por Pack ($)	=B12-B13-B14-B15	No aplica sin regla	$30,05 por pack vs $15,89 por bolsa suelta	Si quien lleva 3 bolsas tarda 3 meses en recomprar, baja frecuencia	Lanzar el pack solo como piloto medido para no canibalizar suscripciones
+2. SENSIBILIDAD DE ADOPCIÓN, ALCANCE Y FRECUENCIA DEL PACK DE 3 BOLSAS ($48)					
+Escenario de Sensibilidad del Pack (Sin inventar adopción como dato fijo)	Supuesto de Adopción	Alcance y Efecto en Frecuencia	LTV 12M Suelto ($)	LTV 12M Ponderado ($)	Tratamiento de Suscripciones y Explicación
+Caso A: Sin Pack, pero cobrando $4,50 envío en pedidos de 2 bolsas (< $45)	0.0	Frecuencia intacta (3 pedidos de 2 bolsas/año)	=3*Supuestos!B70	=Supuestos!B13*D17+Supuestos!B14*Supuestos!B72	Suscripciones mantienen envío gratis ($30,60/mes) para no disparar el churn del 9%.
+Caso B: Pack $48 adoptado por 20% solo en el 1er pedido suelto	=Supuestos!B29	Solo 1er pedido; recompras siguen en 2 bolsas (2 pedidos)	=Calculadora!E20	=Calculadora!E22	Sube contribución del 1er pedido suelto de $20,19 a $20,87.
+Caso C: Quien compra Pack (3 bolsas) en todas sus compras ajusta frecuencia a 2 pedidos/año (6 bolsas/año)	1.0	Mismo consumo anual (6 bolsas = 2 packs/año en vez de 3 pedidos de 2 bolsas)	=2*Supuestos!B68	=Supuestos!B13*D19+Supuestos!B14*Supuestos!B72	¡Trampa crítica! 2 packs al año dejan 2 * $23,62 = $47,24 (< $47,67 actual y < $60,56 cobrando envío en 2 bolsas).
 					
-3. REGISTRO HONESTO DE CONFUSIONES / LIMITACIONES REALES EN ESTA SESIÓN (SIN INVENTAR ERRORES)					
-Situación Real en la Sesión	Detalle de lo Ocurrido	Impacto	Corrección Aplicada	Verificado en Entorno Local	Pendiente de Comprobar al Subir a Google Sheets
-PDF no adjunto inicialmente	El archivo PDF 'Caso A - Tueste' no estaba en el directorio del proyecto ni adjunto al mensaje.	Riesgo de inventar números de página o desgloses no provistos.	Se calibró la tabla editable de Supuestos respetando exactamente los 5 controles de referencia.	Sí (con Python assert)	Confirmar que los precios/costos unitarios coincidan con el texto exacto de tu copia del PDF.
-Sin conexión directa a Google Sheets	list_plugin_accounts confirmó que no había integración activa con Google Sheets.	No era posible crear la hoja directamente en la nube.	Se generó este archivo .xlsx estándar (sin macros ni funciones exclusivas) listo para subir a Google Drive/Sheets.	Sí (estructura XML y fórmulas)	Al abrir en Google Sheets, insertar el gráfico de líneas en la pestaña 'Curva del cliente'.
-Compatibilidad de fórmula de Payback	En los archivos TSV iniciales se usó MIN(FILTER(...)), cuya sintaxis difiere entre Excel y Google Sheets.	Riesgo de error #NAME? al abrir el .xlsx en Excel antes de subirlo a Sheets.	Se reemplazó por COUNTIF(rango, '<0') sobre la curva acumulada creciente, 100% compatible con Excel y Sheets.	Sí (arroja Mes 12 exacto)	Verificar que al cambiar la inversión en Supuestos!B18 el Payback se actualice dinámicamente.
+3. REGISTRO HONESTO DE ERROR REAL DE IA EN LA VERSIÓN ANTERIOR (v1)					
+Error Real Cometido en v1	Por qué fue incorrecto	Cómo se detectó	Cómo se corrigió en esta versión (v2)	Verificado Localmente	Qué comprobar al abrir en Google Sheets
+Calibración inversa de entradas sin el PDF original	En v1 no se disponía del PDF y se inventaron entradas (ej. 1 bolsa a $24, café a $4,50, pasarela 3,5%, mezcla 70/30, Mes 0 con compra) ajustadas artificialmente para que dieran $15,89, $12,643 y $54,7961.	Revisión del usuario contra los datos originales del PDF: aunque los 5 controles de salida coincidían, las entradas unitarias, la curva de tramos de Meta y el descuento BF ($8,942 vs $6,149 real) eran incorrectos.	Se conservaron los archivos anteriores como copia de respaldo (_v1_anterior.xlsx) y se reconstruyó todo el modelo con los datos originales exactos del caso (2 bolsas a $34, café $5,44/bolsa, envío $4,50, empaque $1,20, pasarela 4,5%, mezcla 85/15, churn 9%, Mes 0 solo -CAC).	Sí: los 10 controles independientes cuadran sin calibración artificial.	Comprobar visualmente el gráfico insertado en 'Curva del cliente' y la actualización dinámica al cambiar celdas azules.
