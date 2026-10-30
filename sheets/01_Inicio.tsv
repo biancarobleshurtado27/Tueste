@@ -1,30 +1,31 @@
 SISTEMA DE DECISIONES DE TUESTE — NIVEL 1 (RESUMEN EJECUTIVO)						
-DECISIÓN EJECUTIVA:	Rechazar la propuesta de la agencia ($16.000 + 30% descuento BF). Ejecutar Cambio 1 (bajar Meta a $4.000, CAC real = $50, Payback Mes 10) y evaluar Cambio 2 (Pack $48 + cobro envío < $45, manteniendo envío gratis en suscripción).					
+DECISIÓN EJECUTIVA:	Rechazar la propuesta de la agencia ($16.000 + 30% descuento BF). Evaluar por separado el Cambio 1 (bajar Meta a $4.000), el Cambio 2 (Pack $48 + cobro envío en pedidos de 2 bolsas manteniendo Meta en $8.000) y ambos combinados.					
 						
-INDICADOR CLAVE	Escenario Actual ($8.000)	Propuesta Agencia ($16.000 + BF 30%)	Cambio 1 Separado: Meta $4.000	Cambio 2 Separado: Pack $48 + Envío	Propuesta Combinada (Cambio 1 + 2)	Control / Nota
-Inversión mensual en Meta Ads ($)	=Calculadora!B2	=Calculadora!C2	=Calculadora!D2	=Calculadora!E2	=Calculadora!F2	Vinculado a Supuestos
+INDICADOR CLAVE	Escenario Actual ($8.000)	Propuesta Agencia ($16.000 + BF 30%)	Cambio 1 Solo: Meta $4.000	Cambio 2 Solo: Pack $48 + Envío (Meta $8.000)	Ambos Cambios Combinados (Meta $4.000 + Pack y Envío)	Fórmula / Nota
+Inversión mensual en Meta Ads (rango $0–$20.000) ($)	=Calculadora!B2	=Calculadora!C2	=Calculadora!D2	=Calculadora!E2	=Calculadora!F2	Acotada al dominio histórico válido $0–$20.000
 Fee fijo de agencia ($1.000 si Meta > $0; $0 si no) ($)	=Calculadora!B3	=Calculadora!C3	=Calculadora!D3	=Calculadora!E3	=Calculadora!F3	Regla: $1.000 si Meta > $0; $0 si Meta = $0
 Gasto total de adquisición (Meta + Fee agencia) ($)	=Calculadora!B4	=Calculadora!C4	=Calculadora!D4	=Calculadora!E4	=Calculadora!F4	Inversión Meta + Fee de agencia
 Descuento Black Friday en 1er pedido suelto (%)	=Calculadora!B5	=Calculadora!C5	=Calculadora!D5	=Calculadora!E5	=Calculadora!F5	Afecta solo el 1er pedido de compradores sueltos
-Clientes nuevos reales adquiridos (interpolación lineal)	=Calculadora!B6	=Calculadora!C6	=Calculadora!D6	=Calculadora!E6	=Calculadora!F6	Interpolación lineal en tabla 0->0, 4k->100, 8k->165, 12k->210, 16k->235, 20k->250
-Importe cobrado 1er pedido — Comprador Suelto ($)	=Calculadora!B7	=Calculadora!C7	=Calculadora!D7	=Calculadora!E7	=Calculadora!F7	Actual: $34 | Agencia: $23,80 | Cambio 2: mezcla 2 bolsas+envío ($38,50) y Pack ($48)
-Contribución 1er pedido — Comprador Suelto ($)	=Calculadora!B8	=Calculadora!C8	=Calculadora!D8	=Calculadora!E8	=Calculadora!F8	Control Actual: $15,89 | Control Agencia BF: $6,149
+Clientes nuevos reales adquiridos (interpolación lineal)	=Calculadora!B6	=Calculadora!C6	=Calculadora!D6	=Calculadora!E6	=Calculadora!F6	Interpolación lineal por tramos en Supuestos!A32:B37
+Importe cobrado 1er pedido — Comprador Suelto ($)	=Calculadora!B7	=Calculadora!C7	=Calculadora!D7	=Calculadora!E7	=Calculadora!F7	Vinculado a Supuestos
+Contribución 1er pedido — Comprador Suelto ($)	=Calculadora!B8	=Calculadora!C8	=Calculadora!D8	=Calculadora!E8	=Calculadora!F8	Vinculado a Supuestos
 Contribución 1er pedido — Comprador Suelto (%)	=Calculadora!B9	=Calculadora!C9	=Calculadora!D9	=Calculadora!E9	=Calculadora!F9	Contribución 1er pedido suelto / Importe cobrado
-ROAS de equilibrio — Pedido Suelto (1 / % Contribución)	=Calculadora!B10	=Calculadora!C10	=Calculadora!D10	=Calculadora!E10	=Calculadora!F10	Separado para pedido suelto: $34 / $15,89 = 2,14x (Agencia BF: 3,87x)
-Contribución mensual — Suscripción ($)	=Calculadora!B11	=Calculadora!C11	=Calculadora!D11	=Calculadora!E11	=Calculadora!F11	Control Suscripción: $12,643 (Se mantiene envío gratis en suscripción)
-Contribución mensual — Suscripción (%)	=Calculadora!B12	=Calculadora!C12	=Calculadora!D12	=Calculadora!E12	=Calculadora!F12	$12,643 / $30,60 = 41,32%
-ROAS de equilibrio — Suscripción (1 / % Contribución)	=Calculadora!B13	=Calculadora!C13	=Calculadora!D13	=Calculadora!E13	=Calculadora!F13	Separado para suscripción: $30,60 / $12,643 = 2,42x
-Ingreso promedio ponderado 1er pedido (Mes 1) ($)	=Calculadora!B14	=Calculadora!C14	=Calculadora!D14	=Calculadora!E14	=Calculadora!F14	85% * Cobro 1er pedido suelto + 15% * $30,60
-Contribución promedio ponderada 1er pedido (Mes 1) ($)	=Calculadora!B15	=Calculadora!C15	=Calculadora!D15	=Calculadora!E15	=Calculadora!F15	85% * Contribución 1er pedido suelto + 15% * $12,643
+ROAS de equilibrio — Pedido Suelto (1 / % Contribución)	=Calculadora!B10	=Calculadora!C10	=Calculadora!D10	=Calculadora!E10	=Calculadora!F10	ROAS de equilibrio exclusivo del pedido suelto
+Contribución mensual — Suscripción ($)	=Calculadora!B11	=Calculadora!C11	=Calculadora!D11	=Calculadora!E11	=Calculadora!F11	Vinculado a Supuestos!B60
+Contribución mensual — Suscripción (%)	=Calculadora!B12	=Calculadora!C12	=Calculadora!D12	=Calculadora!E12	=Calculadora!F12	Vinculado a Supuestos!B61
+ROAS de equilibrio — Suscripción (1 / % Contribución)	=Calculadora!B13	=Calculadora!C13	=Calculadora!D13	=Calculadora!E13	=Calculadora!F13	ROAS de equilibrio exclusivo de la suscripción
+Ingreso promedio ponderado 1er pedido (Mes 1) ($)	=Calculadora!B14	=Calculadora!C14	=Calculadora!D14	=Calculadora!E14	=Calculadora!F14	Ponderado por mezcla Suelto / Suscripción
+Contribución promedio ponderada 1er pedido (Mes 1) ($)	=Calculadora!B15	=Calculadora!C15	=Calculadora!D15	=Calculadora!E15	=Calculadora!F15	Ponderado por mezcla Suelto / Suscripción
 ROAS de equilibrio ponderado (1er pedido)	=Calculadora!B16	=Calculadora!C16	=Calculadora!D16	=Calculadora!E16	=Calculadora!F16	Ingreso ponderado Mes 1 / Contribución ponderada Mes 1
-CAC de anuncios (solo Meta / Clientes nuevos) ($)	=Calculadora!B17	=Calculadora!C17	=Calculadora!D17	=Calculadora!E17	=Calculadora!F17	Inversión Meta / Clientes nuevos reales
-CAC real (Meta + Fee agencia / Clientes nuevos) ($)	=Calculadora!B18	=Calculadora!C18	=Calculadora!D18	=Calculadora!E18	=Calculadora!F18	Controles: Actual $9.000/165=$54,55 | Agencia $17.000/235=$72,34 | $4k: $50,00
+CAC de anuncios (solo Meta / Clientes nuevos) ($)	=Calculadora!B17	=Calculadora!C17	=Calculadora!D17	=Calculadora!E17	=Calculadora!F17	Muestra 'No aplica' cuando no hay inversión ni clientes de Meta
+CAC real (Meta + Fee agencia / Clientes nuevos) ($)	=Calculadora!B18	=Calculadora!C18	=Calculadora!D18	=Calculadora!E18	=Calculadora!F18	Muestra 'No aplica' cuando no hay inversión ni clientes de Meta
 ROAS del primer pedido (Ventas 1er pedido / Meta Ads)	=Calculadora!B19	=Calculadora!C19	=Calculadora!D19	=Calculadora!E19	=Calculadora!F19	Clientes nuevos * Ingreso promedio 1er pedido / Inversión Meta
-LTV Contribución 12M — Comprador Suelto (Meses 1 a 12) ($)	=Calculadora!B20	=Calculadora!C20	=Calculadora!D20	=Calculadora!E20	=Calculadora!F20	Mes 1 + recompras de Meses 2 a 12 (2,00 pedidos adicionales)
-LTV Contribución 12M — Suscriptor (Meses 1 a 12) ($)	=Calculadora!B21	=Calculadora!C21	=Calculadora!D21	=Calculadora!E21	=Calculadora!F21	Suma de 0,91^(m-1) en m=1..12 (7,528688 meses) * $12,643 = $95,1852
-LTV Contribución 12M — Promedio Ponderado ($)	=Calculadora!B22	=Calculadora!C22	=Calculadora!D22	=Calculadora!E22	=Calculadora!F22	Control Actual: ~$54,79607 ($54,7973 exacto) | Agencia: $46,5174
-Ratio LTV:CAC (con CAC real)	=Calculadora!B23	=Calculadora!C23	=Calculadora!D23	=Calculadora!E23	=Calculadora!F23	LTV Ponderado 12M / CAC real
-Payback (Mes discreto de recuperación)	=Calculadora!B24	=Calculadora!C24	=Calculadora!D24	=Calculadora!E24	=Calculadora!F24	Control Actual: Mes 12 | Agencia: No recupera en 12 meses | $4k: Mes 10
-CAC Marginal ($ de inversión extra por cliente adicional)	=Calculadora!B25	=Calculadora!C25	=Calculadora!D25	=Calculadora!E25	=Calculadora!F25	Control $8k->$16k: $8.000 / 70 = $114,2857 | $4k->$8k: $4.000 / 65 = $61,5385
-Contribución neta de adquisición por cliente a 12M (LTV - CAC real) ($)	=Calculadora!B26	=Calculadora!C26	=Calculadora!D26	=Calculadora!E26	=Calculadora!F26	Actual: +$0,25/cliente | Agencia: -$25,82/cliente | Cambio 1 ($4k): +$4,80/cliente
-Contribución neta de adquisición de toda la cohorte a 12M ($)	=Calculadora!B27	=Calculadora!C27	=Calculadora!D27	=Calculadora!E27	=Calculadora!F27	Clientes nuevos * (LTV 12M - CAC real) (antes de costos fijos de empresa)
+LTV Contribución 12M — Comprador Suelto (Meses 1 a 12) ($)	=Calculadora!B20	=Calculadora!C20	=Calculadora!D20	=Calculadora!E20	=Calculadora!F20	Suma de contribución de Mes 1 + recompras de Meses 2 a 12
+LTV Contribución 12M — Suscriptor (Meses 1 a 12) ($)	=Calculadora!B21	=Calculadora!C21	=Calculadora!D21	=Calculadora!E21	=Calculadora!F21	Vinculado a Supuestos!B72
+LTV Contribución 12M — Promedio Ponderado ($)	=Calculadora!B22	=Calculadora!C22	=Calculadora!D22	=Calculadora!E22	=Calculadora!F22	85% * LTV Suelto + 15% * LTV Suscriptor
+Ratio LTV:CAC (con CAC real)	=Calculadora!B23	=Calculadora!C23	=Calculadora!D23	=Calculadora!E23	=Calculadora!F23	Protegido con ISNUMBER cuando CAC es 'No aplica'
+Payback (Mes discreto de recuperación)	=Calculadora!B24	=Calculadora!C24	=Calculadora!D24	=Calculadora!E24	=Calculadora!F24	Calculado dinámicamente desde Curva del cliente (sin errores con Inv=0)
+CAC Marginal del tramo histórico ($/cliente extra en ese tramo)	=Calculadora!B25	=Calculadora!C25	=Calculadora!D25	=Calculadora!E25	=Calculadora!F25	Pendiente del tramo de la tabla histórica en que se ubica la inversión
+CAC Incremental respecto al Escenario Actual ($8.000) ($)	=Calculadora!B26	=Calculadora!C26	=Calculadora!D26	=Calculadora!E26	=Calculadora!F26	De $8.000 a $16.000: $8.000 / 70 = $114,29; muestra 'No aplica' si Inv = $8.000 o $0
+Contribución neta de adquisición por cliente a 12M (LTV - CAC real) ($)	=Calculadora!B27	=Calculadora!C27	=Calculadora!D27	=Calculadora!E27	=Calculadora!F27	LTV Ponderado 12M menos CAC real
+Contribución neta de adquisición de toda la cohorte a 12M ($)	=Calculadora!B28	=Calculadora!C28	=Calculadora!D28	=Calculadora!E28	=Calculadora!F28	Clientes nuevos * (LTV 12M - CAC real)
