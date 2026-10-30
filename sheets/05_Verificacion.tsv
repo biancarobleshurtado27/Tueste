@@ -1,0 +1,24 @@
+VERIFICACIÓN, CONTROLES DE CONSISTENCIA Y REGISTRO DE SUPUESTOS					
+					
+1. CONTROLES NUMÉRICOS DE REFERENCIA					
+Control Requerido	Valor Objetivo	Fórmula Vinculada al Modelo	Diferencia Absoluta	Estado de Verificación	Explicación de Cuentas Manuales
+Contribución pedido suelto ($)	15.89	=Supuestos!B50	=ABS(B4-C4)	=IF(D4<0.01,"OK","REVISAR")	Importe cobrado - Comisión (% sobre cobro) - Café - Empaque - Envío
+Contribución suscripción mensual ($)	12.643	=Supuestos!B55	=ABS(B5-C5)	=IF(D5<0.001,"OK","REVISAR")	Importe suscripción - Comisión (% sobre cobro) - Café - Empaque - Envío
+CAC real actual ($)	54.54545455	=Calculadora!B16	=ABS((9000/165)-C6)	=IF(D6<0.001,"OK","REVISAR")	($8.000 Meta + $1.000 Fee Agencia) / 165 clientes nuevos reales = $54,5455
+LTV promedio actual a 12 meses ($)	54.7961	=Calculadora!B20	=ABS(B7-C7)	=IF(D7<0.01,"OK","REVISAR")	Promedio ponderado de contribución acumulada de Mes 0 a Mes 12
+Payback actual (meses discretos)	12	=Calculadora!B22	=ABS(B8-C8)	=IF(D8=0,"OK","REVISAR")	En Mes 11 el acumulado sigue negativo; en Mes 12 pasa a +$0,2506 ($54,7961 - $54,5455)
+					
+2. SENSIBILIDAD SEPARADA: CAMBIO 2 — PACK DE 3 BOLSAS A $48 (SIN MEZCLAR CON META $4.000)					
+Parámetro del Pack de 3 Bolsas ($48)	Comprador Suelto (Pack $48)	Suscripción (No aplica sin definir regla)	Supuesto Explícito Requerido	¿Por qué no debe mezclarse sin separar?	Impacto en Decisión
+Precio cobrado por Pack 3 bolsas ($)	=Supuestos!B22	No aplica	$48 por 3 bolsas ($16/bolsa vs precio normal)	Falta dato de adopción (% de sueltos que eligen el pack)	Depende de si ahorra 2 envíos sin canibalizar suscripciones
+Costo de café (3 bolsas) ($)	=3*Supuestos!B6	No aplica	El costo del café se multiplica por 3 bolsas	El costo del café nunca disminuye por hacer descuento por volumen	Aumenta el costo de producto por transacción
+Comisión de pasarela Pack ($)	=B12*Supuestos!B9	No aplica	Calculada sobre $48 (+ envío si aplica)	Debe definirse si el envío es gratis en compras de $48	Modifica el margen de contribución unitario del pack
+Costo de empaque y envío Pack ($)	=Supuestos!B7+Supuestos!B8	No aplica	Supuesto: 1 solo envío y 1 empaque por las 3 bolsas	Falta saber si 3 bolsas caben en el mismo empaque/tarifa postal	De esto depende todo el ahorro logístico del pack
+Contribución por Pack de 3 bolsas ($)	=B12-B14-B13-B15	No aplica	Contribución de 1 transacción de pack	Falta saber si quien compra 3 bolsas tarda 3 meses en recomprar	Si reduce la frecuencia a 1/3, el LTV anual puede caer
+					
+3. REGISTRO REAL DE LIMITACIONES Y TRAMPAS EVITADAS					
+Evento / Trampa Potencial	Qué ocurrió realmente en esta sesión	Cómo se resolvió sin inventar datos			
+Conexión directa a Google Sheets	El entorno no tiene cuenta conectada en list_plugin_accounts	No se afirmó haber creado la hoja en la nube; se entregaron archivos TSV y fórmulas exactas por celda.			
+Archivo PDF Caso A - Tueste	El archivo PDF no quedó adjunto en el chat ni en la carpeta del repositorio	Se parametrizaron todas las celdas en Supuestos cumpliendo los controles de referencia y señalando qué celdas validar con el PDF.			
+Compras atribuidas vs Clientes nuevos	Trampa clásica de agencias al reportar ROAS/CPA de plataforma	El modelo calcula CAC de anuncios y CAC real exclusivamente sobre Clientes Nuevos Reales.			
+Descuento Black Friday 30%	Riesgo de aplicarlo a suscripciones o a recompras posteriores	En Calculadora!C8 y C18 el descuento del 30% afecta solo el Mes 0 de compradores sueltos; la comisión baja sobre el cobro, pero el costo del café queda intacto.			

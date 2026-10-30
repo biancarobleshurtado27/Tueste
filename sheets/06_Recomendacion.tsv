@@ -1,0 +1,19 @@
+RECOMENDACIÓN EJECUTIVA PARA DIEGO (TUESTE)			
+			
+1. Diagnóstico del Escenario Actual ($8.000/mes en Meta Ads)			
+Actualmente invertimos $8.000 en Meta Ads más $1.000 de fee de agencia ($9.000 totales) para adquirir 165 clientes nuevos reales.			
+Eso significa un CAC real de $54,55 por cliente (`=9000/165`). Como cada cliente genera en promedio $54,80 de contribución acumulada en 12 meses (`=Calculadora!B20`), tardamos exactamente 12 meses en empatar el costo de adquirirlo (ganancia neta de adquisición de apenas $0,25 por cliente al año, antes de costos fijos).			
+			
+2. Por qué debemos RECHAZAR la propuesta de la agencia ($16.000/mes + 30% descuento Black Friday)			
+- Rendimientos decrecientes severos (CAC Marginal): Duplicar el presupuesto de $8.000 a $16.000 no duplica los clientes nuevos reales debido a la saturación del canal. Cada cliente adicional en ese tramo cuesta mucho más que el promedio actual (`=Calculadora!C23`).			
+- Destrucción de contribución en el primer pedido: Aplicar un 30% de descuento en el primer pedido suelto reduce el dinero cobrado y la comisión de pasarela, pero el costo del café, empaque y envío sigue siendo exactamente el mismo. La contribución del primer pedido suelto cae a `=Calculadora!C8`, reduciendo el LTV ponderado a 12 meses a `=Calculadora!C20`.			
+- Resultado: Con un CAC real mayor (`=Calculadora!C16`) y un LTV menor (`=Calculadora!C20`), el cliente promedio no recupera su costo de adquisición en 12 meses (`=Calculadora!C22`).			
+			
+3. Dos cambios propuestos (evaluados por separado)			
+Cambio 1 (Acción inmediata y cuantificable): Reducir la inversión en Meta Ads a $4.000/mes manteniendo precios llenos.			
+- Efecto numérico: Operamos en el tramo más eficiente de la curva de adquisición. El CAC real baja a `=Calculadora!D16`, el LTV a 12 meses se mantiene en `=Calculadora!D20`, el ratio LTV:CAC sube a `=Calculadora!D21` y el Payback baja al mes `=Calculadora!D22`.			
+- Supuesto necesario: Que la curva histórica de respuesta de Meta Ads en el tramo de $4.000 se mantenga estable.			
+			
+Cambio 2 (Prueba controlada / Sensibilidad): Probar el Pack de 3 bolsas a $48 ($16/bolsa) solo cuando se definan sus reglas operativas.			
+- Efecto numérico unitario: Un pack de 3 bolsas a $48 genera una contribución por transacción de `=Verificación!B17` asumiendo 1 solo envío y 1 empaque para las 3 bolsas.			
+- Supuestos críticos pendientes antes de escalarlo: (a) Qué porcentaje de compradores sueltos lo adopta, (b) si espacia la recompra a cada 3 meses en vez de mensual, (c) si incluye o no cobro de envío, y (d) cómo evitar que canibalice a los clientes de suscripción mensual.			

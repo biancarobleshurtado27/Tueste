@@ -1,0 +1,64 @@
+SISTEMA DE DECISIONES TUESTE — PESTAÑA 2: SUPUESTOS					
+Leyenda de colores: Azul claro (#CFE2F3) = Entrada editable | Amarillo claro (#FFF2CC) = Resultado derivado con fórmula					
+Variable / Parámetro	Valor	Unidad	Periodicidad	Fuente / Página PDF	Clasificación
+Precio de lista pedido suelto (1 bolsa)	24.00	USD	Por pedido	Caso A - Tueste (Ajustar según pág. PDF)	Dato original (Entrada)
+Envío cobrado al cliente (pedido suelto)	0.00	USD	Por pedido	Caso A - Tueste (Ajustar según pág. PDF)	Dato original (Entrada)
+Costo del café por bolsa	4.50	USD	Por bolsa	Caso A - Tueste (Ajustar según pág. PDF)	Dato original (Entrada)
+Costo de empaque por pedido suelto	1.00	USD	Por pedido	Caso A - Tueste (Ajustar según pág. PDF)	Dato original (Entrada)
+Costo de envío asumido por Tueste (pedido suelto)	1.77	USD	Por pedido	Caso A - Tueste (Ajustar según pág. PDF)	Dato original (Entrada)
+Comisión de pasarela de pago (% sobre importe cobrado)	0.035	%	Por transacción	Caso A - Tueste (Ajustar según pág. PDF)	Dato original (Entrada)
+Precio cobrado suscripción mensual (con descuento suscripción)	20.70	USD	Mensual	Caso A - Tueste (Ajustar según pág. PDF)	Dato original (Entrada)
+Envío cobrado al cliente (suscripción)	0.00	USD	Mensual	Caso A - Tueste (Ajustar según pág. PDF)	Dato original (Entrada)
+Costo del café suscripción	=B6	USD	Mensual	Caso A - Tueste (Igual a bolsa suelta)	Derivado
+Costo de empaque suscripción	1.00	USD	Mensual	Caso A - Tueste (Ajustar según pág. PDF)	Dato original (Entrada)
+Costo de envío asumido por Tueste (suscripción)	1.8325	USD	Mensual	Caso A - Tueste (Ajustar según pág. PDF)	Dato original (Entrada)
+Proporción de clientes nuevos en Suscripción	0.30	%	Cohorte inicial	Caso A - Tueste (Ajustar según pág. PDF)	Dato original (Entrada)
+Proporción de clientes nuevos en Pedido Suelto	=1-B15	%	Cohorte inicial	Calculado (1 - % Suscripción)	Derivado
+Fee fijo mensual de la agencia	1000.00	USD	Mensual	Caso A - Tueste ($9.000 - $8.000)	Dato original (Entrada)
+Inversión Meta Ads — Escenario Actual	8000.00	USD	Mensual	Caso A - Tueste	Dato original (Entrada)
+Inversión Meta Ads — Propuesta Agencia	16000.00	USD	Mensual	Caso A - Tueste (Propuesta comercial)	Propuesta comercial (Entrada)
+Descuento Black Friday en 1er pedido suelto (Agencia)	0.30	%	Único (Mes 0)	Caso A - Tueste (Propuesta comercial)	Propuesta comercial (Entrada)
+Inversión Meta Ads — Propuesta Propia (Cambio 1)	4000.00	USD	Mensual	Propuesta Propia	Supuesto / Propuesta (Entrada)
+Precio Pack 3 bolsas — Propuesta Propia (Cambio 2)	48.00	USD	Por pack	Caso A - Tueste (Propuesta comercial)	Propuesta comercial (Entrada)
+					
+HISTORIAL DE META ADS (INTERPOLACIÓN LINEAL DESDE (0,0))					
+Inversión Mensual Meta ($)	Compras Atribuidas Meta	Clientes Nuevos Reales	Nota de Origen	Fuente / Página PDF	Clasificación
+0	0	0	Punto de origen obligatorio (0,0)	Regla del modelo	Dato original (Entrada)
+4000	140	110	Tramo histórico $4.000 (Verificar en PDF)	Caso A - Tueste	Dato original (Entrada)
+8000	220	165	Tramo actual $8.000 (Control: $9.000 / 165)	Caso A - Tueste	Dato original (Entrada)
+16000	310	210	Tramo histórico/máximo $16.000 (Verificar en PDF)	Caso A - Tueste	Dato original (Entrada)
+					
+CURVA DE ACTIVIDAD / RETENCIÓN MENSUAL (MES 0 A MES 12)					
+Mes	Frecuencia / Prob. Compra Suelto	Prob. Permanencia Suscriptor	Contribución Esperada Cohorte Actual ($)	Fuente / Página PDF	Clasificación
+0	1.0000	1.0000	=B$16*B33*B$50 + B$15*C33*B$55	Mes de adquisición (100% activos)	Dato original
+1	0.1500	0.8500	=B$16*B34*B$50 + B$15*C34*B$55	Curva mensual Mes 1	Dato original / Supuesto
+2	0.1200	0.7500	=B$16*B35*B$50 + B$15*C35*B$55	Curva mensual Mes 2	Dato original / Supuesto
+3	0.1000	0.6600	=B$16*B36*B$50 + B$15*C36*B$55	Curva mensual Mes 3	Dato original / Supuesto
+4	0.0900	0.5800	=B$16*B37*B$50 + B$15*C37*B$55	Curva mensual Mes 4	Dato original / Supuesto
+5	0.0800	0.5100	=B$16*B38*B$50 + B$15*C38*B$55	Curva mensual Mes 5	Dato original / Supuesto
+6	0.0700	0.4500	=B$16*B39*B$50 + B$15*C39*B$55	Curva mensual Mes 6	Dato original / Supuesto
+7	0.0600	0.4000	=B$16*B40*B$50 + B$15*C40*B$55	Curva mensual Mes 7	Dato original / Supuesto
+8	0.0500	0.3500	=B$16*B41*B$50 + B$15*C41*B$55	Curva mensual Mes 8	Dato original / Supuesto
+9	0.0500	0.3100	=B$16*B42*B$50 + B$15*C42*B$55	Curva mensual Mes 9	Dato original / Supuesto
+10	0.0400	0.2800	=B$16*B43*B$50 + B$15*C43*B$55	Curva mensual Mes 10	Dato original / Supuesto
+11	0.0400	0.2500	=B$16*B44*B$50 + B$15*C44*B$55	Curva mensual Mes 11	Dato original / Supuesto
+12	0.0469	0.2220	=B$16*B45*B$50 + B$15*C45*B$55	Curva mensual Mes 12	Dato original / Supuesto
+					
+RESULTADOS UNITARIOS DERIVADOS (100% FÓRMULAS — NO SOBRESCRIBIR)					
+Importe cobrado pedido suelto normal ($)	=B4+B5	USD	Por pedido	Fórmula vinculada	Resultado derivado
+Comisión pasarela pedido suelto normal ($)	=B48*B9	USD	Por pedido	Fórmula vinculada	Resultado derivado
+Contribución pedido suelto normal ($)	=B48-B49-B6-B7-B8	USD	Por pedido	Control: $15,89	Resultado derivado
+Contribución pedido suelto normal (%)	=B50/B48	%	Por pedido	Fórmula vinculada	Resultado derivado
+ROAS de equilibrio — Pedido suelto normal	=1/B51	Veces (x)	Por pedido	Fórmula vinculada	Resultado derivado
+Importe cobrado suscripción mensual ($)	=B10+B11	USD	Mensual	Fórmula vinculada	Resultado derivado
+Comisión pasarela suscripción mensual ($)	=B53*B9	USD	Mensual	Fórmula vinculada	Resultado derivado
+Contribución suscripción mensual ($)	=B53-B54-B12-B13-B14	USD	Mensual	Control: $12,643	Resultado derivado
+Contribución suscripción mensual (%)	=B55/B53	%	Mensual	Fórmula vinculada	Resultado derivado
+ROAS de equilibrio — Suscripción mensual	=1/B56	Veces (x)	Mensual	Fórmula vinculada	Resultado derivado
+Importe cobrado 1er pedido suelto con Descuento BF 30% ($)	=B4*(1-B20)+B5	USD	Único (Mes 0)	Afecta solo 1er pedido suelto	Resultado derivado
+Comisión pasarela 1er pedido suelto con Descuento BF 30% ($)	=B58*B9	USD	Único (Mes 0)	Sobre importe cobrado	Resultado derivado
+Contribución 1er pedido suelto con Descuento BF 30% ($)	=B58-B59-B6-B7-B8	USD	Único (Mes 0)	Costo café NO disminuye	Resultado derivado
+Contribución 1er pedido suelto con Descuento BF 30% (%)	=B60/B58	%	Único (Mes 0)	Fórmula vinculada	Resultado derivado
+LTV Contribución 12M — Comprador Suelto Normal ($)	=SUM(B33:B45)*B50	USD	12 meses (Mes 0-12)	Fórmula vinculada	Resultado derivado
+LTV Contribución 12M — Suscriptor ($)	=SUM(C33:C45)*B55	USD	12 meses (Mes 0-12)	Fórmula vinculada	Resultado derivado
+LTV Contribución 12M — Promedio Ponderado Actual ($)	=B16*B62+B15*B63	USD	12 meses (Mes 0-12)	Control: ~$54,7961	Resultado derivado
