@@ -3,17 +3,17 @@ Leyenda de colores: Azul claro (#CFE2F3) = Entrada editable | Amarillo claro (#F
 Variable / Parámetro	Valor	Unidad	Periodicidad	Fuente / Página PDF	Clasificación
 Precio por bolsa de café	17.0	USD / bolsa	Por unidad	Caso A - Tueste (Datos de producto)	Dato original (Entrada)
 Bolsas por pedido suelto típico	2	Bolsas / pedido	Por pedido	Caso A - Tueste (Pedido típico: 2 bolsas)	Dato original (Entrada)
-Precio pedido suelto típico (2 bolsas)	=B4*B5	USD / pedido	Por pedido	Calculado con fórmula: =B4*B5	Resultado derivado (Fórmula)
+Precio pedido suelto típico (2 bolsas)	=B4*B5	USD / pedido	Por pedido	Precio por bolsa multiplicado por bolsas por pedido	Resultado derivado (Fórmula)
 Costo del café por bolsa	5.44	USD / bolsa	Por bolsa	Caso A - Tueste (Costos variables)	Dato original (Entrada)
-Costo del café por pedido de 2 bolsas	=B5*B7	USD / pedido	Por pedido	Calculado con fórmula: =B5*B7	Resultado derivado (Fórmula)
+Costo del café por pedido de 2 bolsas	=B5*B7	USD / pedido	Por pedido	Bolsas por pedido multiplicadas por costo de café por bolsa	Resultado derivado (Fórmula)
 Costo de envío pagado por Tueste por pedido	4.5	USD / pedido	Por pedido	Caso A - Tueste (Logística)	Dato original (Entrada)
 Costo de empaque para pedido de 2 bolsas	1.2	USD / pedido	Por pedido	Caso A - Tueste (Empaque 2 bolsas)	Dato original (Entrada)
 Comisión de pasarela de pagos (% sobre importe cobrado)	0.045	%	Por transacción	Caso A - Tueste (Pasarela 4,5%)	Dato original (Entrada)
 Precio suscripción mensual (2 bolsas/mes con 10% desc.)	30.6	USD / mes	Mensual	Caso A - Tueste (Suscripción 2 bolsas)	Dato original (Entrada)
 Proporción de compradores sueltos en nuevos clientes	0.85	%	Cohorte inicial	Caso A - Tueste (Mezcla 85% sueltos)	Dato original (Entrada)
-Proporción de suscriptores en nuevos clientes	=1-B13	%	Cohorte inicial	Calculado con fórmula: =1-B13	Resultado derivado (Fórmula)
+Proporción de suscriptores en nuevos clientes	=1-B13	%	Cohorte inicial	Complemento del porcentaje de compradores sueltos	Resultado derivado (Fórmula)
 Tasa de cancelación mensual de suscriptores (Churn)	0.09	%	Mensual	Caso A - Tueste (Cancelación 9% mensual)	Dato original (Entrada)
-Tasa de permanencia mensual de suscriptores (Retención)	=1-B15	%	Mensual	Calculado con fórmula: =1-B15	Resultado derivado (Fórmula)
+Tasa de permanencia mensual de suscriptores (Retención)	=1-B15	%	Mensual	Complemento de la tasa de cancelación mensual	Resultado derivado (Fórmula)
 Fee fijo mensual de agencia (si Inversión Meta > $0)	1000.0	USD / mes	Mensual	Caso A - Tueste ($1.000 si Meta>0; $0 si no)	Dato original (Entrada)
 Inversión mensual en Meta Ads — Escenario Actual (rango $0-$20.000)	8000.0	USD / mes	Mensual	Caso A - Tueste (Septiembre / Actual)	Dato original (Entrada)
 Dato histórico Septiembre: Compras atribuidas por Meta	706	Compras	Histórico Sept.	Caso A - Tueste (Dato histórico, NO pronóstico)	Dato original informativo
@@ -37,37 +37,37 @@ Inversión Mensual Meta ($)	Clientes Nuevos Reales (Meta)	CAC de Anuncios del Tr
 20000	250	=A37/B37	=(A37+IF(A37>0,$B$17,0))/B37	=(A37-A36)/(B37-B36)	Dato original (Tramo $16.000 a $20.000: $4.000/15)
 CURVA DE ACTIVIDAD MENSUAL DEL CLIENTE (MESES DE VIDA 1 A 12 — COMPRAS INICIAN EN MES 1)					
 Mes de vida (m)	Actividad Comprador Suelto (pedidos)	Actividad Suscriptor = Permanencia^(m-1)	Contribución Mensual Ponderada Actual ($)	Fuente / Fórmula	Clasificación
-1	1.0	=$B$16^(A40-1)	=$B$13*B40*$B$56+$B$14*C40*$B$60	Suelto: tabla caso | Suscriptor: =$B$16^(A-1)	Dato original / Fórmula
-2	0.15	=$B$16^(A41-1)	=$B$13*B41*$B$56+$B$14*C41*$B$60	Suelto: tabla caso | Suscriptor: =$B$16^(A-1)	Dato original / Fórmula
-3	0.2	=$B$16^(A42-1)	=$B$13*B42*$B$56+$B$14*C42*$B$60	Suelto: tabla caso | Suscriptor: =$B$16^(A-1)	Dato original / Fórmula
-4	0.2	=$B$16^(A43-1)	=$B$13*B43*$B$56+$B$14*C43*$B$60	Suelto: tabla caso | Suscriptor: =$B$16^(A-1)	Dato original / Fórmula
-5	0.2	=$B$16^(A44-1)	=$B$13*B44*$B$56+$B$14*C44*$B$60	Suelto: tabla caso | Suscriptor: =$B$16^(A-1)	Dato original / Fórmula
-6	0.2	=$B$16^(A45-1)	=$B$13*B45*$B$56+$B$14*C45*$B$60	Suelto: tabla caso | Suscriptor: =$B$16^(A-1)	Dato original / Fórmula
-7	0.2	=$B$16^(A46-1)	=$B$13*B46*$B$56+$B$14*C46*$B$60	Suelto: tabla caso | Suscriptor: =$B$16^(A-1)	Dato original / Fórmula
-8	0.15	=$B$16^(A47-1)	=$B$13*B47*$B$56+$B$14*C47*$B$60	Suelto: tabla caso | Suscriptor: =$B$16^(A-1)	Dato original / Fórmula
-9	0.15	=$B$16^(A48-1)	=$B$13*B48*$B$56+$B$14*C48*$B$60	Suelto: tabla caso | Suscriptor: =$B$16^(A-1)	Dato original / Fórmula
-10	0.15	=$B$16^(A49-1)	=$B$13*B49*$B$56+$B$14*C49*$B$60	Suelto: tabla caso | Suscriptor: =$B$16^(A-1)	Dato original / Fórmula
-11	0.2	=$B$16^(A50-1)	=$B$13*B50*$B$56+$B$14*C50*$B$60	Suelto: tabla caso | Suscriptor: =$B$16^(A-1)	Dato original / Fórmula
-12	0.2	=$B$16^(A51-1)	=$B$13*B51*$B$56+$B$14*C51*$B$60	Suelto: tabla caso | Suscriptor: =$B$16^(A-1)	Dato original / Fórmula
+1	1.0	=$B$16^(A40-1)	=$B$13*B40*$B$56+$B$14*C40*$B$60	Suelto: tabla del caso | Suscriptor: permanencia elevada a (m-1)	Dato original / Fórmula
+2	0.15	=$B$16^(A41-1)	=$B$13*B41*$B$56+$B$14*C41*$B$60	Suelto: tabla del caso | Suscriptor: permanencia elevada a (m-1)	Dato original / Fórmula
+3	0.2	=$B$16^(A42-1)	=$B$13*B42*$B$56+$B$14*C42*$B$60	Suelto: tabla del caso | Suscriptor: permanencia elevada a (m-1)	Dato original / Fórmula
+4	0.2	=$B$16^(A43-1)	=$B$13*B43*$B$56+$B$14*C43*$B$60	Suelto: tabla del caso | Suscriptor: permanencia elevada a (m-1)	Dato original / Fórmula
+5	0.2	=$B$16^(A44-1)	=$B$13*B44*$B$56+$B$14*C44*$B$60	Suelto: tabla del caso | Suscriptor: permanencia elevada a (m-1)	Dato original / Fórmula
+6	0.2	=$B$16^(A45-1)	=$B$13*B45*$B$56+$B$14*C45*$B$60	Suelto: tabla del caso | Suscriptor: permanencia elevada a (m-1)	Dato original / Fórmula
+7	0.2	=$B$16^(A46-1)	=$B$13*B46*$B$56+$B$14*C46*$B$60	Suelto: tabla del caso | Suscriptor: permanencia elevada a (m-1)	Dato original / Fórmula
+8	0.15	=$B$16^(A47-1)	=$B$13*B47*$B$56+$B$14*C47*$B$60	Suelto: tabla del caso | Suscriptor: permanencia elevada a (m-1)	Dato original / Fórmula
+9	0.15	=$B$16^(A48-1)	=$B$13*B48*$B$56+$B$14*C48*$B$60	Suelto: tabla del caso | Suscriptor: permanencia elevada a (m-1)	Dato original / Fórmula
+10	0.15	=$B$16^(A49-1)	=$B$13*B49*$B$56+$B$14*C49*$B$60	Suelto: tabla del caso | Suscriptor: permanencia elevada a (m-1)	Dato original / Fórmula
+11	0.2	=$B$16^(A50-1)	=$B$13*B50*$B$56+$B$14*C50*$B$60	Suelto: tabla del caso | Suscriptor: permanencia elevada a (m-1)	Dato original / Fórmula
+12	0.2	=$B$16^(A51-1)	=$B$13*B51*$B$56+$B$14*C51*$B$60	Suelto: tabla del caso | Suscriptor: permanencia elevada a (m-1)	Dato original / Fórmula
 Total 12 meses (Suma Meses 1 a 12)	=SUM(B40:B51)	=SUM(C40:C51)	=SUM(D40:D51)	Calculado íntegramente por suma de los meses 1 a 12	Resultado derivado (Fórmula)
 RESULTADOS UNITARIOS DERIVADOS Y CONTROLES (100% FÓRMULAS VINCULADAS)					
-Importe cobrado pedido suelto normal (2 bolsas) ($)	=B6	USD / pedido	Por pedido	Fórmula: =B6	Resultado derivado
-Comisión pasarela pedido suelto normal (4,5%) ($)	=B54*B11	USD / pedido	Por pedido	Fórmula: =B54*B11	Resultado derivado
-Contribución pedido suelto normal (2 bolsas) ($)	=B54-B55-B8-B10-B9	USD / pedido	Por pedido	Fórmula: =B54-B55-B8-B10-B9	Resultado derivado
-Contribución pedido suelto normal (%)	=B56/B54	% sobre cobro	Por pedido	Fórmula: =B56/B54	Resultado derivado
-ROAS de equilibrio — Pedido suelto normal	=B54/B56	Veces (x)	Por pedido	Fórmula: =B54/B56	Resultado derivado
-Comisión pasarela suscripción mensual (4,5%) ($)	=B12*B11	USD / mes	Mensual	Fórmula: =B12*B11	Resultado derivado
-Contribución suscripción mensual (2 bolsas) ($)	=B12-B59-B8-B10-B9	USD / mes	Mensual	Fórmula: =B12-B59-B8-B10-B9	Resultado derivado
-Contribución suscripción mensual (%)	=B60/B12	% sobre cobro	Mensual	Fórmula: =B60/B12	Resultado derivado
-ROAS de equilibrio — Suscripción mensual	=B12/B60	Veces (x)	Mensual	Fórmula: =B12/B60	Resultado derivado
-Importe cobrado 1er pedido suelto con 30% Descuento BF ($)	=B6*(1-B23)	USD / pedido	Único (Mes 1)	Fórmula: =B6*(1-B23)	Resultado derivado
-Comisión pasarela 1er pedido suelto con 30% Descuento BF ($)	=B63*B11	USD / pedido	Único (Mes 1)	Fórmula: =B63*B11	Resultado derivado
-Contribución 1er pedido suelto con 30% Descuento BF ($)	=B63-B64-B8-B10-B9	USD / pedido	Único (Mes 1)	Fórmula: =B63-B64-B8-B10-B9	Resultado derivado
-Contribución 1er pedido suelto con 30% Descuento BF (%)	=B65/B63	% sobre cobro	Único (Mes 1)	Fórmula: =B65/B63	Resultado derivado
-ROAS de equilibrio — 1er pedido suelto con 30% Descuento BF	=B63/B65	Veces (x)	Único (Mes 1)	Fórmula: =B63/B65	Resultado derivado
-Contribución Pack de 3 bolsas a $48 (envío gratis >= $45) ($)	=B26*(1-B11)-(B25*B7)-B27-B9	USD / pack	Por pack	Fórmula: =B26*(1-B11)-(B25*B7)-B27-B9	Resultado derivado
-Contribución Pack de 3 bolsas a $48 (%)	=B68/B26	% sobre cobro	Por pack	Fórmula: =B68/B26	Resultado derivado
-Contribución pedido suelto 2 bolsas cobrando envío de $4,50 ($)	=(B6+B28)*(1-B11)-B8-B10-B9	USD / pedido	Por pedido	Fórmula: =(B6+B28)*(1-B11)-B8-B10-B9	Resultado derivado
-LTV Contribución 12M — Comprador Suelto Normal ($)	=B52*B56	USD / cliente	Meses 1 a 12	Fórmula: =B52*B56	Resultado derivado
-LTV Contribución 12M — Suscriptor ($)	=C52*B60	USD / cliente	Meses 1 a 12	Fórmula: =C52*B60	Resultado derivado
-LTV Contribución 12M — Promedio Ponderado Actual ($)	=B13*B71+B14*B72	USD / cliente	Meses 1 a 12	Fórmula: =B13*B71+B14*B72	Resultado derivado
+Importe cobrado pedido suelto normal (2 bolsas) ($)	=B6	USD / pedido	Por pedido	Precio de 2 bolsas sin descuento	Resultado derivado
+Comisión pasarela pedido suelto normal (4,5%) ($)	=B54*B11	USD / pedido	Por pedido	Porcentaje de pasarela sobre el importe cobrado	Resultado derivado
+Contribución pedido suelto normal (2 bolsas) ($)	=B54-B55-B8-B10-B9	USD / pedido	Por pedido	Importe cobrado menos pasarela, café, empaque y envío	Resultado derivado
+Contribución pedido suelto normal (%)	=B56/B54	% sobre cobro	Por pedido	Contribución unitaria dividida entre importe cobrado	Resultado derivado
+ROAS de equilibrio — Pedido suelto normal	=B54/B56	Veces (x)	Por pedido	Inverso del margen de contribución porcentual	Resultado derivado
+Comisión pasarela suscripción mensual (4,5%) ($)	=B12*B11	USD / mes	Mensual	Porcentaje de pasarela sobre precio de suscripción	Resultado derivado
+Contribución suscripción mensual (2 bolsas) ($)	=B12-B59-B8-B10-B9	USD / mes	Mensual	Precio suscripción menos pasarela, café, empaque y envío	Resultado derivado
+Contribución suscripción mensual (%)	=B60/B12	% sobre cobro	Mensual	Contribución suscripción dividida entre cobro mensual	Resultado derivado
+ROAS de equilibrio — Suscripción mensual	=B12/B60	Veces (x)	Mensual	Inverso del margen porcentual de suscripción	Resultado derivado
+Importe cobrado 1er pedido suelto con 30% Descuento BF ($)	=B6*(1-B23)	USD / pedido	Único (Mes 1)	Precio de 2 bolsas aplicando 30% de descuento	Resultado derivado
+Comisión pasarela 1er pedido suelto con 30% Descuento BF ($)	=B63*B11	USD / pedido	Único (Mes 1)	Calculada sobre el importe efectivamente cobrado	Resultado derivado
+Contribución 1er pedido suelto con 30% Descuento BF ($)	=B63-B64-B8-B10-B9	USD / pedido	Único (Mes 1)	El descuento no reduce el costo del café, empaque ni envío	Resultado derivado
+Contribución 1er pedido suelto con 30% Descuento BF (%)	=B65/B63	% sobre cobro	Único (Mes 1)	Contribución con descuento dividida entre cobro con descuento	Resultado derivado
+ROAS de equilibrio — 1er pedido suelto con 30% Descuento BF	=B63/B65	Veces (x)	Único (Mes 1)	Inverso del margen porcentual con descuento	Resultado derivado
+Contribución Pack de 3 bolsas a $48 (envío gratis >= $45) ($)	=B26*(1-B11)-(B25*B7)-B27-B9	USD / pack	Por pack	Cobro del pack menos pasarela, 3 bolsas de café, empaque y envío	Resultado derivado
+Contribución Pack de 3 bolsas a $48 (%)	=B68/B26	% sobre cobro	Por pack	Contribución del pack dividida entre su precio	Resultado derivado
+Contribución pedido suelto 2 bolsas cobrando envío de $4,50 ($)	=(B6+B28)*(1-B11)-B8-B10-B9	USD / pedido	Por pedido	Cobro de 2 bolsas más envío menos pasarela y costos variables	Resultado derivado
+LTV Contribución 12M — Comprador Suelto Normal ($)	=B52*B56	USD / cliente	Meses 1 a 12	Pedidos acumulados en 12 meses por contribución unitaria	Resultado derivado
+LTV Contribución 12M — Suscriptor ($)	=C52*B60	USD / cliente	Meses 1 a 12	Meses activos esperados en 12 meses por contribución mensual	Resultado derivado
+LTV Contribución 12M — Promedio Ponderado Actual ($)	=B13*B71+B14*B72	USD / cliente	Meses 1 a 12	Ponderado por proporción de compradores sueltos y suscriptores	Resultado derivado
