@@ -833,3 +833,4 @@ export function Simulador24MSection({
     </section>
   );
 }
+

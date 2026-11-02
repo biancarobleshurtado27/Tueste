@@ -369,3 +369,4 @@ export function Controls12MPanel({ params12m, liveRes, onChangeParam }) {
     </aside>
   );
 }
+

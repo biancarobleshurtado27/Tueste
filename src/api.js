@@ -77,3 +77,4 @@ export async function apiCalculateScenario(payload) {
     body: JSON.stringify(payload)
   });
 }
+

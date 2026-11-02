@@ -273,3 +273,4 @@ export function CalculadoraSection({
     </section>
   );
 }
+

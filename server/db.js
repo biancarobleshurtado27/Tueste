@@ -174,3 +174,4 @@ export function deleteSavedScenario(id) {
   const info = stmt.run(Number(id));
   return info.changes > 0;
 }
+
