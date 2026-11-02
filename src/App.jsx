@@ -57,11 +57,19 @@ export default function App() {
     }
     return 'calculadora';
   }); // 'calculadora' | 'tablero' | 'simulador24m' | 'todas'
+
+  const [showScenariosPanel, setShowScenariosPanel] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('panel=open')) {
+      return true;
+    }
+    return false;
+  });
+
   const [activePresetKey, setActivePresetKey] = useState('actual');
   const [params12m, setParams12m] = useState(() => stripPresetMeta(PRESETS_12M.actual));
   const [plan24m, setPlan24m] = useState(() => defaultPlan24m());
 
-  // Estado de persistencia SQLite y conexión con Backend
+  // Estado de guardado y conexión
   const [backendStatus, setBackendStatus] = useState('checking'); // 'online' | 'offline' | 'checking'
   const [savedScenarios, setSavedScenarios] = useState([]);
   const [activeSavedId, setActiveSavedId] = useState(null);
@@ -73,7 +81,7 @@ export default function App() {
     details: []
   });
 
-  // Cálculo instantáneo mediante el módulo compartido (funciona con o sin backend)
+  // Cálculo instantáneo en vivo
   const liveRes12m = computeScenario(params12m);
   const liveSim24m = simulate24Months({
     ...plan24m,
@@ -93,7 +101,7 @@ export default function App() {
         if (showSuccessBanner) {
           setOperationState({
             status: 'success',
-            message: 'Conexión con el backend Express y SQLite restablecida correctamente.',
+            message: 'Guardado disponible nuevamente.',
             details: []
           });
         }
@@ -105,7 +113,7 @@ export default function App() {
       if (showSuccessBanner) {
         setOperationState({
           status: 'error',
-          message: err.message || 'No se pudo conectar con el servidor backend.',
+          message: err.message || 'Guardado no disponible en este momento.',
           details: []
         });
       }
@@ -123,7 +131,6 @@ export default function App() {
     setActiveSavedId(null);
     setParams12m(stripPresetMeta(p));
 
-    // Sincronizar también el calendario de 24M con la referencia seleccionada para facilitar guardado coherente
     setPlan24m(prev => ({
       ...prev,
       investments: Array(24).fill(p.inversion),
@@ -163,7 +170,7 @@ export default function App() {
 
     setOperationState({
       status: 'saving',
-      message: `Guardando "${trimmedName}" en SQLite...`,
+      message: `Guardando "${trimmedName}"...`,
       details: []
     });
 
@@ -178,7 +185,7 @@ export default function App() {
       if (!res.ok || !res.data.ok) {
         setOperationState({
           status: 'error',
-          message: res.data?.error || 'El servidor rechazó los datos del escenario.',
+          message: res.data?.error || 'No se pudo guardar el escenario.',
           details: res.data?.details || []
         });
         return;
@@ -193,12 +200,12 @@ export default function App() {
       }
 
       const viableMsg = created.planViable24m
-        ? 'Plan 24M válido.'
-        : `Guardado como plan 24M inviable (${created.motivosInvalidez24m?.join('; ')}).`;
+        ? 'Plan de 24 meses viable.'
+        : `Guardado como plan de 24 meses inviable (${created.motivosInvalidez24m?.join('; ')}).`;
 
       setOperationState({
         status: 'success',
-        message: `Escenario "${created.name}" guardado con éxito en SQLite (ID #${created.id}). ${viableMsg}`,
+        message: `Escenario "${created.name}" guardado correctamente. ${viableMsg}`,
         details: []
       });
     } catch (err) {
@@ -207,7 +214,7 @@ export default function App() {
         status: 'error',
         message:
           err.message ||
-          'Error de conexión al intentar guardar. Tus entradas actuales siguen intactas en pantalla.',
+          'No se pueden guardar cambios en este momento. Tus datos siguen intactos en pantalla.',
         details: []
       });
     }
@@ -227,7 +234,7 @@ export default function App() {
 
     setOperationState({
       status: 'saving',
-      message: `Actualizando escenario #${activeSavedId} en SQLite...`,
+      message: `Actualizando "${trimmedName}"...`,
       details: []
     });
 
@@ -257,7 +264,7 @@ export default function App() {
 
       setOperationState({
         status: 'success',
-        message: `Escenario #${updated.id} ("${updated.name}") actualizado correctamente en SQLite.`,
+        message: `Escenario "${updated.name}" actualizado correctamente.`,
         details: []
       });
     } catch (err) {
@@ -266,7 +273,7 @@ export default function App() {
         status: 'error',
         message:
           err.message ||
-          'Error de conexión al actualizar. Tus entradas actuales siguen intactas en pantalla.',
+          'No se pueden guardar cambios en este momento. Tus datos siguen intactos en pantalla.',
         details: []
       });
     }
@@ -290,7 +297,7 @@ export default function App() {
     }
     setOperationState({
       status: 'success',
-      message: `Escenario #${sc.id} ("${sc.name}") cargado en las 3 secciones.`,
+      message: `Escenario "${sc.name}" cargado en pantalla.`,
       details: []
     });
   };
@@ -299,7 +306,7 @@ export default function App() {
     if (!sc) return;
     setOperationState({
       status: 'saving',
-      message: `Duplicando "${sc.name}" en SQLite...`,
+      message: `Duplicando "${sc.name}"...`,
       details: []
     });
 
@@ -327,14 +334,14 @@ export default function App() {
       }
       setOperationState({
         status: 'success',
-        message: `Escenario duplicado como "${res.data.scenario.name}" (ID #${res.data.scenario.id}).`,
+        message: `Escenario duplicado como "${res.data.scenario.name}".`,
         details: []
       });
     } catch (err) {
       setBackendStatus('offline');
       setOperationState({
         status: 'error',
-        message: err.message || 'Error de conexión al duplicar el escenario.',
+        message: err.message || 'No se pueden guardar cambios en este momento.',
         details: []
       });
     }
@@ -343,7 +350,7 @@ export default function App() {
   const handleDeleteSavedScenario = async id => {
     setOperationState({
       status: 'saving',
-      message: `Eliminando escenario #${id} de SQLite...`,
+      message: 'Eliminando escenario...',
       details: []
     });
 
@@ -368,14 +375,14 @@ export default function App() {
       }
       setOperationState({
         status: 'success',
-        message: `Escenario #${id} eliminado de SQLite.`,
+        message: 'Escenario eliminado correctamente.',
         details: []
       });
     } catch (err) {
       setBackendStatus('offline');
       setOperationState({
         status: 'error',
-        message: err.message || 'Error de conexión al eliminar el escenario.',
+        message: err.message || 'No se pueden guardar cambios en este momento.',
         details: []
       });
     }
@@ -388,14 +395,29 @@ export default function App() {
           <div className="brand">
             <span className="brand-badge">TUESTE</span>
             <div>
-              <h1>Sistema de Decisiones · Calculadora, Tablero (12M) y Simulador de Caja (24M)</h1>
+              <h1>Decisiones de Marketing, Precios y Flujo de Caja</h1>
               <p>
-                Caso A · Café de especialidad DTC — Aplicación Local React + Vite, Node.js/Express y SQLite
+                Caso A · Café de especialidad DTC — Rentabilidad de anuncios, valor de vida del cliente (12 meses) y caja real (24 meses)
               </p>
             </div>
           </div>
-          <div style={{ fontSize: '0.8rem', color: '#E8D8C8' }}>
-            Respaldo HTML estático conservado en <code>Tueste_Tablero.html</code>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+            <span className={`server-pill ${backendStatus}`} id="headerSaveStatus">
+              {backendStatus === 'online' && '● Guardado disponible'}
+              {backendStatus === 'offline' && '▲ Guardado no disponible'}
+              {backendStatus === 'checking' && '◌ Comprobando...'}
+            </span>
+            <button
+              id="btnToggleMisEscenarios"
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setShowScenariosPanel(prev => !prev)}
+            >
+              {showScenariosPanel
+                ? '▲ Ocultar Mis escenarios'
+                : `📁 Mis escenarios (${savedScenarios.length}) · Guardar escenario`}
+            </button>
           </div>
         </div>
       </header>
@@ -437,32 +459,51 @@ export default function App() {
             </button>
           </div>
           <span style={{ fontSize: '0.82rem', color: 'var(--coffee-700)', fontWeight: 600 }}>
-            Módulo matemático compartido: <code>shared/tuesteModel.js</code>
+            Meta de Diego: decidir con números claros si conviene duplicar o ajustar la inversión en anuncios
           </span>
         </div>
       </nav>
 
       <main className="container">
-        {/* Panel de Persistencia SQLite siempre disponible para guardar/cargar desde cualquier sección */}
-        <SavedScenariosPanel
-          backendStatus={backendStatus}
-          savedScenarios={savedScenarios}
-          activeSavedId={activeSavedId}
-          saveFormName={saveFormName}
-          saveFormNote={saveFormNote}
-          onChangeName={setSaveFormName}
-          onChangeNote={setSaveFormNote}
-          onSaveNew={handleSaveNewScenario}
-          onUpdateActive={handleUpdateActiveScenario}
-          onLoadSaved={handleLoadSavedScenario}
-          onDuplicateSaved={handleDuplicateSavedScenario}
-          onDeleteSaved={handleDeleteSavedScenario}
-          onLoadReferencePreset={handleSelectPreset12m}
-          onRetryConnection={() => refreshSavedScenarios(true)}
-          operationState={operationState}
-        />
+        {/* Si el servidor está desconectado y el panel está cerrado, mostrar el aviso visible sin tapar la pantalla */}
+        {backendStatus === 'offline' && !showScenariosPanel && (
+          <div className="status-banner error" role="alert" id="offlineWarningBanner" style={{ marginBottom: 0 }}>
+            <div>
+              <strong>Aviso:</strong> El guardado no está disponible en este momento. La calculadora, el tablero y el simulador siguen funcionando con normalidad, pero <strong>no se pueden guardar cambios</strong> hasta reconectar.
+            </div>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => refreshSavedScenarios(true)}
+            >
+              Reintentar conexión
+            </button>
+          </div>
+        )}
 
-        {/* Sección 1: Calculadora */}
+        {/* Panel desplegable de Mis escenarios (se abre al pulsar el botón "Mis escenarios · Guardar escenario") */}
+        {showScenariosPanel && (
+          <SavedScenariosPanel
+            backendStatus={backendStatus}
+            savedScenarios={savedScenarios}
+            activeSavedId={activeSavedId}
+            saveFormName={saveFormName}
+            saveFormNote={saveFormNote}
+            onChangeName={setSaveFormName}
+            onChangeNote={setSaveFormNote}
+            onSaveNew={handleSaveNewScenario}
+            onUpdateActive={handleUpdateActiveScenario}
+            onLoadSaved={handleLoadSavedScenario}
+            onDuplicateSaved={handleDuplicateSavedScenario}
+            onDeleteSaved={handleDeleteSavedScenario}
+            onLoadReferencePreset={handleSelectPreset12m}
+            onRetryConnection={() => refreshSavedScenarios(true)}
+            operationState={operationState}
+            onClosePanel={() => setShowScenariosPanel(false)}
+          />
+        )}
+
+        {/* Sección 1: Calculadora (se muestra primero sus resultados y controles) */}
         {(activeTab === 'calculadora' || activeTab === 'todas') && (
           <CalculadoraSection
             params12m={params12m}
@@ -496,10 +537,48 @@ export default function App() {
             onResetPlan24m={() => setPlan24m(defaultPlan24m())}
           />
         )}
+
+        {/* Sección secundaria: Información técnica */}
+        <details
+          className="section-block"
+          id="seccion-informacion-tecnica"
+          style={{ padding: '1rem 1.4rem', background: 'var(--bg-cream)' }}
+        >
+          <summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: '0.92rem', color: 'var(--coffee-800)' }}>
+            Información técnica del sistema
+          </summary>
+          <div className="info-columns" style={{ marginTop: '0.8rem' }}>
+            <div className="info-box" style={{ background: '#fff' }}>
+              <h4>Arquitectura y Módulo Compartido</h4>
+              <ul>
+                <li>
+                  <strong>Interfaz (Frontend):</strong> React 18 con Vite y gráficos interactivos mediante Chart.js.
+                </li>
+                <li>
+                  <strong>Servidor (Backend):</strong> Node.js con Express (ejecución local en <code>127.0.0.1:3001</code>).
+                </li>
+                <li>
+                  <strong>Módulo matemático único:</strong> <code>shared/tuesteModel.js</code> compartido por el navegador y el servidor para garantizar resultados idénticos sin redondeos intermedios.
+                </li>
+              </ul>
+            </div>
+            <div className="info-box" style={{ background: '#fff' }}>
+              <h4>Almacenamiento y Respaldos</h4>
+              <ul>
+                <li>
+                  <strong>Base de datos local:</strong> archivo SQLite en <code>data/tueste.sqlite</code> gestionado con consultas parametrizadas (<code>node:sqlite</code>, requiere Node.js ≥ 22.5.0).
+                </li>
+                <li>
+                  <strong>Respaldos conservados:</strong> tablero estático original en <code>Tueste_Tablero.html</code> y modelo financiero en Excel <code>Tueste_Nivel1_Sistema_Decisiones.xlsx</code>.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </details>
       </main>
 
       <footer className="footer-note">
-        Caso A - Tueste · Aplicación local (React + Vite + Express + SQLite en <code>data/tueste.sqlite</code>). Sin conexión a servicios externos ni exposición a internet.
+        Caso A - Tueste · Herramienta de análisis de marketing, contribución y flujo de caja para toma de decisiones.
       </footer>
     </div>
   );

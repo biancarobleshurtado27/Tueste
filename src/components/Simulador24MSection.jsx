@@ -371,7 +371,7 @@ export function Simulador24MSection({
         <aside className="controls-panel">
           <h3>Configurar Plan Propio B (Editable 24M)</h3>
           <p style={{ fontSize: '0.8rem', color: 'var(--coffee-700)', marginBottom: '0.75rem' }}>
-            Puedes editar las 24 inversiones mensuales por etapas o mes por mes y guardar este plan en SQLite desde el panel superior.
+            Puedes editar las 24 inversiones mensuales por etapas o mes por mes y guardar este plan desde el botón "Mis escenarios". El efecto del Pack ($48) y envío es un supuesto comercial proyectado, no un resultado garantizado.
           </p>
 
           <div

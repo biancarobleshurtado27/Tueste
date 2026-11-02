@@ -26,10 +26,10 @@ export function CalculadoraSection({
     <section className="section-block" id="seccion-calculadora">
       <div className="section-header">
         <div>
-          <span className="section-step">Sección 1 · Calculadora de Economía Unitaria (Nivel 1)</span>
+          <span className="section-step">Sección 1 · Calculadora de Economía Unitaria</span>
           <h2 className="section-title">Calculadora de Contribución, CAC, LTV y Payback</h2>
           <p className="section-subtitle">
-            Edita cualquier supuesto para recalcular mediante el módulo compartido (<code>shared/tuesteModel.js</code>) la contribución por pedido, el costo real de adquisición (CAC), el valor de vida a 12 meses (LTV) y la curva mensual de recuperación del Mes 0 al Mes 12.
+            Ajusta los supuestos para calcular al instante la contribución por pedido, el costo real de adquisición (CAC), el valor de vida proyectado a 12 meses (LTV) y el mes en que se recupera la inversión en cada cliente.
           </p>
         </div>
       </div>
@@ -250,23 +250,40 @@ export function CalculadoraSection({
             </div>
           </div>
 
-          {/* Verificación Manual Explícita del Nivel 1 */}
-          <div className="info-box" style={{ borderLeft: '5px solid var(--terracotta)' }}>
-            <h4>Verificación Manual de Referencia (Nivel 1)</h4>
-            <ul>
-              <li>
-                <strong>CAC real actual verificado manualmente:</strong>{' '}
-                <code>($8.000 + $1.000) / 165 = $54,54545 por cliente nuevo</code>.
-              </li>
-              <li>
-                <strong>Suma de actividad esperada del suscriptor (Meses 1 a 12):</strong>{' '}
-                <code>SUM(0,91^i, i=0..11) = 7,528050139848837 pagos</code>.
-              </li>
-              <li>
-                <strong>LTV promedio ponderado actual (Meses 1 a 12):</strong>{' '}
-                <code>0,85 × (3 × $15,89) + 0,15 × (7,52805014 × $12,643) = $54,7960706877</code> (recupera en el <strong>Mes 12</strong>; con Meta en <code>$4.000</code> el CAC baja a <code>$50,00</code> y recupera en el <strong>Mes 11</strong>).
-              </li>
-            </ul>
+          {/* Distinción entre Datos Originales, Supuestos y Resultados Proyectados */}
+          <div className="info-columns" style={{ marginTop: 0 }}>
+            <div className="info-box" style={{ borderLeft: '5px solid var(--coffee-800)' }}>
+              <h4>Datos Originales vs. Supuestos y Resultados Proyectados</h4>
+              <ul>
+                <li>
+                  <strong>Datos originales del caso:</strong> Bolsa a $17 (pedido típico de 2 bolsas = $34), café $5,44/bolsa ($10,88 por 2 bolsas), empaque $1,20, envío $4,50, pasarela 4,5%, suscripción $30,60/mes, mezcla 85% sueltos y 15% suscriptores, permanencia mensual 91% y 3 pedidos sueltos en 12 meses.
+                </li>
+                <li>
+                  <strong>Supuestos comerciales editables (no garantizados):</strong> activar el Pack de 3 bolsas ($48) y cobrar envío ($4,50 bajo $45) supone una adopción del {fmtNum(params12m.adopcionPack, 0)}% y asume que cobrar envío no reduce los clientes adquiridos ni su frecuencia de compra. <strong>Este beneficio no está garantizado</strong> y requiere validarse con una prueba piloto.
+                </li>
+                <li>
+                  <strong>Resultados proyectados:</strong> el LTV a 12 meses ({fmtUSD(liveRes.ltvPond, 2)}) y el mes de recuperación ({liveRes.paybackLabel}) son proyecciones basadas en que el comportamiento futuro repita la curva histórica.
+                </li>
+              </ul>
+            </div>
+
+            <div className="info-box" style={{ borderLeft: '5px solid var(--terracotta)' }}>
+              <h4>Verificación Manual de Referencia</h4>
+              <ul>
+                <li>
+                  <strong>CAC real actual verificado manualmente:</strong>{' '}
+                  <code>($8.000 + $1.000) / 165 = $54,54545 por cliente nuevo</code>.
+                </li>
+                <li>
+                  <strong>Suma de actividad esperada del suscriptor (Meses 1 a 12):</strong>{' '}
+                  <code>SUM(0,91^i, i=0..11) = 7,528050139848837 pagos</code>.
+                </li>
+                <li>
+                  <strong>LTV promedio ponderado actual (Meses 1 a 12):</strong>{' '}
+                  <code>0,85 × (3 × $15,89) + 0,15 × (7,52805014 × $12,643) = $54,7960706877</code> (recupera en el <strong>Mes 12</strong>; con Meta en <code>$4.000</code> el CAC baja a <code>$50,00</code> y recupera en el <strong>Mes 11</strong>).
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PRESETS_12M, fmtUSD, fmtNum } from '../../shared/tuesteModel.js';
+import { PRESETS_12M, fmtUSD } from '../../shared/tuesteModel.js';
 
 export function SavedScenariosPanel({
   backendStatus,
@@ -16,7 +16,8 @@ export function SavedScenariosPanel({
   onDeleteSaved,
   onLoadReferencePreset,
   onRetryConnection,
-  operationState
+  operationState,
+  onClosePanel
 }) {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
@@ -40,20 +41,20 @@ export function SavedScenariosPanel({
   };
 
   return (
-    <section className="section-block" id="persistencia-sqlite">
+    <section className="section-block" id="panel-mis-escenarios">
       <div className="section-header">
         <div>
-          <span className="section-step">Gestión de Escenarios · SQLite Local</span>
-          <h2 className="section-title">Guardar, Cargar, Duplicar y Comparar Escenarios</h2>
+          <span className="section-step">Gestión de Escenarios</span>
+          <h2 className="section-title">Mis escenarios y Guardar escenario</h2>
           <p className="section-subtitle">
-            Los escenarios originales del caso están protegidos como referencias de solo lectura. Tus escenarios propios se validan y recalculan en el backend Node.js + Express y se almacenan en SQLite local (<code>data/tueste.sqlite</code>).
+            Guarda tus propias combinaciones de presupuesto, precios y retención con un nombre y una nota para compararlas después. Los escenarios originales del caso se mantienen siempre fijos como referencia.
           </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
           <span className={`server-pill ${backendStatus}`}>
-            {backendStatus === 'online' && '● Backend y SQLite Conectados'}
-            {backendStatus === 'offline' && '▲ Backend no disponible (Modo Cálculo Local)'}
-            {backendStatus === 'checking' && '◌ Comprobando servidor...'}
+            {backendStatus === 'online' && '● Guardado disponible'}
+            {backendStatus === 'offline' && '▲ Guardado no disponible'}
+            {backendStatus === 'checking' && '◌ Comprobando conexión...'}
           </span>
           <button
             type="button"
@@ -61,19 +62,28 @@ export function SavedScenariosPanel({
             onClick={onRetryConnection}
             disabled={isBusy}
           >
-            ↻ Comprobar conexión
+            ↻ Reintentar conexión
           </button>
+          {onClosePanel && (
+            <button
+              type="button"
+              className="btn"
+              onClick={onClosePanel}
+            >
+              ✕ Ocultar panel
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Aviso persistente si el backend no está disponible */}
+      {/* Aviso si el servidor no está disponible */}
       {isOffline && (
         <div className="status-banner error" role="alert" id="offlineWarningBanner">
           <div>
-            <strong>Aviso de conexión:</strong> El servidor backend no está disponible en este momento. Puedes seguir calculando y simulando en las 3 secciones sin perder tus datos de entrada, pero <strong>no se pueden guardar, actualizar ni eliminar escenarios en SQLite</strong> hasta reconectar el servidor.
+            <strong>Aviso:</strong> El guardado no está disponible en este momento. Puedes seguir usando la calculadora, el tablero y el simulador sin perder tus datos en pantalla, pero <strong>no se pueden guardar cambios</strong> hasta reconectar.
           </div>
           <button type="button" className="btn" onClick={onRetryConnection}>
-            Reintentar conexión
+            Reintentar
           </button>
         </div>
       )}
@@ -92,8 +102,8 @@ export function SavedScenariosPanel({
           role="status"
         >
           <div>
-            {operationState.status === 'loading' && '⏳ Cargando datos desde SQLite... '}
-            {operationState.status === 'saving' && '💾 Guardando y recalculando escenario en el servidor... '}
+            {operationState.status === 'loading' && '⏳ Cargando escenarios... '}
+            {operationState.status === 'saving' && '💾 Guardando escenario... '}
             {operationState.status === 'success' && '✅ '}
             {operationState.status === 'error' && '⚠️ '}
             <span>{operationState.message}</span>
@@ -111,11 +121,7 @@ export function SavedScenariosPanel({
       <div className="saved-panel-grid">
         {/* Formulario para Guardar o Actualizar Escenario */}
         <div className="controls-panel">
-          <h3>
-            {activeSavedId
-              ? `Guardar o Actualizar Escenario (ID #${activeSavedId})`
-              : 'Guardar Configuración Actual en SQLite'}
-          </h3>
+          <h3>Guardar escenario</h3>
           <div className="control-group">
             <div className="control-header">
               <label htmlFor="inputScenarioName">Nombre del escenario *</label>
@@ -132,13 +138,13 @@ export function SavedScenariosPanel({
 
           <div className="control-group">
             <div className="control-header">
-              <label htmlFor="inputScenarioNote">Nota o justificación (opcional)</label>
+              <label htmlFor="inputScenarioNote">Nota o conclusión (opcional)</label>
             </div>
             <textarea
               id="inputScenarioNote"
               rows={3}
               maxLength={1000}
-              placeholder="Ej. Mantiene piso >= $5.000 y evalúa Pack $48 en piloto de 60 días."
+              placeholder="Ej. Mantiene piso >= $5.000 y evalúa el Pack de $48 en una prueba de 60 días."
               value={saveFormNote}
               onChange={e => onChangeNote(e.target.value)}
             />
@@ -154,7 +160,7 @@ export function SavedScenariosPanel({
             >
               {operationState.status === 'saving'
                 ? 'Guardando...'
-                : '💾 Guardar como nuevo escenario'}
+                : '💾 Guardar escenario'}
             </button>
 
             {activeSavedId && (
@@ -165,27 +171,27 @@ export function SavedScenariosPanel({
                 disabled={isBusy}
                 onClick={onUpdateActive}
               >
-                ✎ Sobrescribir escenario seleccionado (#{activeSavedId})
+                ✎ Actualizar escenario cargado
               </button>
             )}
           </div>
 
           <div className="control-hint" style={{ marginTop: '0.65rem' }}>
-            Se guardan tanto las entradas de la Calculadora/Tablero (12M) como el calendario de 24 meses del Simulador, junto con la versión del modelo y las marcas de fecha. Si un plan de 24M incumple el piso de caja ($5.000), se permite guardar y se etiqueta como <strong>Plan Inviable</strong>.
+            Guarda los valores actuales de 12 meses y el plan de 24 meses. Si un plan de 24 meses baja del piso de $5.000 de caja, también puede guardarse y se mostrará marcado como <strong>Plan Inviable</strong>.
           </div>
         </div>
 
-        {/* Lista de Escenarios Guardados y Referencias Originales */}
+        {/* Lista de Mis escenarios y Referencias Originales */}
         <div>
           <h3 style={{ fontSize: '0.98rem', marginBottom: '0.55rem', color: 'var(--coffee-900)' }}>
-            Escenarios Propios Guardados en SQLite ({savedScenarios.length})
+            Mis escenarios ({savedScenarios.length})
           </h3>
           <div className="table-responsive" style={{ marginBottom: '1.1rem' }}>
             <table id="tablaEscenariosGuardados">
               <thead>
                 <tr>
                   <th>Nombre y Nota</th>
-                  <th>Actualizado</th>
+                  <th>Última actualización</th>
                   <th className="num">CAC Real / LTV 12M</th>
                   <th className="num">Payback 12M</th>
                   <th className="num">Caja Final M24</th>
@@ -197,7 +203,7 @@ export function SavedScenariosPanel({
                 {savedScenarios.length === 0 ? (
                   <tr>
                     <td colSpan={7} style={{ textAlign: 'center', color: 'var(--coffee-500)', padding: '1rem' }}>
-                      No hay escenarios propios guardados aún. Usa el formulario de la izquierda para guardar tu primer escenario en SQLite.
+                      Aún no tienes escenarios guardados. Escribe un nombre a la izquierda y pulsa "Guardar escenario".
                     </td>
                   </tr>
                 ) : (
@@ -212,9 +218,7 @@ export function SavedScenariosPanel({
                         className={!viable ? 'row-violation' : isSelected ? 'row-winner' : ''}
                       >
                         <td>
-                          <strong>
-                            #{sc.id} · {sc.name}
-                          </strong>
+                          <strong>{sc.name}</strong>
                           {sc.note && (
                             <div style={{ fontSize: '0.78rem', color: 'var(--coffee-700)', marginTop: '0.15rem' }}>
                               {sc.note}
@@ -302,7 +306,7 @@ export function SavedScenariosPanel({
 
           <details style={{ background: 'var(--bg-cream)', padding: '0.7rem 0.9rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
             <summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', color: 'var(--coffee-800)' }}>
-              Escenarios Originales de Referencia (Solo Lectura — Protegidos contra sobrescritura)
+              Escenarios originales del caso (Solo lectura)
             </summary>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.65rem' }}>
               {Object.values(PRESETS_12M).map(p => (
@@ -312,7 +316,7 @@ export function SavedScenariosPanel({
                   className="btn"
                   onClick={() => onLoadReferencePreset(p.key)}
                 >
-                  🔒 Cargar referencia: {p.name}
+                  Cargar referencia: {p.name}
                 </button>
               ))}
             </div>
@@ -322,4 +326,3 @@ export function SavedScenariosPanel({
     </section>
   );
 }
-

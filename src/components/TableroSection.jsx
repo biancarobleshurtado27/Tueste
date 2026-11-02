@@ -720,6 +720,31 @@ export function TableroSection({
             </tbody>
           </table>
         </div>
+
+        <div className="info-columns" style={{ marginTop: '1.1rem' }}>
+          <div className="info-box">
+            <h4>Datos Originales del Caso vs. Supuestos</h4>
+            <ul>
+              <li>
+                <strong>Datos originales (Págs. 3–7):</strong> pedido suelto de 2 bolsas ($34,00, contribución $15,89), suscripción mensual ($30,60, contribución $12,643), mezcla 85% sueltos y 15% suscriptores, permanencia 91% mensual y curva histórica de clientes nuevos de Meta.
+              </li>
+              <li>
+                <strong>Supuestos del Pack ($48) y envío ($4,50 bajo $45):</strong> el beneficio del Pack y del cobro de envío <strong>no está garantizado</strong>. Supone que un {fmtNum(params12m.adopcionPack, 0)}% de los primeros pedidos sueltos eligen el Pack, que cobrar envío bajo $45 no reduce la conversión ni las recompras, y que si quien lleva el Pack compra solo 2 veces al año (6 bolsas/año), su contribución anual suelta pasa a $47,24 (2 × $23,62).
+              </li>
+            </ul>
+          </div>
+          <div className="info-box">
+            <h4>Resultados Proyectados vs. Liquidez</h4>
+            <ul>
+              <li>
+                <strong>Proyección a 12 meses:</strong> el LTV ponderado y el mes de recuperación (Payback) son proyecciones por cliente adquirido y no descuentan los $6.500/mes de costos fijos de la empresa.
+              </li>
+              <li>
+                <strong>Validación comercial:</strong> antes de asumir como permanente la mejora del Pack y envío, debe probarse en un piloto midiendo conversión, contribución inicial y primeras recompras.
+              </li>
+            </ul>
+          </div>
+        </div>
       </section>
     </div>
   );
