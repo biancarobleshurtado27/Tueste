@@ -9,192 +9,212 @@ import {
   fmtPct,
   fmtRoas
 } from '../../shared/tuesteModel.js';
-import { PresetBar12M, Controls12MPanel } from './Controls12MPanel.jsx';
+import {
+  PresetBar12M,
+  Controls12MPanel,
+  ResultsHeaderBand12M,
+  TermHelp
+} from './Controls12MPanel.jsx';
 
 export function CalculadoraSection({
   params12m,
   liveRes,
   activePresetKey,
+  lastPresetKey,
+  activeSavedName,
   onSelectPreset,
   onRestore,
   onChangeParam
 }) {
-  const isLoss = liveRes.netoPorCliente !== null && liveRes.netoPorCliente < 0;
-  const isStrongGain = liveRes.ltvCac !== null && liveRes.ltvCac >= 3.0;
-
   return (
-    <section className="section-block" id="seccion-calculadora">
-      <div className="section-header">
+    <section className="notebook-section" id="seccion-calculadora">
+      <div className="notebook-header">
         <div>
-          <span className="section-step">Sección 1 · Calculadora de Economía Unitaria</span>
-          <h2 className="section-title">Calculadora de Contribución, CAC, LTV y Payback</h2>
-          <p className="section-subtitle">
-            Ajusta los supuestos para calcular al instante la contribución por pedido, el costo real de adquisición (CAC), el valor de vida proyectado a 12 meses (LTV) y el mes en que se recupera la inversión en cada cliente.
+          <span className="notebook-kicker">Cuaderno de cuentas · Economía por cliente</span>
+          <h2 className="notebook-title">Calculadora de contribución y recuperación (12 meses)</h2>
+          <p className="notebook-subtitle">
+            Revisa cuánto dinero limpio deja cada pedido después de café, empaque, envío y pasarela, cuánto cuesta adquirir un cliente nuevo y en qué mes se recupera esa inversión.
           </p>
         </div>
       </div>
 
       <PresetBar12M
+        params12m={params12m}
         activePresetKey={activePresetKey}
+        lastPresetKey={lastPresetKey}
+        activeSavedName={activeSavedName}
         onSelectPreset={onSelectPreset}
         onRestore={onRestore}
       />
 
-      <div className="lab-layout">
+      <div className="workspace-grid">
         <Controls12MPanel
           params12m={params12m}
           liveRes={liveRes}
           onChangeParam={onChangeParam}
         />
 
-        <div className="live-results">
-          {/* Resumen Principal de la Calculadora */}
-          <div className="kpi-grid">
-            <div className="kpi-card highlight">
-              <div className="kpi-label">CAC Real por Cliente Nuevo</div>
-              <div className="kpi-val" id="calcKpiCacReal">
-                {liveRes.cacReal !== null ? fmtUSD(liveRes.cacReal, 4) : 'No aplica'}
-              </div>
-              <div className="kpi-sub">
-                {liveRes.cacAnuncios !== null
-                  ? `Anuncios: ${fmtUSD(liveRes.cacAnuncios, 2)} · ${fmtNum(liveRes.clientesNuevos, 1)} clientes`
-                  : 'Sin inversión en Meta Ads ($0)'}
-              </div>
-            </div>
+        <div className="results-column">
+          <ResultsHeaderBand12M liveRes={liveRes} idPrefix="calc" />
 
-            <div className="kpi-card highlight">
-              <div className="kpi-label">LTV Contribución Ponderado (12M)</div>
-              <div className="kpi-val" id="calcKpiLtvPond">
-                {fmtUSD(liveRes.ltvPond, 4)}
-              </div>
-              <div className="kpi-sub">
-                Suelto (85%): {fmtUSD(liveRes.ltvSuelto, 2)} · Suscr. (15%): {fmtUSD(liveRes.ltvSusc, 2)}
-              </div>
+          {/* Indicadores secundarios en filas compactas */}
+          <div className="secondary-ledger">
+            <div className="secondary-ledger-title">
+              Indicadores de pedido y eficiencia publicitaria (por cliente)
             </div>
-
-            <div className={`kpi-card ${isLoss ? 'loss' : isStrongGain ? 'gain' : 'highlight'}`}>
-              <div className="kpi-label">Payback y Ratio LTV:CAC</div>
-              <div className="kpi-val" id="calcKpiPayback">
-                {liveRes.paybackLabel}
+            <div className="ledger-rows">
+              <div className="ledger-row">
+                <span className="ledger-key">Contribución 1er pedido suelto</span>
+                <span className="ledger-val">
+                  {fmtUSD(liveRes.contribSueltoM1, 2)} ({fmtPct(liveRes.pctContribSueltoM1, 1)})
+                </span>
               </div>
-              <div className="kpi-sub">
-                Ratio LTV:CAC: {liveRes.ltvCac !== null ? `${fmtNum(liveRes.ltvCac, 2)}x` : 'No aplica'}
+              <div className="ledger-row">
+                <span className="ledger-key">Contribución mensual suscripción</span>
+                <span className="ledger-val">
+                  {fmtUSD(liveRes.contribSusc, 3)} ({fmtPct(liveRes.pctContribSusc, 1)})
+                </span>
               </div>
-            </div>
-
-            <div className={`kpi-card ${isLoss ? 'loss' : 'highlight'}`}>
-              <div className="kpi-label">Contribución Neta a 12M (LTV − CAC)</div>
-              <div
-                className="kpi-val"
-                id="calcKpiNetoCliente"
-                style={{ color: isLoss ? 'var(--red)' : 'var(--coffee-900)' }}
-              >
-                {liveRes.netoPorCliente !== null ? fmtUSD(liveRes.netoPorCliente, 2) : 'No aplica'}
+              <div className="ledger-row">
+                <span className="ledger-key">
+                  ROAS de equilibrio en 1er pedido <TermHelp term="ROAS" />
+                </span>
+                <span className="ledger-val">
+                  {fmtRoas(liveRes.roasEqPondM1, 'No alcanzable')}
+                </span>
               </div>
-              <div className="kpi-sub">
-                Cohorte completa: {liveRes.netoPorCliente !== null ? fmtUSD(liveRes.netoCohorte, 2) : 'No aplica'}
+              <div className="ledger-row">
+                <span className="ledger-key">ROAS real del 1er pedido (clientes nuevos)</span>
+                <span className="ledger-val">
+                  {liveRes.roas1erPedido !== null
+                    ? fmtRoas(liveRes.roas1erPedido, 'No aplica')
+                    : 'No aplica'}
+                </span>
+              </div>
+              <div className="ledger-row">
+                <span className="ledger-key">Costo por cliente extra del tramo</span>
+                <span className="ledger-val">
+                  {liveRes.margTramo.val !== null ? fmtUSD(liveRes.margTramo.val, 2) : 'No aplica'}
+                </span>
+              </div>
+              <div className="ledger-row">
+                <span className="ledger-key">Costo incremental frente a $8.000</span>
+                <span className="ledger-val">
+                  {liveRes.cacIncremental !== null ? fmtUSD(liveRes.cacIncremental, 2) : 'No aplica'}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Desglose de Economía Unitaria por Tipo de Pedido */}
-          <div className="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Concepto Unitario (Fórmula sin redondeos intermedios)</th>
-                  <th className="num">1er Pedido Suelto (Mes 1)</th>
-                  <th className="num">Recompra Suelta (M2–M12)</th>
-                  <th className="num">Suscripción Mensual (-10%)</th>
-                  <th className="num">Pack 3 Bolsas ($48)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Importe cobrado al cliente ($)</strong></td>
-                  <td className="num">{fmtUSD(liveRes.cobroSueltoM1, 2)}</td>
-                  <td className="num">
-                    {fmtUSD(
-                      params12m.polPack && liveRes.precio2B < 45
-                        ? liveRes.precio2B + 4.5
-                        : liveRes.precio2B,
-                      2
-                    )}
-                  </td>
-                  <td className="num">{fmtUSD(liveRes.cobroSusc, 2)}</td>
-                  <td className="num">{fmtUSD(PRECIO_PACK_3B, 2)}</td>
-                </tr>
-                <tr>
-                  <td>Comisión pasarela de pagos ({fmtNum(PASARELA_RATE * 100, 1)}% sobre cobro)</td>
-                  <td className="num">-{fmtUSD(liveRes.cobroSueltoM1 * PASARELA_RATE, 3)}</td>
-                  <td className="num">
-                    -{fmtUSD(
-                      (params12m.polPack && liveRes.precio2B < 45
-                        ? liveRes.precio2B + 4.5
-                        : liveRes.precio2B) * PASARELA_RATE,
-                      3
-                    )}
-                  </td>
-                  <td className="num">-{fmtUSD(liveRes.cobroSusc * PASARELA_RATE, 3)}</td>
-                  <td className="num">-{fmtUSD(PRECIO_PACK_3B * PASARELA_RATE, 3)}</td>
-                </tr>
-                <tr>
-                  <td>Costo del café tostado + empaque ($)</td>
-                  <td className="num">
-                    {params12m.polPack
-                      ? `Ponderado (${fmtNum(100 - params12m.adopcionPack, 0)}% 2B / ${fmtNum(params12m.adopcionPack, 0)}% Pack)`
-                      : `-${fmtUSD(liveRes.cafe2B + EMPAQUE_2B, 2)}`}
-                  </td>
-                  <td className="num">-{fmtUSD(liveRes.cafe2B + EMPAQUE_2B, 2)}</td>
-                  <td className="num">-{fmtUSD(liveRes.cafe2B + EMPAQUE_2B, 2)}</td>
-                  <td className="num">-{fmtUSD(3 * params12m.costoCafe + EMPAQUE_3B, 2)}</td>
-                </tr>
-                <tr>
-                  <td>Costo de envío pagado por Tueste ($)</td>
-                  <td className="num">-{fmtUSD(params12m.costoEnvio, 2)}</td>
-                  <td className="num">-{fmtUSD(params12m.costoEnvio, 2)}</td>
-                  <td className="num">-{fmtUSD(params12m.costoEnvio, 2)}</td>
-                  <td className="num">-{fmtUSD(params12m.costoEnvio, 2)}</td>
-                </tr>
-                <tr className={liveRes.contribSueltoM1 < 0 ? 'row-violation' : ''}>
-                  <td><strong>Contribución Unitaria Neta ($)</strong></td>
-                  <td className="num"><strong>{fmtUSD(liveRes.contribSueltoM1, 4)}</strong></td>
-                  <td className="num"><strong>{fmtUSD(liveRes.contribSueltoRecompra, 4)}</strong></td>
-                  <td className="num"><strong>{fmtUSD(liveRes.contribSusc, 4)}</strong></td>
-                  <td className="num"><strong>{fmtUSD(liveRes.contribPack, 4)}</strong></td>
-                </tr>
-                <tr>
-                  <td>Margen de Contribución (%) / ROAS de Equilibrio</td>
-                  <td className="num">
-                    {fmtPct(liveRes.pctContribSueltoM1, 2)} ({fmtRoas(liveRes.roasEqSueltoM1)})
-                  </td>
-                  <td className="num">—</td>
-                  <td className="num">
-                    {fmtPct(liveRes.pctContribSusc, 2)} ({fmtRoas(liveRes.roasEqSusc)})
-                  </td>
-                  <td className="num">
-                    {fmtPct(liveRes.contribPack / PRECIO_PACK_3B, 2)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          {/* Tabla de Curva de Contribución Acumulada (Mes 0 a Mes 12) */}
+          {/* Tabla de desglose de cada pedido */}
           <div>
-            <h3 style={{ fontSize: '0.98rem', marginBottom: '0.55rem', color: 'var(--coffee-900)' }}>
-              Curva de Contribución Acumulada por Cliente Nuevo (Mes 0 a Mes 12)
+            <h3
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '1.02rem',
+                marginBottom: '0.5rem',
+                color: 'var(--ink)'
+              }}
+            >
+              Desglose de cada pedido: de lo cobrado a la contribución neta
             </h3>
             <div className="table-responsive">
               <table>
                 <thead>
                   <tr>
+                    <th>Concepto por pedido</th>
+                    <th className="num">1er pedido suelto (Mes 1)</th>
+                    <th className="num">Recompra suelta (M2–M12)</th>
+                    <th className="num">Suscripción mensual (-10%)</th>
+                    <th className="num">Pack 3 bolsas ($48)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Cobrado al cliente ($)</strong></td>
+                    <td className="num">{fmtUSD(liveRes.cobroSueltoM1, 2)}</td>
+                    <td className="num">
+                      {fmtUSD(
+                        params12m.polPack && liveRes.precio2B < 45
+                          ? liveRes.precio2B + 4.5
+                          : liveRes.precio2B,
+                        2
+                      )}
+                    </td>
+                    <td className="num">{fmtUSD(liveRes.cobroSusc, 2)}</td>
+                    <td className="num">{fmtUSD(PRECIO_PACK_3B, 2)}</td>
+                  </tr>
+                  <tr>
+                    <td>Comisión de pasarela ({fmtNum(PASARELA_RATE * 100, 1)}%)</td>
+                    <td className="num">-{fmtUSD(liveRes.cobroSueltoM1 * PASARELA_RATE, 3)}</td>
+                    <td className="num">
+                      -{fmtUSD(
+                        (params12m.polPack && liveRes.precio2B < 45
+                          ? liveRes.precio2B + 4.5
+                          : liveRes.precio2B) * PASARELA_RATE,
+                        3
+                      )}
+                    </td>
+                    <td className="num">-{fmtUSD(liveRes.cobroSusc * PASARELA_RATE, 3)}</td>
+                    <td className="num">-{fmtUSD(PRECIO_PACK_3B * PASARELA_RATE, 3)}</td>
+                  </tr>
+                  <tr>
+                    <td>Café tostado y empaque ($)</td>
+                    <td className="num">
+                      {params12m.polPack
+                        ? `Mezcla (${fmtNum(100 - params12m.adopcionPack, 0)}% 2B / ${fmtNum(
+                            params12m.adopcionPack,
+                            0
+                          )}% Pack)`
+                        : `-${fmtUSD(liveRes.cafe2B + EMPAQUE_2B, 2)}`}
+                    </td>
+                    <td className="num">-{fmtUSD(liveRes.cafe2B + EMPAQUE_2B, 2)}</td>
+                    <td className="num">-{fmtUSD(liveRes.cafe2B + EMPAQUE_2B, 2)}</td>
+                    <td className="num">-{fmtUSD(3 * params12m.costoCafe + EMPAQUE_3B, 2)}</td>
+                  </tr>
+                  <tr>
+                    <td>Envío pagado por Tueste ($)</td>
+                    <td className="num">-{fmtUSD(params12m.costoEnvio, 2)}</td>
+                    <td className="num">-{fmtUSD(params12m.costoEnvio, 2)}</td>
+                    <td className="num">-{fmtUSD(params12m.costoEnvio, 2)}</td>
+                    <td className="num">-{fmtUSD(params12m.costoEnvio, 2)}</td>
+                  </tr>
+                  <tr className={liveRes.contribSueltoM1 < 0 ? 'row-violation' : ''}>
+                    <td><strong>Contribución limpia por pedido ($)</strong></td>
+                    <td className="num"><strong>{fmtUSD(liveRes.contribSueltoM1, 4)}</strong></td>
+                    <td className="num"><strong>{fmtUSD(liveRes.contribSueltoRecompra, 4)}</strong></td>
+                    <td className="num"><strong>{fmtUSD(liveRes.contribSusc, 4)}</strong></td>
+                    <td className="num"><strong>{fmtUSD(liveRes.contribPack, 4)}</strong></td>
+                  </tr>
+                  <tr>
+                    <td>Margen sobre cobro (%) · ROAS de equilibrio</td>
+                    <td className="num">
+                      {fmtPct(liveRes.pctContribSueltoM1, 2)} ({fmtRoas(liveRes.roasEqSueltoM1)})
+                    </td>
+                    <td className="num">—</td>
+                    <td className="num">
+                      {fmtPct(liveRes.pctContribSusc, 2)} ({fmtRoas(liveRes.roasEqSusc)})
+                    </td>
+                    <td className="num">{fmtPct(liveRes.contribPack / PRECIO_PACK_3B, 2)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Desplegable: Ver la cuenta mes a mes (Mes 0 a Mes 12) */}
+          <details className="notebook-details">
+            <summary>Ver la cuenta: curva acumulada por cliente nuevo (Mes 0 a Mes 12)</summary>
+            <div className="table-responsive">
+              <table>
+                <thead>
+                  <tr>
                     <th>Mes</th>
-                    <th className="num">Actividad Suelto (85%)</th>
-                    <th className="num">Actividad Suscriptor (15%)</th>
-                    <th className="num">Contribución del Mes ($)</th>
-                    <th className="num">Contribución Acumulada Neta ($)</th>
-                    <th>Estado de Recuperación</th>
+                    <th className="num">Actividad suelto (85%)</th>
+                    <th className="num">Actividad suscriptor (15%)</th>
+                    <th className="num">Aporte del mes ($/cliente)</th>
+                    <th className="num">Saldo acumulado ($/cliente)</th>
+                    <th>Estado</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -210,10 +230,10 @@ export function CalculadoraSection({
                           <strong>{m === 0 ? 'Mes 0 (Adquisición)' : `Mes ${m}`}</strong>
                         </td>
                         <td className="num">
-                          {m === 0 ? '0,00 (Sin compras)' : fmtNum(liveRes.actSuelto[m - 1], 3)}
+                          {m === 0 ? '0,00' : fmtNum(liveRes.actSuelto[m - 1], 3)}
                         </td>
                         <td className="num">
-                          {m === 0 ? '0,00 (Sin compras)' : fmtNum(liveRes.actSusc[m - 1], 4)}
+                          {m === 0 ? '0,00' : fmtNum(liveRes.actSusc[m - 1], 4)}
                         </td>
                         <td className="num">
                           {m === 0
@@ -233,13 +253,13 @@ export function CalculadoraSection({
                         </td>
                         <td>
                           {m === 0 ? (
-                            <span className="badge-danger">Desembolso inicial (-CAC)</span>
+                            <span className="status-tag danger">[—] Desembolso inicial (-CAC)</span>
                           ) : isPaybackMonth ? (
-                            <span className="badge-ok">★ Mes de Payback (Cruza $0)</span>
+                            <span className="status-tag ok">[OK] Mes de recuperación (cruza $0)</span>
                           ) : neg ? (
-                            <span className="badge-warn">Aún bajo cero</span>
+                            <span className="status-tag warn">[!] Aún por recuperar</span>
                           ) : (
-                            <span className="badge-ok">CAC recuperado</span>
+                            <span className="status-tag ok">[OK] Adquisición recuperada</span>
                           )}
                         </td>
                       </tr>
@@ -248,39 +268,36 @@ export function CalculadoraSection({
                 </tbody>
               </table>
             </div>
-          </div>
+          </details>
 
-          {/* Distinción entre Datos Originales, Supuestos y Resultados Proyectados */}
-          <div className="info-columns" style={{ marginTop: 0 }}>
-            <div className="info-box" style={{ borderLeft: '5px solid var(--coffee-800)' }}>
-              <h4>Datos Originales vs. Supuestos y Resultados Proyectados</h4>
+          {/* Nota de supuestos y fuentes */}
+          <div className="info-columns">
+            <div className="info-box">
+              <h4>Datos del caso frente a supuestos comerciales</h4>
               <ul>
                 <li>
-                  <strong>Datos originales del caso:</strong> Bolsa a $17 (pedido típico de 2 bolsas = $34), café $5,44/bolsa ($10,88 por 2 bolsas), empaque $1,20, envío $4,50, pasarela 4,5%, suscripción $30,60/mes, mezcla 85% sueltos y 15% suscriptores, permanencia mensual 91% y 3 pedidos sueltos en 12 meses.
+                  <strong>Datos originales del caso:</strong> bolsa a $17 (pedido típico de 2 bolsas = $34), café $5,44/bolsa, empaque $1,20, envío $4,50, pasarela 4,5%, suscripción $30,60/mes, 85% compradores sueltos y 15% suscriptores, permanencia 91% mensual y 3 pedidos sueltos al año.
                 </li>
                 <li>
-                  <strong>Supuestos comerciales editables (no garantizados):</strong> activar el Pack de 3 bolsas ($48) y cobrar envío ($4,50 bajo $45) supone una adopción del {fmtNum(params12m.adopcionPack, 0)}% y asume que cobrar envío no reduce los clientes adquiridos ni su frecuencia de compra. <strong>Este beneficio no está garantizado</strong> y requiere validarse con una prueba piloto.
-                </li>
-                <li>
-                  <strong>Resultados proyectados:</strong> el LTV a 12 meses ({fmtUSD(liveRes.ltvPond, 2)}) y el mes de recuperación ({liveRes.paybackLabel}) son proyecciones basadas en que el comportamiento futuro repita la curva histórica.
+                  <strong>Supuesto del Pack ($48) y envío ($4,50 bajo $45):</strong> el beneficio del Pack y del cobro de envío <strong>no está garantizado</strong>; asume {fmtNum(params12m.adopcionPack, 0)}% de adopción inicial sin caída en conversión y debe comprobarse en un piloto antes de escalar presupuesto.
                 </li>
               </ul>
             </div>
 
-            <div className="info-box" style={{ borderLeft: '5px solid var(--terracotta)' }}>
-              <h4>Verificación Manual de Referencia</h4>
+            <div className="info-box">
+              <h4>Verificación manual de las cuentas</h4>
               <ul>
                 <li>
-                  <strong>CAC real actual verificado manualmente:</strong>{' '}
-                  <code>($8.000 + $1.000) / 165 = $54,54545 por cliente nuevo</code>.
+                  <strong>Costo por cliente actual ($8.000):</strong>{' '}
+                  <code>($8.000 + $1.000) / 165 = $54,5455 por cliente</code>.
                 </li>
                 <li>
-                  <strong>Suma de actividad esperada del suscriptor (Meses 1 a 12):</strong>{' '}
-                  <code>SUM(0,91^i, i=0..11) = 7,528050139848837 pagos</code>.
+                  <strong>Cobros esperados de un suscriptor en 12 meses:</strong>{' '}
+                  <code>SUM(0,91^i, i=0..11) = 7,52805 pagos</code>.
                 </li>
                 <li>
-                  <strong>LTV promedio ponderado actual (Meses 1 a 12):</strong>{' '}
-                  <code>0,85 × (3 × $15,89) + 0,15 × (7,52805014 × $12,643) = $54,7960706877</code> (recupera en el <strong>Mes 12</strong>; con Meta en <code>$4.000</code> el CAC baja a <code>$50,00</code> y recupera en el <strong>Mes 11</strong>).
+                  <strong>Contribución en 12 meses actual:</strong>{' '}
+                  <code>0,85 × (3 × $15,89) + 0,15 × (7,52805 × $12,643) = $54,7961</code> (recupera en el <strong>Mes 12</strong>; con $4.000 en Meta el costo baja a <strong>$50,00</strong> y recupera en el <strong>Mes 11</strong>).
                 </li>
               </ul>
             </div>
@@ -290,4 +307,3 @@ export function CalculadoraSection({
     </section>
   );
 }
-

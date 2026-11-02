@@ -12,7 +12,6 @@ import {
 export function Simulador24MSection({
   plan24m,
   liveSim24m,
-  savedScenarios,
   onChangePlan24m,
   onResetPlan24m
 }) {
@@ -61,48 +60,52 @@ export function Simulador24MSection({
 
   useEffect(() => {
     if (!chartRef.current) return;
-    const labels = Array.from({ length: 25 }, (_, i) => `Mes ${i}`);
+    const labels = Array.from({ length: 25 }, (_, i) => `M${i}`);
     const lineaPiso = Array(25).fill(PISO_CAJA_24M);
     const lineaCero = Array(25).fill(0);
+    const gridColor = '#E6E0D4';
+    const tickColor = '#575046';
 
-    const colors = {
-      base8k: { border: '#3B2318', dash: [4, 3], width: 2.2 },
-      agenciaAll: { border: '#B8332A', dash: [], width: 2.2 },
-      agenciaM1: { border: '#D9822B', dash: [3, 3], width: 1.8 },
-      propioA: { border: '#1F5A73', dash: [], width: 2.6 },
-      propioB: { border: '#2E6F40', dash: [], width: 3.4 }
+    const styleMap = {
+      propioB: { label: 'Plan activo (editable)', border: '#B65C3A', dash: [], width: 3.2, radius: 3 },
+      propioA: { label: 'Menor inv. ($4k sin Pack)', border: '#566148', dash: [], width: 2.3, radius: 2 },
+      base8k: { label: 'Actual ($8k)', border: '#29251F', dash: [4, 3], width: 2, radius: 2 },
+      agenciaM1: { label: 'Agencia (30% BF solo M1)', border: '#8C5A1B', dash: [3, 3], width: 1.6, radius: 1.5 },
+      agenciaAll: { label: 'Agencia (30% BF continuo)', border: '#9E2F28', dash: [], width: 1.8, radius: 1.5 }
     };
 
-    const datasets = allPlans.map(p => {
-      const st = colors[p.id] || { border: '#C85A32', dash: [], width: 2.8 };
+    const orderedForChart = [liveSim24m, planPropioA, planBase8k, planAgenciaM1, planAgenciaAll];
+
+    const datasets = orderedForChart.map(p => {
+      const st = styleMap[p.id] || { label: p.shortName, border: '#B65C3A', dash: [], width: 2.5, radius: 2 };
       return {
-        label: p.shortName,
+        label: st.label,
         data: p.serieCajaConMes0,
         borderColor: st.border,
         backgroundColor: st.border,
         borderDash: st.dash,
         borderWidth: st.width,
-        pointRadius: 2.5,
-        tension: 0.12,
+        pointRadius: st.radius,
+        tension: 0.1,
         fill: false
       };
     });
 
     datasets.push({
-      label: 'Piso de Seguridad ($5.000)',
+      label: 'Piso mínimo ($5.000)',
       data: lineaPiso,
-      borderColor: '#B8332A',
-      borderWidth: 2,
+      borderColor: '#9E2F28',
+      borderWidth: 1.8,
       borderDash: [7, 4],
       pointRadius: 0,
       fill: false
     });
 
     datasets.push({
-      label: 'Línea Cero ($0 — Límite de solvencia)',
+      label: 'Línea cero ($0)',
       data: lineaCero,
-      borderColor: '#666666',
-      borderWidth: 1.3,
+      borderColor: '#29251F',
+      borderWidth: 1.4,
       borderDash: [3, 3],
       pointRadius: 0,
       fill: false
@@ -116,17 +119,30 @@ export function Simulador24MSection({
         maintainAspectRatio: false,
         animation: false,
         plugins: {
-          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 10, color: tickColor, font: { size: 11 } }
+          },
           tooltip: {
             callbacks: {
-              label: c => `${c.dataset.label}: ${fmtUSD(c.parsed.y, 2)}`
+              label: c => `${c.dataset.label}: ${fmtUSD(c.parsed.y, 2)} en caja de la empresa`
             }
           }
         },
         scales: {
+          x: {
+            grid: { color: gridColor },
+            ticks: { color: tickColor, font: { size: 11 } }
+          },
           y: {
-            title: { display: true, text: 'Saldo de Caja al Final del Mes ($)' },
-            ticks: { callback: v => '$' + Number(v).toLocaleString('es-ES') }
+            grid: { color: gridColor },
+            title: {
+              display: true,
+              text: 'Saldo en caja de la empresa ($)',
+              color: tickColor,
+              font: { size: 11, weight: '600' }
+            },
+            ticks: { color: tickColor, callback: v => '$' + Number(v).toLocaleString('es-ES') }
           }
         }
       }
@@ -200,6 +216,13 @@ export function Simulador24MSection({
     URL.revokeObjectURL(url);
   };
 
+  // Respaldo sin Pack del plan activo para mostrar el supuesto comercial al lado del resultado
+  const liveSinPack = simulate24Months({
+    ...plan24m,
+    id: 'liveSinPack',
+    polPack: false
+  });
+
   // Datos dinámicos para el Pitch de 2 minutos
   const invM1 = chosenPitchPlan.rows[0].inv;
   const cliMetaM1 = chosenPitchPlan.rows[0].cliMeta;
@@ -207,7 +230,6 @@ export function Simulador24MSection({
   const feeM1 = chosenPitchPlan.rows[0].feeAgencia;
   const avgInv13_24 = chosenPitchPlan.rows.slice(12, 24).reduce((s, r) => s + r.inv, 0) / 12.0;
   const diffVsBase = chosenPitchPlan.cajaMes24 - planBase8k.cajaMes24;
-
   const usaPack = Boolean(chosenPitchPlan.config?.polPack);
   const tieneDescBF = Boolean(chosenPitchPlan.config?.descBF > 0);
   let simSinPack = null;
@@ -220,175 +242,42 @@ export function Simulador24MSection({
   }
 
   return (
-    <section className="section-block" id="seccion-simulador24m">
-      <div className="section-header">
+    <section className="notebook-section" id="seccion-simulador24m">
+      <div className="notebook-header">
         <div>
-          <span className="section-step">Sección 3 · Nivel 3 · Simulador de Caja de 24 Meses</span>
-          <h2 className="section-title">Simulador de Caja de 24 Meses y Comparador de Planes de Inversión</h2>
-          <p className="section-subtitle">
-            Compara planes de inversión en Meta durante 24 meses (Págs. 5, 6, 7 y 10 del PDF). Gana el plan válido con <strong>mayor caja final en el mes 24</strong> sin bajar nunca del piso de <strong>$5.000</strong> ni incumplir la regla de continuidad desde el mes 13; en empate, gana el que tenga más suscriptores activos en el mes 24.
+          <span className="notebook-kicker">Liquidez y solvencia · Caja de la empresa (24 meses)</span>
+          <h2 className="notebook-title">Simulador de caja a 24 meses</h2>
+          <p className="notebook-subtitle">
+            Parte con una <strong>caja inicial de $35.000,00 (Mes 0)</strong>, suma la contribución de clientes anteriores ($9.000 en M1 con caída de 3% mensual) y de las nuevas cohortes (Meta + 47 orgánicos/mes), y descuenta costos fijos ($6.500/mes), agencia y pauta. Ningún mes puede cerrar debajo de <strong>$5.000</strong>.
           </p>
         </div>
       </div>
 
-      {/* Verificación Mes 1 y Reglas */}
-      <div className="info-columns" style={{ marginTop: 0, marginBottom: '1.3rem' }}>
-        <div className="info-box" style={{ borderLeft: '5px solid var(--green)' }}>
-          <h4>1. Verificación Paso a Paso del Mes 1 — Plan Base de $8.000 (Pág. 10)</h4>
-          <ul>
-            <li>
-              <strong>Caja inicial (Mes 0):</strong> <code>$35.000,00</code> (Pág. 6).
-            </li>
-            <li>
-              <strong>Clientes nuevos del Mes 1 (Cohorte 1):</strong> <code>165</code> de Meta ($8.000) +{' '}
-              <code>47</code> orgánicos = <strong><code>212</code> clientes nuevos</strong> (
-              <code>180,20</code> sueltos [85%] y <code>31,80</code> suscriptores [15%]).
-            </li>
-            <li>
-              <strong>Contribución de la nueva cohorte en el Mes 1:</strong>{' '}
-              <code>212 × (0,85 × $15,89 + 0,15 × $12,643) = $3.265,4254</code>.
-            </li>
-            <li>
-              <strong>Contribución de clientes existentes en el Mes 1:</strong>{' '}
-              <strong><code>$9.000,00</code></strong> (serie <code>$9.000 × 0,97^(t-1)</code>).
-            </li>
-            <li>
-              <strong>Salidas del Mes 1:</strong> <code>$8.000</code> (Meta) + <code>$1.000</code> (Agencia) +{' '}
-              <code>$6.500</code> (Costos fijos) = <strong><code>$15.500,00</code></strong>.
-            </li>
-            <li>
-              <strong>Caja final del Mes 1:</strong>{' '}
-              <code>$35.000 + $9.000 + $3.265,4254 − $15.500 =</code>{' '}
-              <strong id="simCheckMes1Val">{fmtUSD(planBase8k.cajaMes1, 4)}</strong>{' '}
-              <span className="badge-ok">OK Exacto</span>
-            </li>
-          </ul>
-        </div>
-
-        <div className="info-box" style={{ borderLeft: '5px solid var(--terracotta)' }}>
-          <h4>2. Reglas del Modelo Mensual y Restricciones</h4>
-          <ul>
-            <li>
-              <strong>Seguimiento de cohortes por edad (<em>a = 1 … 24</em>):</strong> compradores sueltos (85%) compran según la curva de 12M en edades 1–12 y <strong><code>0,10</code> pedidos/mes en edades 13 a 24</strong>. Suscriptores (15%) permanecen activos a razón de <code>0,91^(a-1)</code>.
-            </li>
-            <li>
-              <strong>Tres restricciones obligatorias:</strong> (1) Inversión mensual entre <code>$0</code> y <code>$20.000</code>; (2) <code>Caja final ≥ $5.000</code> en cada uno de los 24 meses; (3) Desde el mes 13 hasta el 24, cada inversión mensual debe ser <code>≥ promedio de inversión de los meses 1 a 12</code>.
-            </li>
-            <li>
-              <strong>Variantes de la Agencia separadas:</strong> se muestran por separado la promoción continua del 30% en cada cohorte (<code>-$82.255,19</code>) y la promoción del 30% solo en el Mes 1 (<code>-$28.552,08</code>).
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      {/* Banner del Mejor Plan */}
-      <div
-        className={`semaforo-banner ${winnerPlan ? 'green' : 'red'}`}
-        style={{ marginBottom: '1.3rem' }}
-      >
-        <div className="semaforo-indicator">
-          <div className="semaforo-dot" />
-          <div>
-            <div style={{ fontWeight: 800, fontSize: '1.04rem' }}>
-              {winnerPlan
-                ? `Mejor entre los planes comparados: ${winnerPlan.name}`
-                : 'Ningún plan comparado cumple actualmente todas las restricciones'}
-            </div>
-            <div style={{ fontSize: '0.84rem' }}>
-              {winnerPlan
-                ? `Partiendo de una caja inicial de $35.000,00 (Mes 0), termina el Mes 24 con ${fmtUSD(
-                    winnerPlan.cajaMes24,
-                    2
-                  )} en el banco, con un mínimo de cierres mensuales (meses 1–24) de ${fmtUSD(
-                    winnerPlan.minCaja,
-                    2
-                  )} en el Mes ${winnerPlan.mesMinCaja} (siempre ≥ $5.000) y ${fmtNum(
-                    winnerPlan.suscMes24,
-                    2
-                  )} suscriptores activos de las cohortes modeladas.`
-                : 'Revisa las restricciones de piso de caja ($5.000) o la regla de continuidad de inversión en meses 13 a 24.'}
-            </div>
+      <div className="workspace-grid" style={{ marginBottom: '1.6rem' }}>
+        {/* PANEL IZQUIERDO: CONFIGURACIÓN DEL PLAN DE 24 MESES */}
+        <aside className="assumptions-panel" aria-label="Configuración del plan de 24 meses">
+          <div className="assumptions-panel-header">
+            <h3>Tu plan editable (24M)</h3>
+            <button
+              id="btnResetPlan24m"
+              type="button"
+              className="btn btn-text"
+              onClick={() => {
+                setStages({ s1_6: 4000, s7_12: 4000, s13_18: 4000, s19_24: 4000 });
+                onResetPlan24m();
+              }}
+            >
+              Volver al caso original
+            </button>
           </div>
-        </div>
-      </div>
 
-      {/* Tabla Comparativa de Planes a 24 Meses */}
-      <h3 style={{ margin: '0 0 0.6rem', fontSize: '1.02rem', color: 'var(--coffee-900)' }}>
-        Comparación de Planes a 24 Meses (Caja Inicial Mes 0: $35.000,00)
-      </h3>
-      <div className="table-responsive" style={{ marginBottom: '1.4rem' }}>
-        <table id="tablaComparacion24m">
-          <thead>
-            <tr>
-              <th>Plan de 24 Meses</th>
-              <th className="num">Inv. Prom. M1–12</th>
-              <th className="num">Inv. Mín. M13–24</th>
-              <th className="num">Caja Inicial Mes 0 ($)</th>
-              <th className="num">Caja Mes 1 ($)</th>
-              <th className="num">Mínimo de Cierres Mensuales (Meses 1–24)</th>
-              <th className="num">Caja Final Mes 24 ($)</th>
-              <th className="num">Suscriptores Activos M24</th>
-              <th>Validez y Restricciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {allPlans.map(p => {
-              const isWin = winnerPlan && p.id === winnerPlan.id;
-              return (
-                <tr
-                  key={p.id}
-                  className={isWin ? 'row-winner' : !p.valid ? 'row-violation' : ''}
-                >
-                  <td>
-                    <strong>{p.name}</strong>
-                    {isWin && ' 🏆 (Mejor entre comparados)'}
-                  </td>
-                  <td className="num">{fmtUSD(p.avgInv1_12, 0)}</td>
-                  <td className="num">{fmtUSD(p.minInv13_24, 0)}</td>
-                  <td className="num">{fmtUSD(CAJA_INICIAL_24M, 2)}</td>
-                  <td className="num">{fmtUSD(p.cajaMes1, 2)}</td>
-                  <td className="num">
-                    {fmtUSD(p.minCaja, 2)} (Mes {p.mesMinCaja})
-                  </td>
-                  <td className="num">
-                    <strong>{fmtUSD(p.cajaMes24, 2)}</strong>
-                  </td>
-                  <td className="num">{fmtNum(p.suscMes24, 2)}</td>
-                  <td>
-                    <span className={p.valid ? 'badge-ok' : 'badge-danger'}>
-                      {p.motivosResumen}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Editor del Plan 24M y Gráfico */}
-      <div className="lab-layout" style={{ marginBottom: '1.5rem' }}>
-        <aside className="controls-panel">
-          <h3>Configurar Plan Propio B (Editable 24M)</h3>
-          <p style={{ fontSize: '0.8rem', color: 'var(--coffee-700)', marginBottom: '0.75rem' }}>
-            Puedes editar las 24 inversiones mensuales por etapas o mes por mes y guardar este plan desde el botón "Mis escenarios". El efecto del Pack ($48) y envío es un supuesto comercial proyectado, no un resultado garantizado.
-          </p>
-
-          <div
-            style={{
-              background: '#fff',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              padding: '0.75rem',
-              marginBottom: '0.85rem'
-            }}
-          >
-            <div style={{ fontSize: '0.81rem', fontWeight: 700, marginBottom: '0.45rem' }}>
-              Edición rápida por etapas ($0 a $20.000):
-            </div>
+          <div className="control-section-group">
+            <div className="control-section-title">Presupuesto por etapas (Meta $)</div>
             <div className="stage-grid">
               <div>
-                <label style={{ fontSize: '0.74rem', fontWeight: 600 }}>Meses 1 a 6 ($)</label>
+                <label htmlFor="inputStage1_6" style={{ fontSize: '0.75rem', fontWeight: 600 }}>
+                  Meses 1 a 6 ($)
+                </label>
                 <input
                   id="inputStage1_6"
                   type="number"
@@ -400,7 +289,9 @@ export function Simulador24MSection({
                 />
               </div>
               <div>
-                <label style={{ fontSize: '0.74rem', fontWeight: 600 }}>Meses 7 a 12 ($)</label>
+                <label htmlFor="inputStage7_12" style={{ fontSize: '0.75rem', fontWeight: 600 }}>
+                  Meses 7 a 12 ($)
+                </label>
                 <input
                   id="inputStage7_12"
                   type="number"
@@ -412,7 +303,9 @@ export function Simulador24MSection({
                 />
               </div>
               <div>
-                <label style={{ fontSize: '0.74rem', fontWeight: 600 }}>Meses 13 a 18 ($)</label>
+                <label htmlFor="inputStage13_18" style={{ fontSize: '0.75rem', fontWeight: 600 }}>
+                  Meses 13 a 18 ($)
+                </label>
                 <input
                   id="inputStage13_18"
                   type="number"
@@ -424,7 +317,9 @@ export function Simulador24MSection({
                 />
               </div>
               <div>
-                <label style={{ fontSize: '0.74rem', fontWeight: 600 }}>Meses 19 a 24 ($)</label>
+                <label htmlFor="inputStage19_24" style={{ fontSize: '0.75rem', fontWeight: 600 }}>
+                  Meses 19 a 24 ($)
+                </label>
                 <input
                   id="inputStage19_24"
                   type="number"
@@ -440,85 +335,91 @@ export function Simulador24MSection({
               id="btnApplyStages24m"
               type="button"
               className="btn"
-              style={{ width: '100%' }}
+              style={{ width: '100%', marginBottom: '0.5rem' }}
               onClick={applyStages}
             >
               Aplicar etapas a los 24 meses
             </button>
+
+            <details className="notebook-details" style={{ padding: '0.55rem 0.75rem' }}>
+              <summary style={{ fontSize: '0.79rem' }}>
+                Ajustar inversión mes por mes (M1 a M24)
+              </summary>
+              <div className="month-grid-24">
+                {plan24m.investments.map((invVal, idx) => (
+                  <div className="month-cell" key={idx}>
+                    <label htmlFor={`inv24m_m${idx + 1}`}>Mes {idx + 1} ($)</label>
+                    <input
+                      id={`inv24m_m${idx + 1}`}
+                      type="number"
+                      min="0"
+                      max="20000"
+                      step="250"
+                      value={invVal}
+                      onChange={e => handleMonthChange(idx, e.target.value)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </details>
           </div>
 
-          <details
-            style={{
-              marginBottom: '0.85rem',
-              background: 'var(--bg-sand)',
-              padding: '0.65rem 0.8rem',
-              borderRadius: '8px',
-              border: '1px solid var(--border)'
-            }}
-          >
-            <summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: '0.83rem' }}>
-              Editar inversión mes por mes (Mes 1 a Mes 24)
-            </summary>
-            <div className="month-grid-24">
-              {plan24m.investments.map((invVal, idx) => (
-                <div className="month-cell" key={idx}>
-                  <label htmlFor={`inv24m_m${idx + 1}`}>Mes {idx + 1} ($)</label>
-                  <input
-                    id={`inv24m_m${idx + 1}`}
-                    type="number"
-                    min="0"
-                    max="20000"
-                    step="250"
-                    value={invVal}
-                    onChange={e => handleMonthChange(idx, e.target.value)}
-                  />
+          <div className="control-section-group">
+            <div className="control-section-title">Supuesto comercial (Pack y envío)</div>
+            <div className="pack-toggle-box" style={{ marginTop: 0 }}>
+              <label className="checkbox-label">
+                <input
+                  id="chkSim24PolPack"
+                  type="checkbox"
+                  checked={plan24m.polPack}
+                  onChange={e => onChangePlan24m({ ...plan24m, polPack: e.target.checked })}
+                />
+                <span>
+                  Probar Pack 3 bolsas ($48) y cobrar envío ($4,50) bajo $45
+                </span>
+              </label>
+
+              <div className="control-item" style={{ marginTop: '0.55rem' }}>
+                <div className="control-row-top">
+                  <label htmlFor="selSim24MesActPack">Mes de inicio de la prueba</label>
                 </div>
-              ))}
-            </div>
-          </details>
-
-          <div className="pack-box" style={{ marginTop: 0, marginBottom: '0.85rem' }}>
-            <label className="checkbox-row">
-              <input
-                id="chkSim24PolPack"
-                type="checkbox"
-                checked={plan24m.polPack}
-                onChange={e => onChangePlan24m({ ...plan24m, polPack: e.target.checked })}
-              />
-              <span>
-                Activar Pack 3 bolsas ($48) y cobro de envío ($4,50 bajo $45) en Plan Propio B
-              </span>
-            </label>
-
-            <div className="control-group" style={{ marginTop: '0.6rem', marginBottom: '0.5rem' }}>
-              <div className="control-header">
-                <label htmlFor="selSim24MesActPack">Mes de activación del cambio comercial</label>
+                <select
+                  id="selSim24MesActPack"
+                  className="sim-select"
+                  value={plan24m.mesActPack}
+                  onChange={e =>
+                    onChangePlan24m({ ...plan24m, mesActPack: Number(e.target.value) })
+                  }
+                >
+                  {Array.from({ length: 24 }, (_, i) => i + 1).map(m => (
+                    <option key={m} value={m}>
+                      Mes {m}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <select
-                id="selSim24MesActPack"
-                className="sim-select"
-                style={{ width: '100%' }}
-                value={plan24m.mesActPack}
-                onChange={e =>
-                  onChangePlan24m({ ...plan24m, mesActPack: Number(e.target.value) })
-                }
-              >
-                {Array.from({ length: 24 }, (_, i) => i + 1).map(m => (
-                  <option key={m} value={m}>
-                    Mes {m}
-                  </option>
-                ))}
-              </select>
-            </div>
 
-            <div className="control-group" style={{ marginBottom: 0 }}>
-              <div className="control-header">
-                <label htmlFor="numSim24AdopPack">Adopción del Pack (%)</label>
-                <span>{fmtNum(plan24m.adopPack, 1)}%</span>
-              </div>
-              <div className="control-inputs">
+              <div className="control-item" style={{ marginTop: '0.55rem' }}>
+                <div className="control-row-top">
+                  <label htmlFor="numSim24AdopPack">Adopción del Pack</label>
+                  <div className="input-with-unit">
+                    <input
+                      id="numSim24AdopPack"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="1"
+                      value={plan24m.adopPack}
+                      onChange={e =>
+                        onChangePlan24m({ ...plan24m, adopPack: Number(e.target.value) })
+                      }
+                    />
+                    <span className="input-unit-suffix">%</span>
+                  </div>
+                </div>
                 <input
                   type="range"
+                  aria-label="Deslizador de adopción del Pack en simulador"
                   min="0"
                   max="100"
                   step="5"
@@ -527,310 +428,458 @@ export function Simulador24MSection({
                     onChangePlan24m({ ...plan24m, adopPack: Number(e.target.value) })
                   }
                 />
+              </div>
+            </div>
+          </div>
+
+          <div className="control-section-group">
+            <div className="control-section-title">Inversión de capital opcional</div>
+            <div className="pack-toggle-box" style={{ marginTop: 0 }}>
+              <label className="checkbox-label">
                 <input
-                  id="numSim24AdopPack"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="1"
-                  value={plan24m.adopPack}
-                  onChange={e =>
-                    onChangePlan24m({ ...plan24m, adopPack: Number(e.target.value) })
-                  }
+                  id="chkSim24Tostadora"
+                  type="checkbox"
+                  checked={plan24m.buyTostadora}
+                  onChange={e => onChangePlan24m({ ...plan24m, buyTostadora: e.target.checked })}
                 />
+                <span>Comprar 2ª tostadora ($14.000)</span>
+              </label>
+              <div className="control-item" style={{ marginTop: '0.5rem' }}>
+                <div className="control-row-top">
+                  <label htmlFor="selSim24MesTostadora">Mes del desembolso ($14.000)</label>
+                </div>
+                <select
+                  id="selSim24MesTostadora"
+                  className="sim-select"
+                  value={plan24m.mesTostadora}
+                  onChange={e =>
+                    onChangePlan24m({ ...plan24m, mesTostadora: Number(e.target.value) })
+                  }
+                >
+                  {Array.from({ length: 24 }, (_, i) => i + 1).map(m => (
+                    <option key={m} value={m}>
+                      Mes {m}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
-
-          <div
-            className="pack-box"
-            style={{ marginTop: 0, marginBottom: '0.85rem', background: '#FFF9F2' }}
-          >
-            <label className="checkbox-row">
-              <input
-                id="chkSim24Tostadora"
-                type="checkbox"
-                checked={plan24m.buyTostadora}
-                onChange={e => onChangePlan24m({ ...plan24m, buyTostadora: e.target.checked })}
-              />
-              <span>Decisión opcional separada: Comprar 2ª tostadora ($14.000)</span>
-            </label>
-            <div className="control-group" style={{ marginTop: '0.5rem', marginBottom: 0 }}>
-              <div className="control-header">
-                <label htmlFor="selSim24MesTostadora">Mes de compra ($14.000)</label>
-              </div>
-              <select
-                id="selSim24MesTostadora"
-                className="sim-select"
-                style={{ width: '100%' }}
-                value={plan24m.mesTostadora}
-                onChange={e =>
-                  onChangePlan24m({ ...plan24m, mesTostadora: Number(e.target.value) })
-                }
-              >
-                {Array.from({ length: 24 }, (_, i) => i + 1).map(m => (
-                  <option key={m} value={m}>
-                    Mes {m}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <button
-            id="btnResetPlan24m"
-            type="button"
-            className="btn btn-restore"
-            style={{ width: '100%', marginLeft: 0 }}
-            onClick={() => {
-              setStages({ s1_6: 4000, s7_12: 4000, s13_18: 4000, s19_24: 4000 });
-              onResetPlan24m();
-            }}
-          >
-            ↺ Restaurar Plan Propio B ($4.000/mes + Pack Mes 1)
-          </button>
         </aside>
 
-        <div className="live-results">
-          <div className="chart-card">
-            <h4>Evolución de la Caja Final Mes a Mes (Mes 0 a Mes 24) vs. Piso de Seguridad ($5.000)</h4>
+        {/* COLUMNA DERECHA: CIFRA PROTAGONISTA, SUPUESTO VISIBLE Y GRÁFICO DOMINANTE */}
+        <div className="results-column">
+          {/* Conclusión corta + Banda protagonista de 3 cifras */}
+          <div className={`verdict-banner ${liveSim24m.valid ? 'green' : 'red'}`}>
+            <div className="verdict-kicker">Resultado de tu plan editable · Caja de la empresa</div>
+            <div className="verdict-headline">
+              {liveSim24m.valid
+                ? winnerPlan && winnerPlan.id === liveSim24m.id
+                  ? 'Mejor entre los planes comparados: cumple todas las reglas de liquidez'
+                  : 'Plan válido: respeta el piso de $5.000 y la continuidad de inversión'
+                : `[!] Plan inviable: ${liveSim24m.motivosInvalidez.join(' · ')}`}
+            </div>
+            <div className="verdict-summary">
+              Caja inicial (Mes 0): <strong>$35.000,00</strong> · Cierre del Mes 1:{' '}
+              <strong>{fmtUSD(liveSim24m.cajaMes1, 2)}</strong> · Suscriptores activos al Mes 24:{' '}
+              <strong>{fmtNum(liveSim24m.suscMes24, 2)}</strong>.
+            </div>
+          </div>
+
+          <div className="metrics-band-3" role="region" aria-label="Cifras principales de caja a 24 meses">
+            <div className="band-cell">
+              <div>
+                <div className="band-label-row">
+                  <span className="band-label">Caja al mes 24</span>
+                </div>
+                <div
+                  className={`band-value tabular ${
+                    liveSim24m.cajaMes24 < PISO_CAJA_24M ? 'loss' : 'gain'
+                  }`}
+                >
+                  {fmtUSD(liveSim24m.cajaMes24, 2)}
+                </div>
+              </div>
+              <div className="band-sub tabular">
+                Caja inicial M0: $35.000,00 · Variación neta:{' '}
+                {liveSim24m.cajaMes24 - CAJA_INICIAL_24M >= 0 ? '+' : ''}
+                {fmtUSD(liveSim24m.cajaMes24 - CAJA_INICIAL_24M, 2)}
+              </div>
+            </div>
+
+            <div className="band-cell">
+              <div>
+                <div className="band-label-row">
+                  <span className="band-label">Menor saldo mensual</span>
+                </div>
+                <div
+                  className={`band-value tabular ${
+                    liveSim24m.minCaja < PISO_CAJA_24M ? 'loss' : ''
+                  }`}
+                >
+                  {fmtUSD(liveSim24m.minCaja, 2)}
+                </div>
+              </div>
+              <div className="band-sub tabular">
+                Mínimo de cierres mensuales, meses 1–24 (ocurre en el Mes {liveSim24m.mesMinCaja}; piso exigido: $5.000)
+              </div>
+            </div>
+
+            <div className="band-cell">
+              <div>
+                <div className="band-label-row">
+                  <span className="band-label">¿Cumple las reglas?</span>
+                </div>
+                <div className={`band-value ${liveSim24m.valid ? 'gain' : 'loss'}`}>
+                  {liveSim24m.valid ? '[OK] Sí cumple' : '[!] No cumple'}
+                </div>
+              </div>
+              <div className="band-sub">
+                {liveSim24m.valid
+                  ? 'Rango $0–$20k, saldo mensual ≥ $5.000 y pauta M13–24 ≥ promedio M1–12'
+                  : liveSim24m.motivosInvalidez.join(' | ')}
+              </div>
+            </div>
+          </div>
+
+          {/* Supuestos comerciales del Pack visibles cerca del resultado */}
+          <div className="sim-commercial-callout">
+            <strong>Supuestos comerciales cerca del resultado:</strong>{' '}
+            {plan24m.polPack ? (
+              <>
+                Tu plan activo incluye el supuesto comercial del <strong>Pack de 3 bolsas ($48, adopción {fmtNum(plan24m.adopPack, 0)}%) y envío de $4,50 en pedidos sueltos menores a $45</strong> desde el Mes {plan24m.mesActPack}.{' '}
+                <strong>Este beneficio no está garantizado:</strong> si ese cambio comercial no se aplicara o no mejorara el margen, este mismo calendario de inversión cerraría el Mes 24 con{' '}
+                <strong>{fmtUSD(liveSinPack.cajaMes24, 2)}</strong> (menor saldo mensual de{' '}
+                <strong>{fmtUSD(liveSinPack.minCaja, 2)}</strong> en el Mes {liveSinPack.mesMinCaja}).
+              </>
+            ) : (
+              <>
+                Tu plan activo se evalúa únicamente con las <strong>condiciones comerciales originales verificadas del caso</strong> (bolsa a $17, envío absorbido por Tueste, sin depender del Pack de $48).
+              </>
+            )}
+          </div>
+
+          {/* Gráfico de caja dominante */}
+          <div className="chart-frame">
+            <div className="chart-frame-header">
+              <h4>Evolución del saldo en banco mes a mes (Mes 0 a Mes 24)</h4>
+              <span className="chart-scope-tag">Caja de la empresa</span>
+            </div>
             <p className="chart-caption">
-              Arranca en $35.000 en el Mes 0. La línea horizontal roja marca el piso mínimo de $5.000 exigido por Camila.
+              Todos los planes parten de $35.000 en el Mes 0. La línea punteada roja en $5.000 marca el piso mínimo de seguridad exigido por Camila.
             </p>
-            <div className="canvas-wrap" style={{ height: '310px' }}>
+            <div className="canvas-wrap" style={{ height: '350px' }}>
               <canvas ref={chartRef} />
-            </div>
-          </div>
-
-          <div className="preset-bar" style={{ marginBottom: 0 }}>
-            <label htmlFor="selInspectPlan24m" className="preset-label">
-              Inspeccionar detalle de 24 meses del plan:
-            </label>
-            <select
-              id="selInspectPlan24m"
-              className="sim-select"
-              value={inspectKey}
-              onChange={e => setInspectKey(e.target.value)}
-            >
-              <option value="propioB">Plan 4: Propio B (Editable en vivo)</option>
-              <option value="propioA">Plan 3: Propio A ($4.000 fijos, condiciones originales)</option>
-              <option value="base8k">Plan 1: Base Actual ($8.000 fijos, condiciones originales)</option>
-              <option value="agenciaAll">
-                Plan 2a: Agencia ($16.000 + 30% BF en cada cohorte)
-              </option>
-              <option value="agenciaM1">
-                Plan 2b: Agencia Variante ($16.000 + 30% BF solo en Mes 1)
-              </option>
-            </select>
-            <button
-              id="btnExportCsv24m"
-              type="button"
-              className="btn btn-restore"
-              onClick={exportCSV}
-            >
-              ⬇ Exportar CSV (24 meses)
-            </button>
-          </div>
-
-          <div className="kpi-grid">
-            <div className={`kpi-card ${inspected.minCaja < PISO_CAJA_24M ? 'loss' : 'highlight'}`}>
-              <div className="kpi-label">Mínimo de Cierres Mensuales (Meses 1–24)</div>
-              <div className="kpi-val">{fmtUSD(inspected.minCaja, 2)}</div>
-              <div className="kpi-sub">
-                En Mes {inspected.mesMinCaja} · Caja inicial M0: $35.000,00
-              </div>
-            </div>
-
-            <div className={`kpi-card ${inspected.cajaMes24 < 0 ? 'loss' : 'highlight'}`}>
-              <div className="kpi-label">Caja Final (Mes 24)</div>
-              <div className="kpi-val">{fmtUSD(inspected.cajaMes24, 2)}</div>
-              <div className="kpi-sub">
-                Caja inicial M0: $35.000,00 · Variación:{' '}
-                {inspected.cajaMes24 - CAJA_INICIAL_24M >= 0 ? '+' : ''}
-                {fmtUSD(inspected.cajaMes24 - CAJA_INICIAL_24M, 2)}
-              </div>
-            </div>
-
-            <div className="kpi-card">
-              <div className="kpi-label">Suscriptores Activos Mes 24</div>
-              <div className="kpi-val">{fmtNum(inspected.suscMes24, 2)}</div>
-              <div className="kpi-sub">Solo de cohortes modeladas (M1–M24)</div>
-            </div>
-
-            <div className={`kpi-card ${inspected.valid ? 'gain' : 'loss'}`}>
-              <div className="kpi-label">Estado del Plan y Restricciones</div>
-              <div
-                className="kpi-val"
-                style={{ color: inspected.valid ? 'var(--green)' : 'var(--red)' }}
-              >
-                {inspected.valid ? 'VÁLIDO' : 'INVÁLIDO'}
-              </div>
-              <div className="kpi-sub">
-                {inspected.valid
-                  ? 'Cumple rango $0–$20k, piso ≥ $5.000 y regla Mes 13–24'
-                  : inspected.motivosInvalidez.join(' | ')}
-              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tabla Mensual Detallada de 24 Filas */}
-      <h3 style={{ margin: '0 0 0.6rem', fontSize: '1.02rem', color: 'var(--coffee-900)' }}>
-        Tabla Mensual Detallada (Mes 1 a Mes 24) — {inspected.name}
-      </h3>
-      <div className="table-responsive" style={{ marginBottom: '1.5rem' }}>
-        <table>
-          <thead>
-            <tr>
-              <th>Mes</th>
-              <th className="num">Inversión Meta ($)</th>
-              <th className="num">Clientes Meta</th>
-              <th className="num">Clientes Orgánicos</th>
-              <th className="num">Total Cohorte Mes</th>
-              <th className="num">Suscriptores Activos</th>
-              <th className="num">Contribución Existentes ($)</th>
-              <th className="num">Contribución Nuevas ($)</th>
-              <th className="num">Salidas Totales ($)</th>
-              <th className="num">Caja Final Mes ($)</th>
-              <th>Estado de Reglas</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inspected.rows.map(r => {
-              const hasViol = r.violRango || r.violPiso || r.violRegla13;
-              return (
-                <tr key={r.t} className={hasViol ? 'row-violation' : ''}>
-                  <td>
-                    <strong>Mes {r.t}</strong>
-                  </td>
-                  <td className="num">{fmtUSD(r.inv, 0)}</td>
-                  <td className="num">{fmtNum(r.cliMeta, 2)}</td>
-                  <td className="num">{fmtNum(r.cliOrg, 0)}</td>
-                  <td className="num">{fmtNum(r.cliTot, 2)}</td>
-                  <td className="num">{fmtNum(r.suscActivosModelados, 2)}</td>
-                  <td className="num">{fmtUSD(r.contribExist, 2)}</td>
-                  <td className="num">{fmtUSD(r.contribNuevas, 2)}</td>
-                  <td className="num">{fmtUSD(r.salidas, 2)}</td>
-                  <td className="num">
-                    <strong>{fmtUSD(r.cajaFinal, 2)}</strong>
-                  </td>
-                  <td>
-                    <span className={hasViol ? 'badge-danger' : 'badge-ok'}>{r.alertaTexto}</span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pitch de 2 Minutos Dinámico */}
-      <div className="info-box" style={{ background: '#fff' }}>
+      {/* COMPARACIÓN DE PLANES DEBAJO DEL GRÁFICO */}
+      <div style={{ marginBottom: '1.25rem' }}>
         <div
           style={{
             display: 'flex',
             flexWrap: 'wrap',
             justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: '0.8rem'
+            alignItems: 'baseline',
+            gap: '0.5rem',
+            marginBottom: '0.6rem'
           }}
         >
-          <div>
-            <h4 style={{ marginBottom: '0.2rem' }}>
-              Guion de Pitch de 2 Minutos para Diego y Camila (Vinculado al Plan Seleccionado)
-            </h4>
-            <p style={{ fontSize: '0.81rem', color: 'var(--coffee-700)' }}>
-              Usa dinámicamente el presupuesto, CAC, clientes y cierres de caja del plan elegido.
-            </p>
-          </div>
-          <select
-            id="selPitchPlan24m"
-            className="sim-select"
-            value={pitchKey}
-            onChange={e => setPitchKey(e.target.value)}
-          >
-            <option value="winner">Mejor plan válido actual</option>
-            <option value="propioB">Plan 4: Propio B (Editable)</option>
-            <option value="propioA">Plan 3: Propio A ($4.000 sin cambios)</option>
-            <option value="base8k">Plan 1: Base Actual ($8.000)</option>
-            <option value="agenciaAll">Plan 2a: Agencia ($16.000 + 30% BF continuo)</option>
-            <option value="agenciaM1">Plan 2b: Agencia Variante (30% BF solo Mes 1)</option>
-          </select>
+          <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.08rem', color: 'var(--ink)' }}>
+            Comparación de planes a 24 meses (caja inicial Mes 0: $35.000,00)
+          </h3>
+          {winnerPlan && (
+            <span className="status-tag ok">
+              [OK] Mejor entre los planes comparados: {winnerPlan.shortName} ({fmtUSD(winnerPlan.cajaMes24, 2)})
+            </span>
+          )}
         </div>
 
-        <div className="pitch-grid">
-          <div className="pitch-card">
-            <h4>1. Presupuesto y adquisición del plan elegido (0:00 – 0:30)</h4>
-            <p>
-              En el plan seleccionado (<strong>{chosenPitchPlan.name}</strong>), la inversión en Meta del Mes 1 es de{' '}
-              <strong>{fmtUSD(invM1, 0)}</strong>, con un promedio de{' '}
-              <strong>{fmtUSD(chosenPitchPlan.avgInv1_12, 0)}/mes</strong> en los meses 1 a 12 y{' '}
-              <strong>{fmtUSD(avgInv13_24, 0)}/mes</strong> en los meses 13 a 24. En el Mes 1 adquiere{' '}
-              <strong>{fmtNum(cliMetaM1, 1)} clientes por Meta</strong> más <strong>47 orgánicos</strong> (
-              <strong>{fmtNum(cliTotM1, 1)} clientes totales</strong>, con{' '}
-              {invM1 > 0 && cliMetaM1 > 0
-                ? `CAC real de ${fmtUSD((invM1 + feeM1) / cliMetaM1, 2)} incluyendo agencia`
-                : 'gasto $0 en anuncios'}
-              ).
-            </p>
-          </div>
-
-          <div className="pitch-card">
-            <h4>2. Resultados en caja real y contraste (0:30 – 1:00)</h4>
-            <p>
-              Partiendo de la <strong>caja inicial de $35.000,00 (Mes 0)</strong>, cierra el Mes 1 en{' '}
-              <strong>{fmtUSD(chosenPitchPlan.cajaMes1, 2)}</strong>, registra un{' '}
-              <strong>
-                mínimo de cierres mensuales (meses 1–24) de {fmtUSD(chosenPitchPlan.minCaja, 2)} en el Mes{' '}
-                {chosenPitchPlan.mesMinCaja}
-              </strong>
-              , y termina el Mes 24 con <strong>{fmtUSD(chosenPitchPlan.cajaMes24, 2)}</strong> (
-              {diffVsBase >= 0 ? '+' : ''}
-              {fmtUSD(diffVsBase, 2)} frente al plan base de $8.000/mes) y{' '}
-              <strong>{fmtNum(chosenPitchPlan.suscMes24, 2)} suscriptores activos</strong>. En contraste, la Agencia ($16.000/mes) cierra en{' '}
-              <strong>{fmtUSD(planAgenciaAll.cajaMes24, 2)}</strong> con promoción continua y en{' '}
-              <strong>{fmtUSD(planAgenciaM1.cajaMes24, 2)}</strong> con promoción solo en el Mes 1.
-            </p>
-          </div>
-
-          <div className="pitch-card">
-            <h4>3. Riesgos que corresponden a este plan (1:00 – 1:30)</h4>
-            <p>
-              <strong>• Cartera previa (-3%/mes) y retención:</strong> la contribución existente baja de $9.000 en M1 a $4.466,94 en M24; compensarla depende del volumen y retención de las nuevas cohortes.
-              <br />
-              {usaPack && simSinPack && (
-                <>
-                  <strong>• Incertidumbre de Pack ($48) y envío ($4,50 bajo $45):</strong> cobrar envío puede afectar conversión o frecuencia; sin Pack ni envío, este mismo calendario cerraría el Mes 24 en{' '}
-                  <strong>{fmtUSD(simSinPack.cajaMes24, 2)}</strong>.
-                  <br />
-                </>
-              )}
-              {tieneDescBF && (
-                <>
-                  <strong>• Erosión de margen promocional:</strong> el descuento reduce la contribución del primer pedido suelto a $6,149 mientras café, empaque y envío no bajan.
-                  <br />
-                </>
-              )}
-              {!chosenPitchPlan.valid && (
-                <strong>
-                  ⚠️ Alerta: este plan es INVÁLIDO ({chosenPitchPlan.motivosResumen}).
-                </strong>
-              )}
-            </p>
-          </div>
-
-          <div className="pitch-card">
-            <h4>4. Prueba de 60 días (observable vs. proyección) y reglas vs. gestión (1:30 – 2:00)</h4>
-            <p>
-              <strong>Piloto de 60 días:</strong> en 60 días no puede observarse directamente el LTV de 12 meses (que continúa siendo una proyección); sí pueden observarse conversión, CAC real, contribución inicial, adopción del Pack y primeras recompras (meses 1–2).
-              <br />
-              <strong>Reglas del caso vs. propuesta de gestión:</strong> las <em>reglas del caso</em> exigen piso de caja ≥ $5.000 e inversión M13–24 ≥ promedio M1–12 ({fmtUSD(chosenPitchPlan.avgInv1_12, 0)}). Exigir un colchón adicional (ej. $50.000 en banco antes de comprar la tostadora de $14.000) se plantea como <em>propuesta prudencial de gestión</em>.
-            </p>
-          </div>
+        <div className="table-responsive">
+          <table id="tablaComparacion24m">
+            <thead>
+              <tr>
+                <th>Plan comparado</th>
+                <th className="num">Pauta prom. M1–12</th>
+                <th className="num">Pauta mín. M13–24</th>
+                <th className="num">Caja inicial M0</th>
+                <th className="num">Caja Mes 1</th>
+                <th className="num">Menor saldo mensual (mínimo de cierres mensuales, meses 1–24)</th>
+                <th className="num">Caja al mes 24</th>
+                <th className="num">Suscriptores M24</th>
+                <th>¿Cumple las reglas?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allPlans.map(p => {
+                const isWin = winnerPlan && p.id === winnerPlan.id;
+                return (
+                  <tr
+                    key={p.id}
+                    className={isWin ? 'row-winner' : !p.valid ? 'row-violation' : ''}
+                  >
+                    <td>
+                      <strong>{p.name}</strong>
+                      {isWin && (
+                        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--green)' }}>
+                          [Mejor entre los planes comparados]
+                        </div>
+                      )}
+                    </td>
+                    <td className="num">{fmtUSD(p.avgInv1_12, 0)}</td>
+                    <td className="num">{fmtUSD(p.minInv13_24, 0)}</td>
+                    <td className="num">{fmtUSD(CAJA_INICIAL_24M, 2)}</td>
+                    <td className="num">{fmtUSD(p.cajaMes1, 2)}</td>
+                    <td className="num">
+                      {fmtUSD(p.minCaja, 2)} (Mes {p.mesMinCaja})
+                    </td>
+                    <td className="num">
+                      <strong>{fmtUSD(p.cajaMes24, 2)}</strong>
+                    </td>
+                    <td className="num">{fmtNum(p.suscMes24, 2)}</td>
+                    <td>
+                      <span className={`status-tag ${p.valid ? 'ok' : 'danger'}`}>
+                        {p.valid ? `[OK] ${p.motivosResumen}` : `[!] ${p.motivosResumen}`}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
+
+      {/* TABLA MENSUAL DESPLEGABLE (24 FILAS + EXPORTACIÓN CSV) */}
+      <details className="notebook-details" style={{ marginBottom: '1.1rem' }}>
+        <summary>
+          Ver la cuenta: tabla mensual detallada de 24 meses ({inspected.shortName}) y exportar CSV
+        </summary>
+        <div>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '0.75rem',
+              marginBottom: '0.85rem'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <label htmlFor="selInspectPlan24m" style={{ fontSize: '0.83rem', fontWeight: 700 }}>
+                Plan mostrado en la tabla:
+              </label>
+              <select
+                id="selInspectPlan24m"
+                className="sim-select"
+                style={{ width: 'auto' }}
+                value={inspectKey}
+                onChange={e => setInspectKey(e.target.value)}
+              >
+                <option value="propioB">Plan 4: Propio B (Editable en vivo)</option>
+                <option value="propioA">Plan 3: Propio A ($4.000 fijos, condiciones originales)</option>
+                <option value="base8k">Plan 1: Base Actual ($8.000 fijos, condiciones originales)</option>
+                <option value="agenciaAll">Plan 2a: Agencia ($16.000 + 30% BF en cada cohorte)</option>
+                <option value="agenciaM1">Plan 2b: Agencia Variante ($16.000 + 30% BF solo en Mes 1)</option>
+              </select>
+            </div>
+
+            <button
+              id="btnExportCsv24m"
+              type="button"
+              className="btn"
+              onClick={exportCSV}
+            >
+              Exportar CSV (24 meses)
+            </button>
+          </div>
+
+          <div className="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mes</th>
+                  <th className="num">Inversión Meta ($)</th>
+                  <th className="num">Clientes Meta</th>
+                  <th className="num">Clientes orgánicos</th>
+                  <th className="num">Total cohorte</th>
+                  <th className="num">Suscriptores activos</th>
+                  <th className="num">Aporte existentes ($)</th>
+                  <th className="num">Aporte nuevas ($)</th>
+                  <th className="num">Salidas totales ($)</th>
+                  <th className="num">Caja al cierre ($)</th>
+                  <th>¿Cumple las reglas?</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inspected.rows.map(r => {
+                  const hasViol = r.violRango || r.violPiso || r.violRegla13;
+                  return (
+                    <tr key={r.t} className={hasViol ? 'row-violation' : ''}>
+                      <td>
+                        <strong>Mes {r.t}</strong>
+                      </td>
+                      <td className="num">{fmtUSD(r.inv, 0)}</td>
+                      <td className="num">{fmtNum(r.cliMeta, 2)}</td>
+                      <td className="num">{fmtNum(r.cliOrg, 0)}</td>
+                      <td className="num">{fmtNum(r.cliTot, 2)}</td>
+                      <td className="num">{fmtNum(r.suscActivosModelados, 2)}</td>
+                      <td className="num">{fmtUSD(r.contribExist, 2)}</td>
+                      <td className="num">{fmtUSD(r.contribNuevas, 2)}</td>
+                      <td className="num">{fmtUSD(r.salidas, 2)}</td>
+                      <td className="num">
+                        <strong>{fmtUSD(r.cajaFinal, 2)}</strong>
+                      </td>
+                      <td>
+                        <span className={`status-tag ${hasViol ? 'danger' : 'ok'}`}>
+                          {hasViol ? `[!] ${r.alertaTexto}` : `[OK] ${r.alertaTexto}`}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+
+      {/* DESPLEGABLE: VERIFICACIÓN DEL MES 1 Y ARGUMENTARIO PARA DIEGO Y CAMILA */}
+      <details className="notebook-details" open>
+        <summary>
+          Comprobación del Mes 1 ($31.765,4254) y síntesis para conversar con Camila
+        </summary>
+        <div>
+          <div className="info-columns" style={{ marginBottom: '1rem' }}>
+            <div className="info-box">
+              <h4>Comprobación paso a paso del Mes 1 (Plan actual de $8.000)</h4>
+              <ul>
+                <li>
+                  <strong>Caja inicial (Mes 0):</strong> <code>$35.000,00</code>.
+                </li>
+                <li>
+                  <strong>Cohorte 1:</strong> <code>165</code> clientes de Meta + <code>47</code> orgánicos ={' '}
+                  <strong>212 clientes nuevos</strong> (180,20 sueltos y 31,80 suscriptores).
+                </li>
+                <li>
+                  <strong>Contribución de la Cohorte 1 en el Mes 1:</strong>{' '}
+                  <code>212 × (0,85 × $15,89 + 0,15 × $12,643) = $3.265,4254</code>.
+                </li>
+                <li>
+                  <strong>Contribución de clientes anteriores (Mes 1):</strong> <code>$9.000,00</code>.
+                </li>
+                <li>
+                  <strong>Salidas del Mes 1:</strong> <code>$8.000</code> (Meta) + <code>$1.000</code> (agencia) +{' '}
+                  <code>$6.500</code> (costos fijos) = <code>$15.500,00</code>.
+                </li>
+                <li>
+                  <strong>Saldo final Mes 1:</strong>{' '}
+                  <strong id="simCheckMes1Val">{fmtUSD(planBase8k.cajaMes1, 4)}</strong>.
+                </li>
+              </ul>
+            </div>
+
+            <div className="info-box">
+              <h4>Reglas del simulador y variantes de la agencia</h4>
+              <ul>
+                <li>
+                  <strong>Tres reglas obligatorias:</strong> (1) pauta entre $0 y $20.000/mes; (2) cierre de caja mensual ≥ $5.000 en los 24 meses; (3) en cada mes del año 2 (meses 13 a 24), la inversión debe ser ≥ promedio invertido en los meses 1 a 12.
+                </li>
+                <li>
+                  <strong>Promoción de la agencia separada:</strong> se distingue la promoción continua del 30% en todas las cohortes ({fmtUSD(planAgenciaAll.cajaMes24, 2)}) frente a aplicar el 30% solo en el Mes 1 ({fmtUSD(planAgenciaM1.cajaMes24, 2)}).
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '0.75rem',
+              marginBottom: '0.6rem'
+            }}
+          >
+            <strong style={{ fontSize: '0.88rem' }}>
+              Resumen ejecutivo vinculado al plan seleccionado:
+            </strong>
+            <select
+              id="selPitchPlan24m"
+              className="sim-select"
+              style={{ width: 'auto' }}
+              value={pitchKey}
+              onChange={e => setPitchKey(e.target.value)}
+            >
+              <option value="winner">Mejor entre los planes comparados</option>
+              <option value="propioB">Plan 4: Propio B (Editable)</option>
+              <option value="propioA">Plan 3: Propio A ($4.000 sin cambios)</option>
+              <option value="base8k">Plan 1: Base Actual ($8.000)</option>
+              <option value="agenciaAll">Plan 2a: Agencia ($16.000 + 30% BF continuo)</option>
+              <option value="agenciaM1">Plan 2b: Agencia Variante (30% BF solo Mes 1)</option>
+            </select>
+          </div>
+
+          <div className="pitch-editorial-grid">
+            <div className="pitch-block">
+              <h4>1. Presupuesto y adquisición del plan elegido</h4>
+              <p>
+                En <strong>{chosenPitchPlan.name}</strong>, la pauta del Mes 1 es de{' '}
+                <strong>{fmtUSD(invM1, 0)}</strong> (promedio de{' '}
+                <strong>{fmtUSD(chosenPitchPlan.avgInv1_12, 0)}/mes</strong> en meses 1–12 y{' '}
+                <strong>{fmtUSD(avgInv13_24, 0)}/mes</strong> en meses 13–24). En el Mes 1 incorpora{' '}
+                <strong>{fmtNum(cliMetaM1, 1)} clientes por Meta</strong> más <strong>47 orgánicos</strong> (
+                <strong>{fmtNum(cliTotM1, 1)} clientes totales</strong>, con{' '}
+                {invM1 > 0 && cliMetaM1 > 0
+                  ? `costo por cliente de ${fmtUSD((invM1 + feeM1) / cliMetaM1, 2)} incluyendo agencia`
+                  : 'gasto $0 en anuncios'}
+                ).
+              </p>
+            </div>
+
+            <div className="pitch-block">
+              <h4>2. Caja al mes 24 y menor saldo mensual</h4>
+              <p>
+                Partiendo de la <strong>caja inicial de $35.000,00 (Mes 0)</strong>, cierra el Mes 1 en{' '}
+                <strong>{fmtUSD(chosenPitchPlan.cajaMes1, 2)}</strong>, registra un{' '}
+                <strong>
+                  mínimo de cierres mensuales (meses 1–24) de {fmtUSD(chosenPitchPlan.minCaja, 2)} en el Mes{' '}
+                  {chosenPitchPlan.mesMinCaja}
+                </strong>{' '}
+                y termina el Mes 24 con <strong>{fmtUSD(chosenPitchPlan.cajaMes24, 2)}</strong> (
+                {diffVsBase >= 0 ? '+' : ''}
+                {fmtUSD(diffVsBase, 2)} frente a mantener $8.000/mes).
+              </p>
+            </div>
+
+            <div className="pitch-block">
+              <h4>3. Riesgos reales del plan</h4>
+              <p>
+                La contribución de la cartera previa cae 3% cada mes (de $9.000 en M1 a $4.466,94 en M24) y no está garantizado que las nuevas cohortes la compensen si sube la cancelación o se encarece Meta.{' '}
+                {usaPack && simSinPack && (
+                  <>
+                    Además, el aporte del Pack ($48) y envío bajo $45 es un supuesto no garantizado: sin esa mejora comercial, la caja final sería de <strong>{fmtUSD(simSinPack.cajaMes24, 2)}</strong>.
+                  </>
+                )}
+                {tieneDescBF && (
+                  <> El descuento promocional reduce el margen inicial y acelera el drenaje de caja.</>
+                )}
+              </p>
+            </div>
+
+            <div className="pitch-block">
+              <h4>4. Qué medir en una prueba de 60 días y decisión sobre la tostadora</h4>
+              <p>
+                En una prueba de 60 días pueden observarse conversión, contribución del primer pedido, costo por cliente (CAC) y primeras recompras; la contribución anual (LTV de 12 meses) sigue siendo una proyección. Respecto a la segunda tostadora ($14.000, dato del caso), como propuesta de gestión propia sugerimos posponerla mientras se valida el flujo de caja.
+              </p>
+            </div>
+          </div>
+        </div>
+      </details>
     </section>
   );
 }
-

@@ -9,12 +9,19 @@ import {
   fmtPct,
   fmtRoas
 } from '../../shared/tuesteModel.js';
-import { PresetBar12M, Controls12MPanel } from './Controls12MPanel.jsx';
+import {
+  PresetBar12M,
+  Controls12MPanel,
+  ResultsHeaderBand12M,
+  TermHelp
+} from './Controls12MPanel.jsx';
 
 export function TableroSection({
   params12m,
   liveRes,
   activePresetKey,
+  lastPresetKey,
+  activeSavedName,
   onSelectPreset,
   onRestore,
   onChangeParam
@@ -34,10 +41,12 @@ export function TableroSection({
 
   useEffect(() => {
     const instances = [];
+    const gridColor = '#E6E0D4';
+    const tickColor = '#575046';
 
-    // 1. Gráfico Curva Acumulada (Mes 0 a 12)
+    // 1. Gráfico Curva Acumulada por cliente (Mes 0 a 12)
     if (refCurva.current) {
-      const labelsMeses = Array.from({ length: 13 }, (_, i) => `Mes ${i}`);
+      const labelsMeses = Array.from({ length: 13 }, (_, i) => `M${i}`);
       const lineaCero = Array(13).fill(0);
       instances.push(
         new Chart(refCurva.current.getContext('2d'), {
@@ -46,43 +55,43 @@ export function TableroSection({
             labels: labelsMeses,
             datasets: [
               {
-                label: 'Tu Escenario en Vivo',
+                label: 'Activo',
                 data: liveRes.curvaAcumulada,
-                borderColor: '#C85A32',
-                backgroundColor: 'rgba(200, 90, 50, 0.12)',
-                borderWidth: 3.5,
-                pointRadius: 4,
-                tension: 0.15
+                borderColor: '#B65C3A',
+                backgroundColor: 'rgba(182, 92, 58, 0.1)',
+                borderWidth: 3,
+                pointRadius: 3.5,
+                tension: 0.12
               },
               {
-                label: 'Actual ($8.000)',
+                label: 'Actual ($8k)',
                 data: refScenarios.actual.curvaAcumulada,
-                borderColor: '#3B2318',
-                borderWidth: 2,
+                borderColor: '#29251F',
+                borderWidth: 1.8,
                 borderDash: [4, 3],
-                pointRadius: 2.5,
-                tension: 0.15
+                pointRadius: 2,
+                tension: 0.12
               },
               {
-                label: 'Agencia ($16.000 + 30% BF)',
+                label: 'Agencia ($16k)',
                 data: refScenarios.agencia.curvaAcumulada,
-                borderColor: '#B8332A',
-                borderWidth: 2,
-                pointRadius: 2.5,
-                tension: 0.15
+                borderColor: '#9E2F28',
+                borderWidth: 1.6,
+                pointRadius: 2,
+                tension: 0.12
               },
               {
-                label: 'Combinado ($4k + Pack/Envío)',
+                label: 'Combinado ($4k+Pack)',
                 data: refScenarios.combinado.curvaAcumulada,
-                borderColor: '#2E6F40',
-                borderWidth: 2,
-                pointRadius: 2.5,
-                tension: 0.15
+                borderColor: '#566148',
+                borderWidth: 1.8,
+                pointRadius: 2,
+                tension: 0.12
               },
               {
-                label: 'Línea Cero (Equilibrio CAC)',
+                label: 'Equilibrio ($0)',
                 data: lineaCero,
-                borderColor: '#666666',
+                borderColor: '#29251F',
                 borderWidth: 1.5,
                 borderDash: [6, 4],
                 pointRadius: 0,
@@ -95,17 +104,30 @@ export function TableroSection({
             maintainAspectRatio: false,
             animation: false,
             plugins: {
-              legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+              legend: {
+                position: 'bottom',
+                labels: { boxWidth: 10, color: tickColor, font: { size: 11 } }
+              },
               tooltip: {
                 callbacks: {
-                  label: ctx => `${ctx.dataset.label}: ${fmtUSD(ctx.parsed.y, 2)}`
+                  label: ctx => `${ctx.dataset.label}: ${fmtUSD(ctx.parsed.y, 2)} por cliente`
                 }
               }
             },
             scales: {
+              x: {
+                grid: { color: gridColor },
+                ticks: { color: tickColor, font: { size: 11 } }
+              },
               y: {
-                title: { display: true, text: 'Acumulado Neto por Cliente ($)' },
-                ticks: { callback: v => '$' + v }
+                grid: { color: gridColor },
+                title: {
+                  display: true,
+                  text: 'Saldo acumulado por cliente ($)',
+                  color: tickColor,
+                  font: { size: 11, weight: '600' }
+                },
+                ticks: { color: tickColor, callback: v => '$' + v }
               }
             }
           }
@@ -113,7 +135,7 @@ export function TableroSection({
       );
     }
 
-    // 2. Gráfico LTV frente a CAC con límites dinámicos
+    // 2. Gráfico Contribución 12M (LTV) frente a Costo por cliente (CAC)
     if (refLtvCac.current) {
       const allScenariosForBounds = [
         refScenarios.actual,
@@ -140,59 +162,59 @@ export function TableroSection({
           data: {
             datasets: [
               {
-                label: 'Tu Escenario en Vivo',
+                label: 'Activo',
                 data: liveRes.cacReal !== null ? [{ x: liveRes.cacReal, y: liveRes.ltvPond }] : [],
-                backgroundColor: '#C85A32',
-                borderColor: '#24150E',
+                backgroundColor: '#B65C3A',
+                borderColor: '#29251F',
                 borderWidth: 2,
-                pointRadius: 9
+                pointRadius: 8
               },
               {
-                label: 'Actual ($8k)',
+                label: 'Actual',
                 data: [{ x: refScenarios.actual.cacReal, y: refScenarios.actual.ltvPond }],
-                backgroundColor: '#3B2318',
-                pointRadius: 6
+                backgroundColor: '#29251F',
+                pointRadius: 5.5
               },
               {
-                label: 'Agencia ($16k + BF)',
+                label: 'Agencia',
                 data: [{ x: refScenarios.agencia.cacReal, y: refScenarios.agencia.ltvPond }],
-                backgroundColor: '#B8332A',
-                pointRadius: 6
+                backgroundColor: '#9E2F28',
+                pointRadius: 5.5
               },
               {
-                label: 'Cambio 1 ($4k)',
+                label: 'Menor inv.',
                 data: [{ x: refScenarios.cambio1.cacReal, y: refScenarios.cambio1.ltvPond }],
-                backgroundColor: '#D9822B',
-                pointRadius: 6
+                backgroundColor: '#8C5A1B',
+                pointRadius: 5.5
               },
               {
-                label: 'Cambio 2 ($8k + Pack)',
+                label: 'Pack y envío',
                 data: [{ x: refScenarios.cambio2.cacReal, y: refScenarios.cambio2.ltvPond }],
-                backgroundColor: '#7D5642',
-                pointRadius: 6
+                backgroundColor: '#787065',
+                pointRadius: 5.5
               },
               {
-                label: 'Combinado ($4k + Pack)',
+                label: 'Combinado',
                 data: [{ x: refScenarios.combinado.cacReal, y: refScenarios.combinado.ltvPond }],
-                backgroundColor: '#2E6F40',
-                pointRadius: 6
+                backgroundColor: '#566148',
+                pointRadius: 5.5
               },
               {
-                label: 'Umbral LTV = 1×CAC (Mínimo)',
+                label: 'Empate 1:1',
                 type: 'line',
                 data: [{ x: 0, y: 0 }, { x: maxCacAxis, y: maxCacAxis }],
-                borderColor: '#B8332A',
-                borderWidth: 1.8,
+                borderColor: '#9E2F28',
+                borderWidth: 1.5,
                 borderDash: [5, 4],
                 pointRadius: 0,
                 fill: false
               },
               {
-                label: 'Umbral LTV = 3×CAC (Verde)',
+                label: 'Ref. 3:1',
                 type: 'line',
                 data: [{ x: 0, y: 0 }, { x: maxCacAxis, y: maxCacAxis * 3 }],
-                borderColor: '#2E6F40',
-                borderWidth: 1.8,
+                borderColor: '#566148',
+                borderWidth: 1.5,
                 borderDash: [5, 4],
                 pointRadius: 0,
                 fill: false
@@ -204,10 +226,17 @@ export function TableroSection({
             maintainAspectRatio: false,
             animation: false,
             plugins: {
-              legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+              legend: {
+                position: 'bottom',
+                labels: { boxWidth: 10, color: tickColor, font: { size: 11 } }
+              },
               tooltip: {
                 callbacks: {
-                  label: ctx => `${ctx.dataset.label}: CAC ${fmtUSD(ctx.parsed.x, 2)} | LTV ${fmtUSD(ctx.parsed.y, 2)}`
+                  label: ctx =>
+                    `${ctx.dataset.label}: Costo ${fmtUSD(ctx.parsed.x, 2)}/cli | Contribución 12M ${fmtUSD(
+                      ctx.parsed.y,
+                      2
+                    )}/cli`
                 }
               }
             },
@@ -215,14 +244,26 @@ export function TableroSection({
               x: {
                 min: 0,
                 max: maxCacAxis,
-                title: { display: true, text: 'CAC Real por Cliente ($)' },
-                ticks: { callback: v => '$' + v }
+                grid: { color: gridColor },
+                title: {
+                  display: true,
+                  text: 'Costo por cliente — CAC ($/cliente)',
+                  color: tickColor,
+                  font: { size: 11, weight: '600' }
+                },
+                ticks: { color: tickColor, callback: v => '$' + v }
               },
               y: {
                 min: minYAxis,
                 max: maxYAxis,
-                title: { display: true, text: 'LTV Contribución 12M ($)' },
-                ticks: { callback: v => '$' + v }
+                grid: { color: gridColor },
+                title: {
+                  display: true,
+                  text: 'Contribución 12M — LTV ($/cliente)',
+                  color: tickColor,
+                  font: { size: 11, weight: '600' }
+                },
+                ticks: { color: tickColor, callback: v => '$' + v }
               }
             }
           }
@@ -230,9 +271,9 @@ export function TableroSection({
       );
     }
 
-    // 3. Gráfico Historial de Clientes Nuevos y CAC Marginal por Tramo
+    // 3. Gráfico Rendimientos decrecientes en Meta (clientes y costo por cliente extra)
     if (refHistorial.current) {
-      const labelsHist = ['$0', '$4.000', '$8.000', '$12.000', '$16.000', '$20.000'];
+      const labelsHist = ['$0', '$4k', '$8k', '$12k', '$16k', '$20k'];
       const dataClientesHist = META_HISTORY.map(p => p.clientes);
       const dataCacMargHist = [null, 40.0, 4000 / 65, 4000 / 45, 4000 / 25, 4000 / 15];
 
@@ -244,21 +285,22 @@ export function TableroSection({
             datasets: [
               {
                 type: 'line',
-                label: 'Clientes Nuevos de Meta (Curva Histórica)',
+                label: 'Clientes nuevos (total)',
                 data: dataClientesHist,
-                borderColor: '#3B2318',
-                backgroundColor: '#3B2318',
-                borderWidth: 3,
-                pointRadius: 5,
+                borderColor: '#29251F',
+                backgroundColor: '#29251F',
+                borderWidth: 2.5,
+                pointRadius: 4,
                 yAxisID: 'yClientes'
               },
               {
                 type: 'bar',
-                label: 'CAC Marginal del Tramo ($/cliente extra)',
+                label: 'Costo por cliente extra del tramo ($/cliente)',
                 data: dataCacMargHist,
-                backgroundColor: 'rgba(200, 90, 50, 0.75)',
-                borderColor: '#A64420',
+                backgroundColor: 'rgba(86, 97, 72, 0.72)',
+                borderColor: '#3F4834',
                 borderWidth: 1,
+                borderRadius: 3,
                 yAxisID: 'yCacMarg'
               }
             ]
@@ -268,15 +310,29 @@ export function TableroSection({
             maintainAspectRatio: false,
             animation: false,
             plugins: {
-              legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+              legend: {
+                position: 'bottom',
+                labels: { boxWidth: 10, color: tickColor, font: { size: 11 } }
+              }
             },
             scales: {
+              x: {
+                grid: { color: gridColor },
+                ticks: { color: tickColor }
+              },
               yClientes: {
                 type: 'linear',
                 position: 'left',
                 min: 0,
                 max: 280,
-                title: { display: true, text: 'Clientes Nuevos Reales' }
+                grid: { color: gridColor },
+                title: {
+                  display: true,
+                  text: 'Clientes nuevos al mes',
+                  color: tickColor,
+                  font: { size: 11, weight: '600' }
+                },
+                ticks: { color: tickColor }
               },
               yCacMarg: {
                 type: 'linear',
@@ -284,8 +340,13 @@ export function TableroSection({
                 min: 0,
                 max: 300,
                 grid: { drawOnChartArea: false },
-                title: { display: true, text: 'CAC Marginal ($)' },
-                ticks: { callback: v => '$' + v }
+                title: {
+                  display: true,
+                  text: 'Costo marginal ($/cliente)',
+                  color: tickColor,
+                  font: { size: 11, weight: '600' }
+                },
+                ticks: { color: tickColor, callback: v => '$' + v }
               }
             }
           }
@@ -293,7 +354,7 @@ export function TableroSection({
       );
     }
 
-    // 4. Gráfico La Trampa: ROAS Meta 3,0 vs ROAS Equilibrio y ROAS 1er Pedido (usa null cuando no aplica)
+    // 4. Gráfico ROAS Meta vs Equilibrio y 1er Pedido (usa null cuando no aplica)
     if (refTrampa.current) {
       const valRoasMeta = 3.0;
       const valRoasEq = liveRes.roasEqPondM1;
@@ -305,18 +366,18 @@ export function TableroSection({
           type: 'bar',
           data: {
             labels: [
-              'ROAS Reportado por Meta (Sept.)',
-              valRoasEq !== null ? 'ROAS de Equilibrio Ponderado (Break-even)' : 'ROAS de Equilibrio (No alcanzable)',
-              valRoas1er !== null ? 'ROAS Real del 1er Pedido (Adquisición)' : 'ROAS Real del 1er Pedido (No aplica)'
+              'Reportado Meta (3,0x)',
+              valRoasEq !== null ? 'Equilibrio 1er pedido' : 'Equilibrio (No alcanzable)',
+              valRoas1er !== null ? 'Real 1er pedido nuevo' : 'Real 1er pedido (No aplica)'
             ],
             datasets: [
               {
-                label: 'ROAS (Veces sobre inversión publicitaria)',
+                label: 'ROAS (veces sobre gasto en anuncios)',
                 data: [valRoasMeta, valRoasEq, valRoas1er],
-                backgroundColor: ['#7D5642', '#D9822B', '#B8332A'],
-                borderColor: ['#3B2318', '#A65B12', '#7A1C16'],
-                borderWidth: 1.5,
-                borderRadius: 6
+                backgroundColor: ['#787065', '#566148', '#B65C3A'],
+                borderColor: ['#29251F', '#3F4834', '#934527'],
+                borderWidth: 1,
+                borderRadius: 4
               }
             ]
           },
@@ -331,16 +392,26 @@ export function TableroSection({
                   label: ctx =>
                     ctx.parsed.y === null
                       ? 'No aplicable / No alcanzable'
-                      : `${fmtNum(ctx.parsed.y, 2)}x`
+                      : `${fmtNum(ctx.parsed.y, 2)}x sobre pauta`
                 }
               }
             },
             scales: {
+              x: {
+                grid: { display: false },
+                ticks: { color: tickColor, font: { size: 11 } }
+              },
               y: {
                 min: 0,
                 max: maxRoasForScale,
-                title: { display: true, text: 'ROAS (x)' },
-                ticks: { callback: v => fmtNum(v, 1) + 'x' }
+                grid: { color: gridColor },
+                title: {
+                  display: true,
+                  text: 'ROAS por cliente (veces, x)',
+                  color: tickColor,
+                  font: { size: 11, weight: '600' }
+                },
+                ticks: { color: tickColor, callback: v => fmtNum(v, 1) + 'x' }
               }
             }
           }
@@ -353,29 +424,6 @@ export function TableroSection({
     };
   }, [liveRes]);
 
-  // Semáforo LTV:CAC
-  let semClass = 'neutral';
-  let semTitulo = 'Semáforo LTV:CAC — NO APLICA (Inversión $0 en Meta Ads)';
-  let semDesc =
-    'Sin inversión en Meta Ads no hay clientes adquiridos por pauta ni CAC aplicable. Nota: el negocio aún debe cubrir $6.500/mes de costos fijos.';
-
-  if (liveRes.ltvCac !== null) {
-    if (liveRes.ltvCac < 1.0) {
-      semClass = 'red';
-      semTitulo = `Semáforo LTV:CAC — ROJO (${fmtNum(liveRes.ltvCac, 2)}x < 1,0x): Destruye valor en 12 meses`;
-      semDesc = `Cada cliente cuesta ${fmtUSD(liveRes.cacReal, 2)} y solo genera ${fmtUSD(liveRes.ltvPond, 2)} de contribución en 12 meses (${fmtUSD(liveRes.netoPorCliente, 2)}/cliente). No recupera el CAC en 12 meses.`;
-    } else if (liveRes.ltvCac < 3.0) {
-      semClass = 'yellow';
-      semTitulo = `Semáforo LTV:CAC — AMARILLO (${fmtNum(liveRes.ltvCac, 2)}x: entre 1,0x y menos de 3,0x)`;
-      semDesc = `Recupera el CAC en el ${liveRes.paybackLabel} (${fmtUSD(liveRes.netoPorCliente, 2)} netos por cliente a 12M). Recuerda: este semáforo no garantiza caja suficiente ni beneficio después de costos fijos ($6.500/mes).`;
-    } else {
-      semClass = 'green';
-      semTitulo = `Semáforo LTV:CAC — VERDE (${fmtNum(liveRes.ltvCac, 2)}x >= 3,0x): Adquisición saludable`;
-      semDesc = `Supera el umbral de 3,0x y recupera en el ${liveRes.paybackLabel}. Aun así, verifica siempre la liquidez mensual porque el ratio LTV:CAC no descuenta costos fijos de la empresa.`;
-    }
-  }
-
-  // Filas de la tabla comparativa
   const comparisonCols = [
     refScenarios.actual,
     refScenarios.agencia,
@@ -386,288 +434,232 @@ export function TableroSection({
   ];
 
   const rowsSpec = [
-    { label: 'Inversión mensual en Meta Ads ($)', fn: s => fmtUSD(s.inv, 0) },
-    { label: 'Fee mensual de agencia ($)', fn: s => fmtUSD(s.feeEfectivo, 0) },
+    { label: 'Inversión mensual en Meta ($)', fn: s => fmtUSD(s.inv, 0) },
+    { label: 'Honorario mensual de agencia ($)', fn: s => fmtUSD(s.feeEfectivo, 0) },
     { label: 'Clientes nuevos reales de Meta', fn: s => fmtNum(s.clientesNuevos, 1) },
     {
-      label: 'Contribución 1er pedido — Suelto ($ / %)',
+      label: 'Contribución 1er pedido suelto ($ / %)',
       fn: s => `${fmtUSD(s.contribSueltoM1, 2)} (${fmtPct(s.pctContribSueltoM1, 1)})`
     },
     {
-      label: 'Contribución mensual — Suscripción ($ / %)',
+      label: 'Contribución mensual suscripción ($ / %)',
       fn: s => `${fmtUSD(s.contribSusc, 3)} (${fmtPct(s.pctContribSusc, 1)})`
     },
+    { label: 'ROAS de equilibrio en 1er pedido', fn: s => fmtRoas(s.roasEqPondM1) },
     {
-      label: 'ROAS de equilibrio — Suelto / Suscripción',
-      fn: s => `${fmtRoas(s.roasEqSueltoM1)} / ${fmtRoas(s.roasEqSusc)}`
-    },
-    { label: 'ROAS de equilibrio ponderado (1er pedido)', fn: s => fmtRoas(s.roasEqPondM1) },
-    {
-      label: 'ROAS real del 1er pedido (Adquisición)',
+      label: 'ROAS real del 1er pedido (clientes nuevos)',
       fn: s => (s.roas1erPedido !== null ? fmtRoas(s.roas1erPedido, 'No aplica') : 'No aplica')
     },
-    { label: 'CAC de anuncios ($)', fn: s => (s.cacAnuncios !== null ? fmtUSD(s.cacAnuncios, 2) : 'No aplica') },
-    { label: 'CAC real (con agencia) ($)', fn: s => (s.cacReal !== null ? fmtUSD(s.cacReal, 2) : 'No aplica') },
+    { label: 'Costo por cliente solo anuncios ($)', fn: s => (s.cacAnuncios !== null ? fmtUSD(s.cacAnuncios, 2) : 'No aplica') },
+    { label: 'Costo por cliente con agencia — CAC ($)', fn: s => (s.cacReal !== null ? fmtUSD(s.cacReal, 2) : 'No aplica') },
     {
-      label: 'CAC marginal del tramo histórico ($)',
+      label: 'Costo por cliente extra del tramo ($)',
       fn: s => (s.margTramo.val !== null ? fmtUSD(s.margTramo.val, 2) : 'No aplica')
     },
     {
-      label: 'CAC incremental vs. base $8.000 ($)',
+      label: 'Costo incremental frente a $8.000 ($)',
       fn: s => (s.cacIncremental !== null ? fmtUSD(s.cacIncremental, 2) : 'No aplica')
     },
-    { label: 'LTV Contribución 12M — Suelto ($)', fn: s => fmtUSD(s.ltvSuelto, 2) },
-    { label: 'LTV Contribución 12M — Suscriptor ($)', fn: s => fmtUSD(s.ltvSusc, 2) },
-    { label: 'LTV Contribución 12M — Ponderado ($)', fn: s => fmtUSD(s.ltvPond, 4) },
-    { label: 'Ratio LTV:CAC (con CAC real)', fn: s => (s.ltvCac !== null ? `${fmtNum(s.ltvCac, 2)}x` : 'No aplica') },
-    { label: 'Payback (Mes discreto de recuperación)', fn: s => s.paybackLabel },
+    { label: 'Contribución 12M — Comprador suelto ($)', fn: s => fmtUSD(s.ltvSuelto, 2) },
+    { label: 'Contribución 12M — Suscriptor ($)', fn: s => fmtUSD(s.ltvSusc, 2) },
+    { label: 'Contribución 12M ponderada — LTV ($)', fn: s => fmtUSD(s.ltvPond, 4) },
+    { label: 'Relación LTV:CAC', fn: s => (s.ltvCac !== null ? `${fmtNum(s.ltvCac, 2)}x` : 'No aplica') },
+    { label: 'Mes de recuperación', fn: s => s.paybackLabel },
     {
-      label: 'Contribución neta cohorte a 12M (LTV - CAC) ($)',
+      label: 'Saldo neto a 12M de la cohorte ($)',
       fn: s => (s.netoPorCliente !== null ? fmtUSD(s.netoCohorte, 2) : 'No aplica')
     }
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.6rem' }} id="seccion-tablero">
-      {/* 2.1 Diagnóstico */}
-      <section className="section-block">
-        <div className="section-header">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }} id="seccion-tablero">
+      {/* 1. DIAGNÓSTICO EDITORIAL */}
+      <section className="notebook-section">
+        <div className="notebook-header">
           <div>
-            <span className="section-step">Sección 2 · Diagnóstico del Caso</span>
-            <h2 className="section-title">¿Los anuncios venden o dejan dinero?</h2>
-            <p className="section-subtitle">
-              En septiembre, Meta Ads reportó un ROAS de 3,0x ($24.000 en compras sobre $8.000 invertidos), pero Tueste cerró el mes con <strong>$3.200 menos en el banco</strong> que en agosto. Estas son las claves para entender el problema (Págs. 2 a 5 del PDF).
+            <span className="notebook-kicker">Diagnóstico de septiembre</span>
+            <h2 className="notebook-title">¿Los anuncios venden o dejan dinero?</h2>
+            <p className="notebook-subtitle">
+              En septiembre, el administrador de anuncios mostró un ROAS de 3,0x ($24.000 en ventas sobre $8.000 invertidos), pero Tueste cerró el mes con <strong>$3.200 menos en el banco</strong> que en agosto. Estas son las claves para entender el problema.
             </p>
           </div>
         </div>
 
-        <div className="diag-grid">
-          <div className="diag-card alert">
-            <h3>1. La trampa de atribución de Meta</h3>
-            <div className="big-num">706 vs. 165</div>
-            <p>
-              Meta se adjudicó <strong>706 compras ($24.000)</strong> porque incluye campañas de retargeting que alcanzan a visitantes recientes de la web (<em>RTG_Visitantes_30d</em>) y a compradores anteriores (<em>RTG_Compradores_180d</em>), además de atribución por vista de 1 día sin clic. En realidad, por Meta llegaron solo <strong>165 clientes nuevos</strong> (Pág. 4).
+        <div className="diag-editorial-list">
+          <div className="diag-item">
+            <span className="diag-kicker">1. Atribución inflada</span>
+            <div className="diag-figure">706 vs. 165</div>
+            <p className="diag-text">
+              Meta se adjudicó <strong>706 compras ($24.000)</strong> porque incluye campañas de retargeting que alcanzan a visitantes recientes (<em>RTG_Visitantes_30d</em>) y a compradores anteriores (<em>RTG_Compradores_180d</em>), además de ventas por vista de 1 día sin clic. En realidad llegaron <strong>165 clientes nuevos</strong>.
             </p>
           </div>
 
-          <div className="diag-card">
-            <h3>2. Ventas no son contribución</h3>
-            <div className="big-num">$15,89 / $34</div>
-            <p>
-              De un pedido suelto de 2 bolsas (<strong>$34,00</strong>), Tueste paga $10,88 de café, $4,50 de envío, $1,20 de empaque y $1,53 de pasarela (4,5%). Quedan <strong>$15,89 de contribución (46,74%)</strong>. En suscripción ($30,60) quedan <strong>$12,643 (41,32%)</strong> (Pág. 3).
+          <div className="diag-item">
+            <span className="diag-kicker">2. Venta no es contribución</span>
+            <div className="diag-figure">$15,89 de $34</div>
+            <p className="diag-text">
+              De un pedido suelto de 2 bolsas ($34,00), Tueste descuenta $10,88 de café, $4,50 de envío, $1,20 de empaque y $1,53 de pasarela (4,5%). Quedan <strong>$15,89 limpios (46,74%)</strong>; en suscripción ($30,60) quedan <strong>$12,643 (41,32%)</strong>.
             </p>
           </div>
 
-          <div className="diag-card">
-            <h3>3. El primer pedido no paga el CAC</h3>
-            <div className="big-num">$15,40 vs. $54,55</div>
-            <p>
-              Con $8.000 en Meta + $1.000 de agencia para 165 clientes nuevos, el <strong>CAC real es $54,55</strong>. En su primer mes un cliente promedio deja <strong>$15,40 de contribución</strong>: cada cliente nuevo abre un hueco inicial de caja de <strong>-$39,14</strong> que tarda <strong>12 meses</strong> en empatarse.
+          <div className="diag-item">
+            <span className="diag-kicker">3. El 1er pedido no paga el CAC</span>
+            <div className="diag-figure">$15,40 vs. $54,55</div>
+            <p className="diag-text">
+              Con $8.000 en Meta más $1.000 de agencia para 165 clientes nuevos, cada cliente cuesta <strong>$54,55</strong>. En su primer mes deja <strong>$15,40</strong>: abre una brecha inicial de <strong>-$39,14 por cliente</strong> que tarda <strong>12 meses</strong> en recuperarse.
             </p>
           </div>
 
-          <div className="diag-card danger">
-            <h3>4. Por qué duplicar a $16.000 + 30% BF falla</h3>
-            <div className="big-num">-$25,82 / cliente</div>
-            <p>
-              Subir de $8.000 a $16.000 solo trae <strong>70 clientes extra</strong> (de 165 a 235: cada cliente adicional cuesta <strong>$114,29</strong> en anuncios) y el 30% de descuento baja la contribución del 1er pedido suelto a <strong>$6,149</strong>. El LTV ($46,52) queda debajo del CAC real ($72,34).
+          <div className="diag-item danger">
+            <span className="diag-kicker">4. Por qué duplicar a $16.000 + 30% BF falla</span>
+            <div className="diag-figure">-$25,82 / cliente</div>
+            <p className="diag-text">
+              Subir de $8.000 a $16.000 solo suma <strong>70 clientes extra</strong> ($114,29 por cliente adicional en pauta) y el 30% de descuento hunde la contribución del 1er pedido suelto a <strong>$6,15</strong>. En 12 meses aporta $46,52 frente a un costo de $72,34.
             </p>
           </div>
         </div>
       </section>
 
-      {/* 2.2 Laboratorio y Gráficos */}
-      <section className="section-block">
-        <div className="section-header">
+      {/* 2. LABORATORIO DE DECISIONES */}
+      <section className="notebook-section">
+        <div className="notebook-header">
           <div>
-            <span className="section-step">Sección 2 · Tablero Interactivo de Decisiones (Nivel 2)</span>
-            <h2 className="section-title">Laboratorio de Adquisición, Precios y Retención</h2>
-            <p className="section-subtitle">
-              Experimenta con los controles o selecciona un escenario de referencia. Todos los indicadores y los 4 gráficos se actualizan al instante.
+            <span className="notebook-kicker">Tablero de decisiones · Economía por cliente</span>
+            <h2 className="notebook-title">Laboratorio de publicidad, cada pedido y recompra</h2>
+            <p className="notebook-subtitle">
+              Compara los cinco escenarios del caso o ajusta cualquier supuesto a la izquierda. Las cifras muestran el resultado por cliente adquirido; para evaluar la liquidez total de la empresa revisa la sección Caja a 24 meses.
             </p>
           </div>
         </div>
 
         <PresetBar12M
+          params12m={params12m}
           activePresetKey={activePresetKey}
+          lastPresetKey={lastPresetKey}
+          activeSavedName={activeSavedName}
           onSelectPreset={onSelectPreset}
           onRestore={onRestore}
         />
 
-        <div className="lab-layout">
+        <div className="workspace-grid">
           <Controls12MPanel
             params12m={params12m}
             liveRes={liveRes}
             onChangeParam={onChangeParam}
           />
 
-          <div className="live-results">
-            <div className={`semaforo-banner ${semClass}`} id="tableroSemaforoBanner">
-              <div className="semaforo-indicator">
-                <div className="semaforo-dot" />
-                <div>
-                  <div style={{ fontWeight: 800, fontSize: '1.02rem' }}>{semTitulo}</div>
-                  <div style={{ fontSize: '0.84rem' }}>{semDesc}</div>
+          <div className="results-column">
+            <ResultsHeaderBand12M liveRes={liveRes} idPrefix="tablero" />
+
+            {/* Indicadores secundarios en filas compactas */}
+            <div className="secondary-ledger">
+              <div className="secondary-ledger-title">
+                Detalle unitario y tramos de inversión (por cliente)
+              </div>
+              <div className="ledger-rows">
+                <div className="ledger-row">
+                  <span className="ledger-key">Contribución 1er pedido suelto</span>
+                  <span className="ledger-val">
+                    {fmtUSD(liveRes.contribSueltoM1, 2)} ({fmtPct(liveRes.pctContribSueltoM1, 1)} de {fmtUSD(liveRes.cobroSueltoM1, 2)})
+                  </span>
+                </div>
+                <div className="ledger-row">
+                  <span className="ledger-key">Contribución mensual suscripción</span>
+                  <span className="ledger-val">
+                    {fmtUSD(liveRes.contribSusc, 3)} ({fmtPct(liveRes.pctContribSusc, 1)} de {fmtUSD(liveRes.cobroSusc, 2)})
+                  </span>
+                </div>
+                <div className="ledger-row">
+                  <span className="ledger-key">
+                    ROAS de equilibrio en 1er pedido <TermHelp term="ROAS" />
+                  </span>
+                  <span className="ledger-val">
+                    {fmtRoas(liveRes.roasEqPondM1, 'No alcanzable')}
+                  </span>
+                </div>
+                <div className="ledger-row">
+                  <span className="ledger-key">ROAS real del 1er pedido (clientes nuevos)</span>
+                  <span className="ledger-val">
+                    {liveRes.roas1erPedido !== null
+                      ? fmtRoas(liveRes.roas1erPedido, 'No aplica')
+                      : 'No aplica'}
+                  </span>
+                </div>
+                <div className="ledger-row">
+                  <span className="ledger-key">Costo por cliente extra del tramo</span>
+                  <span className="ledger-val">
+                    {liveRes.margTramo.val !== null ? fmtUSD(liveRes.margTramo.val, 2) : 'No aplica'}{' '}
+                    <span style={{ fontWeight: 400, color: 'var(--ink-muted)' }}>({liveRes.margTramo.label})</span>
+                  </span>
+                </div>
+                <div className="ledger-row">
+                  <span className="ledger-key">Costo incremental frente a $8.000</span>
+                  <span className="ledger-val">
+                    {liveRes.cacIncremental !== null ? fmtUSD(liveRes.cacIncremental, 2) : 'No aplica'}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="kpi-grid">
-              <div className="kpi-card">
-                <div className="kpi-label">Contribución 1er Pedido Suelto</div>
-                <div className="kpi-val">{fmtUSD(liveRes.contribSueltoM1, 2)}</div>
-                <div className="kpi-sub">
-                  {fmtPct(liveRes.pctContribSueltoM1, 2)} del cobro ({fmtUSD(liveRes.cobroSueltoM1, 2)})
-                </div>
-              </div>
-
-              <div className="kpi-card">
-                <div className="kpi-label">Contribución Suscripción (Mes)</div>
-                <div className="kpi-val">{fmtUSD(liveRes.contribSusc, 3)}</div>
-                <div className="kpi-sub">
-                  {fmtPct(liveRes.pctContribSusc, 2)} del cobro ({fmtUSD(liveRes.cobroSusc, 2)})
-                </div>
-              </div>
-
-              <div className="kpi-card">
-                <div className="kpi-label">ROAS de Equilibrio (Break-even)</div>
-                <div className="kpi-val">{fmtRoas(liveRes.roasEqPondM1, 'No alcanzable')}</div>
-                <div className="kpi-sub">
-                  Suelto: {fmtRoas(liveRes.roasEqSueltoM1, 'No alcanzable')} · Suscr.:{' '}
-                  {fmtRoas(liveRes.roasEqSusc, 'No alcanzable')}
-                </div>
-              </div>
-
-              <div className="kpi-card highlight">
-                <div className="kpi-label">CAC Real (con Agencia)</div>
-                <div className="kpi-val">
-                  {liveRes.cacReal !== null ? fmtUSD(liveRes.cacReal, 2) : 'No aplica'}
-                </div>
-                <div className="kpi-sub">
-                  {liveRes.cacAnuncios !== null
-                    ? `CAC Anuncios: ${fmtUSD(liveRes.cacAnuncios, 2)} · ${fmtNum(liveRes.clientesNuevos, 1)} clientes`
-                    : 'Sin inversión ni clientes de Meta'}
-                </div>
-              </div>
-
-              <div className="kpi-card highlight">
-                <div className="kpi-label">LTV Contribución (12 Meses)</div>
-                <div className="kpi-val">{fmtUSD(liveRes.ltvPond, 2)}</div>
-                <div className="kpi-sub">
-                  Suelto: {fmtUSD(liveRes.ltvSuelto, 2)} · Suscr.: {fmtUSD(liveRes.ltvSusc, 2)}
-                </div>
-              </div>
-
-              <div
-                className={`kpi-card ${
-                  liveRes.netoPorCliente !== null && liveRes.netoPorCliente < 0
-                    ? 'loss'
-                    : liveRes.ltvCac !== null && liveRes.ltvCac >= 3.0
-                    ? 'gain'
-                    : 'highlight'
-                }`}
-              >
-                <div className="kpi-label">Ratio LTV:CAC y Payback</div>
-                <div className="kpi-val">
-                  {liveRes.ltvCac !== null
-                    ? `${fmtNum(liveRes.ltvCac, 2)}x · ${liveRes.paybackLabel}`
-                    : 'No aplica · No aplica'}
-                </div>
-                <div className="kpi-sub">
-                  {liveRes.netoPorCliente !== null
-                    ? `Neto 12M: ${fmtUSD(liveRes.netoPorCliente, 2)}/cli (${fmtUSD(liveRes.netoCohorte, 2)} cohorte)`
-                    : 'Sin cohorte adquirida por Meta'}
-                </div>
-              </div>
-
-              <div className="kpi-card">
-                <div className="kpi-label">ROAS Real del 1er Pedido</div>
-                <div className="kpi-val">
-                  {liveRes.roas1erPedido !== null
-                    ? fmtRoas(liveRes.roas1erPedido, 'No aplica')
-                    : 'No aplica'}
-                </div>
-                <div className="kpi-sub">
-                  Ingreso 1er pedido: {fmtUSD(liveRes.ingresoPondM1, 2)}/cliente
-                </div>
-              </div>
-
-              <div className="kpi-card">
-                <div className="kpi-label">CAC Marginal del Tramo Histórico</div>
-                <div className="kpi-val">
-                  {liveRes.margTramo.val !== null ? fmtUSD(liveRes.margTramo.val, 2) : 'No aplica'}
-                </div>
-                <div className="kpi-sub">{liveRes.margTramo.label}</div>
-              </div>
-
-              <div className="kpi-card">
-                <div className="kpi-label">CAC Incremental vs. Base ($8.000)</div>
-                <div className="kpi-val">
-                  {liveRes.cacIncremental !== null ? fmtUSD(liveRes.cacIncremental, 2) : 'No aplica'}
-                </div>
-                <div className="kpi-sub">{liveRes.cacIncrementalLabel}</div>
-              </div>
-            </div>
-
-            {/* Los 4 Gráficos */}
+            {/* Los 4 Gráficos exigidos */}
             <div className="charts-grid">
-              <div className="chart-card">
-                <h4>1. Curva de Caja Acumulada de un Cliente (Mes 0 a Mes 12)</h4>
+              <div className="chart-frame">
+                <div className="chart-frame-header">
+                  <h4>1. Recuperación acumulada mes a mes (M0 a M12)</h4>
+                  <span className="chart-scope-tag">Por cliente</span>
+                </div>
                 <p className="chart-caption">
-                  El Mes 0 muestra exclusivamente el desembolso de adquisición (-CAC real). El Payback ocurre en el primer mes donde la curva cruza la línea cero.
+                  Parte en Mes 0 con el costo de adquisición (-CAC). Cruza la línea de $0 en el mes de recuperación.
                 </p>
                 <div className="canvas-wrap">
                   <canvas ref={refCurva} />
                 </div>
               </div>
 
-              <div className="chart-card">
-                <h4>2. LTV a 12 Meses frente a CAC Real (Umbrales 1:1 y 3:1)</h4>
+              <div className="chart-frame">
+                <div className="chart-frame-header">
+                  <h4>2. Contribución a 12 meses frente a costo por cliente</h4>
+                  <span className="chart-scope-tag">Por cliente</span>
+                </div>
                 <p className="chart-caption">
-                  Debajo de la línea roja (LTV = CAC) se pierde dinero en 12 meses. Entre la línea roja y la verde (LTV = 3×CAC) es zona amarilla.
+                  Debajo de la línea punteada roja (1:1) cada cliente da pérdida en el año.
                 </p>
                 <div className="canvas-wrap">
                   <canvas ref={refLtvCac} />
                 </div>
               </div>
 
-              <div className="chart-card">
-                <h4>3. Clientes Nuevos según Inversión y CAC Marginal por Tramo</h4>
+              <div className="chart-frame">
+                <div className="chart-frame-header">
+                  <h4>3. Clientes nuevos y costo por cliente extra según tramo</h4>
+                  <span className="chart-scope-tag">Por cliente</span>
+                </div>
                 <p className="chart-caption">
-                  Rendimientos decrecientes del historial (Pág. 5): cada tramo de $4.000 trae menos clientes adicionales y dispara el CAC marginal.
+                  Cada bloque adicional de $4.000 en Meta aporta menos clientes nuevos y encarece el costo marginal.
                 </p>
                 <div className="canvas-wrap">
                   <canvas ref={refHistorial} />
                 </div>
               </div>
 
-              <div className="chart-card">
-                <h4>4. La Trampa a la Vista: ROAS Meta (3,0x) vs. ROAS 1er Pedido y Break-even</h4>
+              <div className="chart-frame">
+                <div className="chart-frame-header">
+                  <h4>4. ROAS de Meta (3,0x) frente a equilibrio y 1er pedido</h4>
+                  <span className="chart-scope-tag">Por cliente</span>
+                </div>
                 <p className="chart-caption">
-                  El ROAS de Meta (3,0x) incluye campañas de retargeting a visitantes (<em>RTG_Visitantes_30d</em>) y compradores anteriores (<em>RTG_Compradores_180d</em>), mientras que el ROAS del 1er pedido cuenta solo la primera compra de clientes nuevos.
+                  El 3,0x de Meta mezcla visitantes (<em>RTG_Visitantes_30d</em>) y compradores previos (<em>RTG_Compradores_180d</em>).
                 </p>
                 {(liveRes.roasEqPondM1 === null || liveRes.roas1erPedido === null) && (
-                  <div
-                    style={{
-                      background: 'var(--amber-soft)',
-                      border: '1px solid var(--amber)',
-                      color: '#6B3D08',
-                      padding: '0.5rem 0.7rem',
-                      borderRadius: '8px',
-                      fontSize: '0.78rem',
-                      fontWeight: 600
-                    }}
-                  >
-                    {liveRes.roasEqPondM1 === null && (
-                      <div>
-                        • ROAS de Equilibrio Ponderado = "No alcanzable" (valor nulo, no es 0x): la contribución ponderada del 1er pedido es ≤ $0.
-                      </div>
-                    )}
-                    {liveRes.roas1erPedido === null && (
-                      <div>
-                        • ROAS Real del 1er Pedido = "No aplica" (valor nulo, no es 0x): la inversión en Meta Ads es $0.
-                      </div>
-                    )}
+                  <div className="status-banner info" style={{ padding: '0.4rem 0.65rem', fontSize: '0.76rem' }}>
+                    <div>
+                      {liveRes.roasEqPondM1 === null && (
+                        <div>[!] ROAS de equilibrio = No alcanzable (valor nulo, no es 0x): la contribución del 1er pedido es menor o igual a $0.</div>
+                      )}
+                      {liveRes.roas1erPedido === null && (
+                        <div>[!] ROAS real del 1er pedido = No aplica (valor nulo, no es 0x): la inversión en Meta es $0.</div>
+                      )}
+                    </div>
                   </div>
                 )}
                 <div className="canvas-wrap">
@@ -679,14 +671,14 @@ export function TableroSection({
         </div>
       </section>
 
-      {/* 2.3 Tabla Comparativa de Escenarios */}
-      <section className="section-block">
-        <div className="section-header">
+      {/* 3. COMPARACIÓN DE ESCENARIOS */}
+      <section className="notebook-section">
+        <div className="notebook-header">
           <div>
-            <span className="section-step">Comparación Lado a Lado</span>
-            <h2 className="section-title">Escenarios Fijos de Referencia vs. Tu Escenario de Trabajo</h2>
-            <p className="section-subtitle">
-              Los 5 escenarios originales permanecen fijos con los datos del caso para comparar contra tu escenario activo en la última columna.
+            <span className="notebook-kicker">Comparación lado a lado · Por cliente y cohorte</span>
+            <h2 className="notebook-title">Los cinco escenarios del caso frente a tu configuración</h2>
+            <p className="notebook-subtitle">
+              Compara las cuentas de cada alternativa. Los beneficios de Pack y envío dependen de un supuesto comercial que debe validarse en prueba piloto.
             </p>
           </div>
         </div>
@@ -695,13 +687,13 @@ export function TableroSection({
           <table>
             <thead>
               <tr>
-                <th>Indicador / Métrica</th>
-                <th className="num">Actual ($8.000)</th>
-                <th className="num">Agencia ($16.000 + 30% BF)</th>
-                <th className="num">Cambio 1 Solo (Meta $4.000)</th>
-                <th className="num">Cambio 2 Solo (Pack + Envío, $8k)</th>
-                <th className="num">Combinado ($4k + Pack/Envío)</th>
-                <th className="num live-col">Tu Escenario en Vivo</th>
+                <th>Indicador</th>
+                <th className="num">Actual</th>
+                <th className="num">Agencia</th>
+                <th className="num">Menor inversión</th>
+                <th className="num">Pack y envío</th>
+                <th className="num">Combinado</th>
+                <th className="num live-col">Escenario activo</th>
               </tr>
             </thead>
             <tbody>
@@ -720,33 +712,7 @@ export function TableroSection({
             </tbody>
           </table>
         </div>
-
-        <div className="info-columns" style={{ marginTop: '1.1rem' }}>
-          <div className="info-box">
-            <h4>Datos Originales del Caso vs. Supuestos</h4>
-            <ul>
-              <li>
-                <strong>Datos originales (Págs. 3–7):</strong> pedido suelto de 2 bolsas ($34,00, contribución $15,89), suscripción mensual ($30,60, contribución $12,643), mezcla 85% sueltos y 15% suscriptores, permanencia 91% mensual y curva histórica de clientes nuevos de Meta.
-              </li>
-              <li>
-                <strong>Supuestos del Pack ($48) y envío ($4,50 bajo $45):</strong> el beneficio del Pack y del cobro de envío <strong>no está garantizado</strong>. Supone que un {fmtNum(params12m.adopcionPack, 0)}% de los primeros pedidos sueltos eligen el Pack, que cobrar envío bajo $45 no reduce la conversión ni las recompras, y que si quien lleva el Pack compra solo 2 veces al año (6 bolsas/año), su contribución anual suelta pasa a $47,24 (2 × $23,62).
-              </li>
-            </ul>
-          </div>
-          <div className="info-box">
-            <h4>Resultados Proyectados vs. Liquidez</h4>
-            <ul>
-              <li>
-                <strong>Proyección a 12 meses:</strong> el LTV ponderado y el mes de recuperación (Payback) son proyecciones por cliente adquirido y no descuentan los $6.500/mes de costos fijos de la empresa.
-              </li>
-              <li>
-                <strong>Validación comercial:</strong> antes de asumir como permanente la mejora del Pack y envío, debe probarse en un piloto midiendo conversión, contribución inicial y primeras recompras.
-              </li>
-            </ul>
-          </div>
-        </div>
       </section>
     </div>
   );
 }
-

@@ -1,3 +1,4 @@
+import { DecisionBrief } from './components/DecisionBrief.jsx';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   PRESETS_12M,
@@ -50,12 +51,23 @@ function defaultPlan24m() {
   };
 }
 
+const DRAFT_KEY = 'tueste.workbench.v1';
+function readDraft() {
+  try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null') || {}; }
+  catch { return {}; }
+}
+const initialDraft = readDraft();
+
 export default function App() {
   const [activeTab, setActiveTab] = useState(() => {
-    if (typeof window !== 'undefined' && window.location.search.includes('tab=todas')) {
-      return 'todas';
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const t = params.get('tab');
+      if (t === 'calculadora' || t === 'tablero' || t === 'simulador24m' || t === 'todas') {
+        return t;
+      }
     }
-    return 'calculadora';
+    return ['calculadora','tablero','simulador24m','todas'].includes(initialDraft.activeTab) ? initialDraft.activeTab : 'tablero';
   }); // 'calculadora' | 'tablero' | 'simulador24m' | 'todas'
 
   const [showScenariosPanel, setShowScenariosPanel] = useState(() => {
@@ -65,21 +77,28 @@ export default function App() {
     return false;
   });
 
-  const [activePresetKey, setActivePresetKey] = useState('actual');
-  const [params12m, setParams12m] = useState(() => stripPresetMeta(PRESETS_12M.actual));
-  const [plan24m, setPlan24m] = useState(() => defaultPlan24m());
+  const [activePresetKey, setActivePresetKey] = useState(initialDraft.activePresetKey === undefined ? 'actual' : initialDraft.activePresetKey);
+  const [lastPresetKey, setLastPresetKey] = useState(initialDraft.lastPresetKey || 'actual');
+  const [params12m, setParams12m] = useState(() => ({ ...stripPresetMeta(PRESETS_12M.actual), ...initialDraft.params12m }));
+  const [plan24m, setPlan24m] = useState(() => ({ ...defaultPlan24m(), ...initialDraft.plan24m }));
 
   // Estado de guardado y conexión
   const [backendStatus, setBackendStatus] = useState('checking'); // 'online' | 'offline' | 'checking'
   const [savedScenarios, setSavedScenarios] = useState([]);
   const [activeSavedId, setActiveSavedId] = useState(null);
-  const [saveFormName, setSaveFormName] = useState('');
-  const [saveFormNote, setSaveFormNote] = useState('');
+  const [saveFormName, setSaveFormName] = useState(initialDraft.saveFormName || '');
+  const [saveFormNote, setSaveFormNote] = useState(initialDraft.saveFormNote || '');
   const [operationState, setOperationState] = useState({
     status: 'idle', // 'idle' | 'loading' | 'saving' | 'success' | 'error'
     message: '',
     details: []
   });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ activeTab, activePresetKey, lastPresetKey, params12m, plan24m, saveFormName, saveFormNote }));
+    } catch { /* La aplicación sigue calculando si el navegador bloquea el almacenamiento. */ }
+  }, [activeTab, activePresetKey, lastPresetKey, params12m, plan24m, saveFormName, saveFormNote]);
 
   // Cálculo instantáneo en vivo
   const liveRes12m = computeScenario(params12m);
@@ -89,6 +108,8 @@ export default function App() {
     name: 'Plan 4: Propio B (Editable — Meta + Política Pack/Envío)',
     shortName: 'Propio B (Editable)'
   });
+
+  const activeSavedObj = savedScenarios.find(sc => sc.id === activeSavedId) || null;
 
   const refreshSavedScenarios = useCallback(async (showSuccessBanner = false) => {
     setBackendStatus('checking');
@@ -128,6 +149,7 @@ export default function App() {
     const p = PRESETS_12M[presetKey];
     if (!p) return;
     setActivePresetKey(presetKey);
+    setLastPresetKey(presetKey);
     setActiveSavedId(null);
     setParams12m(stripPresetMeta(p));
 
@@ -142,6 +164,7 @@ export default function App() {
 
   const handleRestoreDefaults = () => {
     setActivePresetKey('actual');
+    setLastPresetKey('actual');
     setActiveSavedId(null);
     setParams12m(stripPresetMeta(PRESETS_12M.actual));
     setPlan24m(defaultPlan24m());
@@ -234,7 +257,7 @@ export default function App() {
 
     setOperationState({
       status: 'saving',
-      message: `Actualizando "${trimmedName}"...`,
+      message: `Guardando cambios en "${trimmedName}"...`,
       details: []
     });
 
@@ -264,7 +287,7 @@ export default function App() {
 
       setOperationState({
         status: 'success',
-        message: `Escenario "${updated.name}" actualizado correctamente.`,
+        message: `Cambios guardados en "${updated.name}".`,
         details: []
       });
     } catch (err) {
@@ -297,7 +320,7 @@ export default function App() {
     }
     setOperationState({
       status: 'success',
-      message: `Escenario "${sc.name}" cargado en pantalla.`,
+      message: `Escenario "${sc.name}" cargado en el cuaderno.`,
       details: []
     });
   };
@@ -390,84 +413,65 @@ export default function App() {
 
   return (
     <div>
-      <header className="app-header">
-        <div className="header-inner">
-          <div className="brand">
-            <span className="brand-badge">TUESTE</span>
-            <div>
-              <h1>Decisiones de Marketing, Precios y Flujo de Caja</h1>
-              <p>
-                Caso A · Café de especialidad DTC — Rentabilidad de anuncios, valor de vida del cliente (12 meses) y caja real (24 meses)
-              </p>
-            </div>
+      {/* 1. ENCABEZADO COMPACTO EDITORIAL */}
+      <header className="roaster-header">
+        <div className="roaster-header-inner">
+          <div className="roaster-brand">
+            <span className="roaster-wordmark">TUESTE</span>
+            <span className="roaster-descriptor">Origen y balance</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
-            <span className={`server-pill ${backendStatus}`} id="headerSaveStatus">
-              {backendStatus === 'online' && '● Guardado disponible'}
-              {backendStatus === 'offline' && '▲ Guardado no disponible'}
-              {backendStatus === 'checking' && '◌ Comprobando...'}
+          <nav className="roaster-nav" aria-label="Secciones principales">
+            <button
+              id="navTabCalculadora"
+              type="button"
+              className={`roaster-nav-btn ${activeTab === 'calculadora' ? 'active' : ''}`}
+              onClick={() => setActiveTab('calculadora')}
+            >
+              Calculadora
+            </button>
+            <button
+              id="navTabTablero"
+              type="button"
+              className={`roaster-nav-btn ${activeTab === 'tablero' ? 'active' : ''}`}
+              onClick={() => setActiveTab('tablero')}
+            >
+              Tablero
+            </button>
+            <button
+              id="navTabSimulador24m"
+              type="button"
+              className={`roaster-nav-btn ${activeTab === 'simulador24m' ? 'active' : ''}`}
+              onClick={() => setActiveTab('simulador24m')}
+            >
+              Caja a 24 meses
+            </button>
+          </nav>
+
+          <div className="roaster-actions">
+            <span className={`save-status-discrete ${backendStatus}`} id="headerSaveStatus">
+              <span className="save-status-dot" />
+              {backendStatus === 'online' && 'Guardado disponible'}
+              {backendStatus === 'offline' && 'Guardado no disponible'}
+              {backendStatus === 'checking' && 'Comprobando...'}
             </span>
             <button
               id="btnToggleMisEscenarios"
               type="button"
-              className="btn btn-primary"
+              className="btn"
+              aria-expanded={showScenariosPanel}
               onClick={() => setShowScenariosPanel(prev => !prev)}
             >
-              {showScenariosPanel
-                ? '▲ Ocultar Mis escenarios'
-                : `📁 Mis escenarios (${savedScenarios.length}) · Guardar escenario`}
+              Mis escenarios ({savedScenarios.length})
             </button>
           </div>
         </div>
       </header>
 
-      <nav className="nav-bar" aria-label="Secciones principales">
-        <div className="nav-inner">
-          <div className="nav-tabs">
-            <button
-              id="navTabCalculadora"
-              type="button"
-              className={`nav-tab-btn ${activeTab === 'calculadora' ? 'active' : ''}`}
-              onClick={() => setActiveTab('calculadora')}
-            >
-              1. Calculadora
-            </button>
-            <button
-              id="navTabTablero"
-              type="button"
-              className={`nav-tab-btn ${activeTab === 'tablero' ? 'active' : ''}`}
-              onClick={() => setActiveTab('tablero')}
-            >
-              2. Tablero de decisiones
-            </button>
-            <button
-              id="navTabSimulador24m"
-              type="button"
-              className={`nav-tab-btn ${activeTab === 'simulador24m' ? 'active' : ''}`}
-              onClick={() => setActiveTab('simulador24m')}
-            >
-              3. Simulador de caja de 24 meses
-            </button>
-            <button
-              id="navTabTodas"
-              type="button"
-              className={`nav-tab-btn ${activeTab === 'todas' ? 'active' : ''}`}
-              onClick={() => setActiveTab('todas')}
-            >
-              Ver las 3 secciones juntas
-            </button>
-          </div>
-          <span style={{ fontSize: '0.82rem', color: 'var(--coffee-700)', fontWeight: 600 }}>
-            Meta de Diego: decidir con números claros si conviene duplicar o ajustar la inversión en anuncios
-          </span>
-        </div>
-      </nav>
-
       <main className="container">
-        {/* Si el servidor está desconectado y el panel está cerrado, mostrar el aviso visible sin tapar la pantalla */}
+        {/* Aviso visible si se pierde la conexión para guardar */}
         {backendStatus === 'offline' && !showScenariosPanel && (
-          <div className="status-banner error" role="alert" id="offlineWarningBanner" style={{ marginBottom: 0 }}>
+          <div className="status-banner error" role="alert" id="offlineWarningBanner">
             <div>
               <strong>Aviso:</strong> El guardado no está disponible en este momento. La calculadora, el tablero y el simulador siguen funcionando con normalidad, pero <strong>no se pueden guardar cambios</strong> hasta reconectar.
             </div>
@@ -476,12 +480,12 @@ export default function App() {
               className="btn"
               onClick={() => refreshSavedScenarios(true)}
             >
-              Reintentar conexión
+              Reintentar
             </button>
           </div>
         )}
 
-        {/* Panel desplegable de Mis escenarios (se abre al pulsar el botón "Mis escenarios · Guardar escenario") */}
+        {/* Panel lateral desplegable de Mis escenarios */}
         {showScenariosPanel && (
           <SavedScenariosPanel
             backendStatus={backendStatus}
@@ -503,31 +507,37 @@ export default function App() {
           />
         )}
 
-        {/* Sección 1: Calculadora (se muestra primero sus resultados y controles) */}
+        {(activeTab === 'tablero' || activeTab === 'todas') && <DecisionBrief onExplore={() => document.getElementById('seccion-tablero')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />}
+
+        {/* Sección 1: Calculadora */}
         {(activeTab === 'calculadora' || activeTab === 'todas') && (
           <CalculadoraSection
             params12m={params12m}
             liveRes={liveRes12m}
             activePresetKey={activePresetKey}
+            lastPresetKey={lastPresetKey}
+            activeSavedName={activeSavedObj ? activeSavedObj.name : null}
             onSelectPreset={handleSelectPreset12m}
             onRestore={handleRestoreDefaults}
             onChangeParam={handleChangeParam12m}
           />
         )}
 
-        {/* Sección 2: Tablero de decisiones */}
+        {/* Sección 2: Tablero */}
         {(activeTab === 'tablero' || activeTab === 'todas') && (
           <TableroSection
             params12m={params12m}
             liveRes={liveRes12m}
             activePresetKey={activePresetKey}
+            lastPresetKey={lastPresetKey}
+            activeSavedName={activeSavedObj ? activeSavedObj.name : null}
             onSelectPreset={handleSelectPreset12m}
             onRestore={handleRestoreDefaults}
             onChangeParam={handleChangeParam12m}
           />
         )}
 
-        {/* Sección 3: Simulador de caja de 24 meses */}
+        {/* Sección 3: Caja a 24 meses */}
         {(activeTab === 'simulador24m' || activeTab === 'todas') && (
           <Simulador24MSection
             plan24m={plan24m}
@@ -538,38 +548,29 @@ export default function App() {
           />
         )}
 
-        {/* Sección secundaria: Información técnica */}
-        <details
-          className="section-block"
-          id="seccion-informacion-tecnica"
-          style={{ padding: '1rem 1.4rem', background: 'var(--bg-cream)' }}
-        >
-          <summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: '0.92rem', color: 'var(--coffee-800)' }}>
-            Información técnica del sistema
-          </summary>
-          <div className="info-columns" style={{ marginTop: '0.8rem' }}>
-            <div className="info-box" style={{ background: '#fff' }}>
-              <h4>Arquitectura y Módulo Compartido</h4>
+        {/* Sección secundaria al pie: Fuentes, supuestos y verificación */}
+        <details className="notebook-details" id="seccion-informacion-tecnica">
+          <summary>Fuentes del caso, supuestos y verificación técnica</summary>
+          <div className="info-columns">
+            <div className="info-box">
+              <h4>Fuentes del caso Tueste y reglas de negocio</h4>
               <ul>
                 <li>
-                  <strong>Interfaz (Frontend):</strong> React 18 con Vite y gráficos interactivos mediante Chart.js.
+                  <strong>Datos históricos verificados:</strong> bolsa de 340 g a $17 (pedido típico de 2 bolsas = $34), café tostado $5,44/bolsa, empaque $1,20 (2 bolsas) / $1,40 (3 bolsas), envío $4,50, pasarela 4,5%, suscripción mensual $30,60 (-10%) con permanencia del 91%/mes, y curva de clientes nuevos en Meta: (0,0), ($4k, 100), ($8k, 165), ($12k, 210), ($16k, 235), ($20k, 250).
                 </li>
                 <li>
-                  <strong>Servidor (Backend):</strong> Node.js con Express (ejecución local en <code>127.0.0.1:3001</code>).
-                </li>
-                <li>
-                  <strong>Módulo matemático único:</strong> <code>shared/tuesteModel.js</code> compartido por el navegador y el servidor para garantizar resultados idénticos sin redondeos intermedios.
+                  <strong>Supuestos sujetos a validación comercial:</strong> el Pack degustación de 3 bolsas ($48) y el cobro de $4,50 de envío en pedidos sueltos bajo $45 son propuestas comerciales cuyos beneficios no están garantizados sin una prueba piloto.
                 </li>
               </ul>
             </div>
-            <div className="info-box" style={{ background: '#fff' }}>
-              <h4>Almacenamiento y Respaldos</h4>
+            <div className="info-box">
+              <h4>Información técnica del sistema</h4>
               <ul>
                 <li>
-                  <strong>Base de datos local:</strong> archivo SQLite en <code>data/tueste.sqlite</code> gestionado con consultas parametrizadas (<code>node:sqlite</code>, requiere Node.js ≥ 22.5.0).
+                  <strong>Cálculo unificado:</strong> las tres vistas y el guardado local comparten el mismo motor matemático sin redondeos intermedios.
                 </li>
                 <li>
-                  <strong>Respaldos conservados:</strong> tablero estático original en <code>Tueste_Tablero.html</code> y modelo financiero en Excel <code>Tueste_Nivel1_Sistema_Decisiones.xlsx</code>.
+                  <strong>Persistencia local:</strong> los escenarios creados en "Mis escenarios" se almacenan localmente en base de datos SQLite para consulta y comparación sin requerir servicios externos.
                 </li>
               </ul>
             </div>
@@ -578,7 +579,7 @@ export default function App() {
       </main>
 
       <footer className="footer-note">
-        Caso A - Tueste · Herramienta de análisis de marketing, contribución y flujo de caja para toma de decisiones.
+        TUESTE · Cuaderno de decisiones para crecer · Análisis de publicidad, contribución por cliente y caja de la empresa.
       </footer>
     </div>
   );
