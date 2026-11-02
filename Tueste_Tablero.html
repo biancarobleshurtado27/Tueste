@@ -43,16 +43,13 @@
       padding-bottom: 3rem;
     }
 
-    /* Encabezado Principal */
+    /* Encabezado Principal (no fijo para no tapar controles ni gráficos al desplazarse) */
     header {
       background: linear-gradient(135deg, var(--coffee-900) 0%, var(--coffee-800) 100%);
       color: var(--bg-cream);
-      padding: 1.5rem 2rem;
+      padding: 1.15rem 2rem;
       border-bottom: 4px solid var(--terracotta);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
     }
 
     .header-inner {
@@ -91,13 +88,25 @@
       color: #D8C7B8;
     }
 
-    .cdn-notice {
+    .cdn-error-banner {
+      display: none;
+      background: var(--red-soft);
+      color: #6E140E;
+      border: 2px solid var(--red);
+      padding: 0.9rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .footer-note {
+      max-width: 1380px;
+      margin: 2rem auto 0;
+      padding: 0.85rem 1.5rem 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
       font-size: 0.78rem;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 0.4rem 0.75rem;
-      border-radius: 6px;
-      color: #EEDCC9;
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: var(--coffee-500);
     }
 
     /* Navegación de Secciones */
@@ -216,6 +225,11 @@
     .diag-card.good {
       border-left-color: var(--green);
       background: var(--green-soft);
+    }
+
+    .diag-card.danger {
+      border-left-color: var(--red);
+      background: var(--red-soft);
     }
 
     .diag-card h3 {
@@ -655,9 +669,6 @@
           <p>Caso A · Café de especialidad DTC — Adquisición, Contribución y Retención a 12 Meses</p>
         </div>
       </div>
-      <div class="cdn-notice" id="cdnStatus">
-        Nota: Los 4 gráficos interactivos usan Chart.js desde CDN (requieren conexión a internet). Los cálculos funcionan 100% en local.
-      </div>
     </div>
   </header>
 
@@ -677,6 +688,9 @@
 
   <main class="container">
 
+    <!-- Aviso visible únicamente si falla la carga de Chart.js desde el CDN -->
+    <div id="cdnStatus" class="cdn-error-banner"></div>
+
     <!-- ===================================================================== -->
     <!-- SECCIÓN 1: DIAGNÓSTICO                                                -->
     <!-- ===================================================================== -->
@@ -686,7 +700,7 @@
           <span class="section-step">Sección 1 · Diagnóstico del Caso</span>
           <h2 class="section-title">¿Los anuncios venden o dejan dinero?</h2>
           <p class="section-subtitle">
-            En septiembre, Meta Ads reportó un ROAS de 3,0x ($24.000 en compras sobre $8.000 invertidos), pero Tueste cerró el mes con <strong>$3.200 menos en el banco</strong> que en agosto. Aquí están las 3 causas numéricas de esa discrepancia (Págs. 2 a 5 del PDF).
+            En septiembre, Meta Ads reportó un ROAS de 3,0x ($24.000 en compras sobre $8.000 invertidos), pero Tueste cerró el mes con <strong>$3.200 menos en el banco</strong> que en agosto. Estas son las claves para entender el problema (Págs. 2 a 5 del PDF).
           </p>
         </div>
       </div>
@@ -696,7 +710,7 @@
           <h3>1. La trampa de atribución de Meta</h3>
           <div class="big-num">706 vs. 165</div>
           <p>
-            Meta se adjudicó <strong>706 compras ($24.000)</strong> porque suma campañas de retargeting a clientes que ya compraban (<em>Visitantes 30d</em> y <em>Compradores 180d</em>) y vistas de 1 día sin clic. En realidad, por Meta llegaron solo <strong>165 clientes nuevos</strong> (Pág. 4).
+            Meta se adjudicó <strong>706 compras ($24.000)</strong> porque incluye campañas de retargeting que alcanzan a visitantes recientes de la web (<em>RTG_Visitantes_30d</em>) y a compradores anteriores (<em>RTG_Compradores_180d</em>), además de atribución por vista de 1 día sin clic. En realidad, por Meta llegaron solo <strong>165 clientes nuevos</strong> (Pág. 4).
           </p>
         </div>
 
@@ -716,7 +730,7 @@
           </p>
         </div>
 
-        <div class="diag-card good">
+        <div class="diag-card danger">
           <h3>4. Por qué duplicar a $16.000 + 30% BF falla</h3>
           <div class="big-num">-$25,82 / cliente</div>
           <p>
@@ -1005,7 +1019,7 @@
             <div class="chart-card">
               <h4>4. La Trampa a la Vista: ROAS Meta (3,0x) vs. ROAS 1er Pedido y Break-even</h4>
               <p class="chart-caption">
-                <strong>Aclaración metodológica:</strong> El ROAS histórico de Meta (3,0x) incluye ventas atribuidas a clientes previos (retargeting y vistas de 1 día), mientras que el ROAS del 1er pedido cuenta solo la primera compra de clientes nuevos. Compararlos explica por qué baja el banco, pero no demuestra causalidad ni que Meta haya causado todas las ventas.
+                <strong>Aclaración metodológica:</strong> El ROAS histórico de Meta (3,0x) incluye compras de campañas de retargeting que alcanzan a visitantes recientes de la web (<em>RTG_Visitantes_30d</em>) y a compradores anteriores (<em>RTG_Compradores_180d</em>), además de vistas de 1 día sin clic, mientras que el ROAS del 1er pedido cuenta solo la primera compra de clientes nuevos. Compararlos explica por qué baja el banco, pero no demuestra causalidad ni que Meta haya causado todas las ventas.
               </p>
               <div id="chartTrampaNotice" style="display:none; background:var(--amber-soft); border:1px solid var(--amber); color:#6B3D08; padding:0.55rem 0.75rem; border-radius:8px; font-size:0.79rem; font-weight:600;"></div>
               <div class="canvas-wrap">
@@ -1113,6 +1127,10 @@
     </section>
 
   </main>
+
+  <footer class="footer-note" id="cdnFooterNote">
+    Nota técnica: Los 4 gráficos interactivos se renderizan mediante Chart.js desde CDN (requieren conexión a internet); todos los cálculos, controles y tablas funcionan 100% en local.
+  </footer>
 
   <script>
     // =========================================================================
@@ -1550,10 +1568,7 @@
       if (typeof Chart === 'undefined') {
         const statusEl = document.getElementById('cdnStatus');
         if (statusEl) {
-          statusEl.style.background = '#FCEAE8';
-          statusEl.style.color = '#6E140E';
-          statusEl.style.borderColor = '#B8332A';
-          statusEl.style.fontWeight = '700';
+          statusEl.style.display = 'block';
           statusEl.innerHTML =
             '⚠️ Aviso: Chart.js no se pudo cargar (sin conexión al CDN). Todos los controles, resultados en vivo y tablas comparativas siguen funcionando al 100%.';
         }
@@ -1567,6 +1582,9 @@
           }
         });
         return;
+      } else {
+        const statusEl = document.getElementById('cdnStatus');
+        if (statusEl) statusEl.style.display = 'none';
       }
 
       const labelsMeses = Array.from({ length: 13 }, (_, i) => `Mes ${i}`);
