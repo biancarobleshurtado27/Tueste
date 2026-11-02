@@ -656,6 +656,88 @@
     .info-box li {
       margin-bottom: 0.4rem;
     }
+
+    /* Estilos específicos Nivel 3: Simulador de Caja de 24 Meses */
+    .month-grid-24 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 0.55rem;
+      margin-top: 0.75rem;
+    }
+
+    .month-cell {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.45rem 0.55rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .month-cell label {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--coffee-700);
+    }
+
+    .month-cell input {
+      width: 100%;
+      padding: 0.28rem 0.4rem;
+      font-size: 0.82rem;
+    }
+
+    .stage-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .pitch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .pitch-card {
+      background: var(--bg-cream);
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--terracotta);
+      border-radius: 10px;
+      padding: 1.1rem;
+    }
+
+    .pitch-card h4 {
+      font-size: 0.95rem;
+      color: var(--coffee-900);
+      margin-bottom: 0.45rem;
+    }
+
+    .pitch-card p {
+      font-size: 0.86rem;
+      color: var(--coffee-800);
+    }
+
+    tr.row-violation td {
+      background: var(--red-soft) !important;
+      color: #6E140E;
+    }
+
+    tr.row-winner td {
+      background: var(--green-soft) !important;
+    }
+
+    select.sim-select {
+      padding: 0.42rem 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--coffee-900);
+      background: #fff;
+    }
   </style>
 </head>
 <body>
@@ -665,8 +747,8 @@
       <div class="brand">
         <span class="brand-badge">TUESTE</span>
         <div>
-          <h1>Tablero Interactivo de Decisiones · Nivel 2</h1>
-          <p>Caso A · Café de especialidad DTC — Adquisición, Contribución y Retención a 12 Meses</p>
+          <h1>Tablero Interactivo de Decisiones · Niveles 2 y 3</h1>
+          <p>Caso A · Café de especialidad DTC — Adquisición, Contribución, Retención (12M) y Simulador de Caja (24M)</p>
         </div>
       </div>
     </div>
@@ -679,6 +761,7 @@
         <a href="#laboratorio">2. Laboratorio Interactivo</a>
         <a href="#comparacion">3. Comparación de Escenarios</a>
         <a href="#supuestos">4. Supuestos, Pack y Verificación Excel</a>
+        <a href="#simulador24m" style="background:var(--terracotta); color:#fff;">5. Simulador de Caja de 24 Meses (Nivel 3)</a>
       </div>
       <span style="font-size:0.82rem; color:var(--coffee-700); font-weight:600;">
         Meta de Diego: decidir antes del viernes si firma o no la propuesta de Black Friday
@@ -1126,10 +1209,324 @@
       </div>
     </section>
 
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 5 (NIVEL 3): SIMULADOR DE CAJA DE 24 MESES                    -->
+    <!-- ===================================================================== -->
+    <section class="section-block" id="simulador24m">
+      <div class="section-header">
+        <div>
+          <span class="section-step">Sección 5 · Nivel 3 · Simulador de Caja de 24 Meses</span>
+          <h2 class="section-title">Simulador de Caja de 24 Meses y Comparador de Planes de Inversión</h2>
+          <p class="section-subtitle">
+            Compara planes de inversión en Meta durante 24 meses (Págs. 5, 6, 7 y 10 del PDF). Gana el plan válido (entre los comparados) con <strong>mayor caja final en el mes 24</strong> sin bajar nunca del piso de <strong>$5.000</strong> ni incumplir la regla de continuidad desde el mes 13; en caso de empate, gana el que tenga más suscriptores activos en el mes 24. No confundas ventas con contribución ni con caja final.
+          </p>
+        </div>
+      </div>
+
+      <!-- 5.1 VERIFICACIÓN OBLIGATORIA DEL MES 1 Y CONTROLES DEL MODELO -->
+      <div class="info-columns" style="margin-top:0; margin-bottom:1.4rem;">
+        <div class="info-box" id="verificacionMes1Box" style="border-left:5px solid var(--green);">
+          <h4>1. Verificación Paso a Paso del Mes 1 — Plan Base de $8.000 (Pág. 10)</h4>
+          <ul>
+            <li><strong>Caja inicial (Mes 0):</strong> <code>$35.000,00</code> (Pág. 6).</li>
+            <li><strong>Clientes nuevos del Mes 1 (Cohorte 1):</strong> <code>165</code> de Meta (con $8.000) + <code>47</code> orgánicos = <strong><code>212</code> clientes nuevos</strong> (<code>180,20</code> compradores sueltos [85%] y <code>31,80</code> suscriptores [15%]).</li>
+            <li><strong>Contribución de la nueva cohorte en el Mes 1:</strong><br/>
+              <code>212 × (0,85 × $15,89 + 0,15 × $12,643) = 212 × $15,40295 = $3.265,4254</code>.
+            </li>
+            <li><strong>Contribución de clientes existentes en el Mes 1:</strong> <strong><code>$9.000,00</code></strong> (en el mes <em>t</em> es <code>$9.000 × 0,97^(t-1)</code>; ya es contribución neta: no se restan otra vez costos variables ni se duplican como cohortes nuevas).</li>
+            <li><strong>Salidas del Mes 1:</strong> <code>$8.000</code> (Meta) + <code>$1.000</code> (Agencia, porque Meta &gt; $0) + <code>$6.500</code> (Costos fijos) = <strong><code>$15.500,00</code></strong> (no se vuelve a restar CAC porque Meta y Agencia ya están en las salidas).</li>
+            <li><strong>Caja final del Mes 1:</strong> <code>$35.000 + $9.000 + $3.265,4254 − $15.500 =</code> <strong><span id="lblCheckMes1Calc">$31.765,4254</span></strong> vs. referencia <code>$31.765,4254</code> → <span id="badgeCheckMes1" class="badge-ok">OK Exacto (Dif. $0,0000)</span>.</li>
+          </ul>
+        </div>
+
+        <div class="info-box" style="border-left:5px solid var(--terracotta);">
+          <h4>2. Reglas del Modelo Mensual, Restricciones y Supuestos Explícitos</h4>
+          <ul>
+            <li><strong>Seguimiento de cohortes por edad (<em>a = 1 … 24</em>):</strong> cada mes <em>c</em> nace una cohorte con <code>Clientes_Meta(Inv_c) + 47</code>. Los compradores sueltos (85%) compran según la curva <code>[1, 0.15, 0.20, 0.20, 0.20, 0.20, 0.20, 0.15, 0.15, 0.15, 0.20, 0.20]</code> en edades 1 a 12, y <strong><code>0,10</code> pedidos/mes en edades 13 a 24</strong> (Pág. 5). Los suscriptores (15%) permanecen activos a razón de <code>0,91^(a-1)</code>.</li>
+            <li><strong>Tres restricciones obligatorias de validez:</strong> (1) Inversión mensual entre <code>$0</code> y <code>$20.000</code>; (2) <code>Caja final ≥ $5.000</code> en cada uno de los 24 meses; (3) Desde el mes 13 hasta el 24, cada inversión mensual debe ser <code>≥ promedio de inversión de los meses 1 a 12</code>. Un plan que incumpla cualquiera de ellas se marca como <strong>INVÁLIDO</strong> y no puede ser ganador.</li>
+            <li><strong>Promoción de la Agencia a 24 meses:</strong> por defecto, en el plan de la Agencia (<code>$16.000/mes + 30% BF</code>) el descuento del 30% se aplica al <strong>primer pedido suelto (edad 1) de cada cohorte adquirida durante los 24 meses</strong>. También se incluye por separado la variante <em>“Promoción 30% solo en el Mes 1 (Cohorte 1)”</em> sin mezclar ambos resultados.</li>
+            <li><strong>Alcance de los cambios comerciales (Pack $48 y envío $4,50 bajo $45):</strong> reutiliza las fórmulas verificadas del Nivel 2. Declara como supuestos la adopción del Pack (<code>20%</code> editable) y que la frecuencia de compra y la retención de suscripciones (<code>91%</code>, manteniendo envío gratis a <code>$30,60/mes</code>) no cambian. La contribución agregada de clientes existentes se mantiene en la serie original <code>$9.000 × 0,97^(t-1)</code> porque no hay desglose para recalcular su composición comercial.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 5.2 BANNER DEL MEJOR PLAN ENTRE LOS COMPARADOS -->
+      <div class="semaforo-banner green" id="bannerGanador24m" style="margin-bottom:1.4rem;">
+        <div class="semaforo-indicator">
+          <div class="semaforo-dot"></div>
+          <div>
+            <div style="font-weight:800; font-size:1.06rem;" id="tituloGanador24m">Mejor entre los planes comparados: calculando...</div>
+            <div style="font-size:0.85rem;" id="descGanador24m"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5.3 TABLA COMPARATIVA DE LOS PLANES A 24 MESES -->
+      <h3 style="margin: 0 0 0.65rem; font-size: 1.05rem; color: var(--coffee-900);">
+        Comparación de Planes a 24 Meses (Ordenados por Validez, Mayor Caja Final Mes 24 y Suscriptores Activos)
+      </h3>
+      <div class="table-responsive" style="margin-bottom:1.5rem;">
+        <table id="tablaPlanes24m">
+          <thead>
+            <tr>
+              <th>Plan de 24 Meses</th>
+              <th class="num">Inv. Prom. M1–12</th>
+              <th class="num">Inv. Mín. M13–24</th>
+              <th class="num">Caja Mes 1 ($)</th>
+              <th class="num">Caja Mínima ($ / Mes)</th>
+              <th class="num">Caja Final Mes 24 ($)</th>
+              <th class="num">Suscriptores Activos M24 (Cohortes)</th>
+              <th>Validez y Restricciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyPlanes24m">
+            <!-- Generado dinámicamente por JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 5.4 PANEL DE EDICIÓN DEL PLAN PROPIO B Y GRÁFICO DE CAJA A 24 MESES -->
+      <div class="lab-layout" style="margin-bottom:1.6rem;">
+        <!-- Columna Izquierda: Editor del Plan Propio B y Opciones -->
+        <aside class="controls-panel">
+          <h3>Configurar Plan Propio B (Editable)</h3>
+          <p style="font-size:0.8rem; color:var(--coffee-700); margin-bottom:0.8rem;">
+            Inicialmente configurado en <strong>$4.000/mes</strong> con política de Pack ($48) y cobro de envío ($4,50 bajo $45) desde el Mes 1. Puedes editarlo por etapas o mes por mes.
+          </p>
+
+          <!-- Edición rápida por etapas de 6 meses -->
+          <div style="background:#fff; border:1px solid var(--border); border-radius:8px; padding:0.75rem; margin-bottom:0.9rem;">
+            <div style="font-size:0.82rem; font-weight:700; color:var(--coffee-900); margin-bottom:0.45rem;">
+              Edición rápida por etapas ($0 a $20.000):
+            </div>
+            <div class="stage-grid">
+              <div>
+                <label for="stage1_6" style="font-size:0.75rem; font-weight:600;">Meses 1 a 6 ($)</label>
+                <input type="number" id="stage1_6" min="0" max="20000" step="500" value="4000" />
+              </div>
+              <div>
+                <label for="stage7_12" style="font-size:0.75rem; font-weight:600;">Meses 7 a 12 ($)</label>
+                <input type="number" id="stage7_12" min="0" max="20000" step="500" value="4000" />
+              </div>
+              <div>
+                <label for="stage13_18" style="font-size:0.75rem; font-weight:600;">Meses 13 a 18 ($)</label>
+                <input type="number" id="stage13_18" min="0" max="20000" step="500" value="4000" />
+              </div>
+              <div>
+                <label for="stage19_24" style="font-size:0.75rem; font-weight:600;">Meses 19 a 24 ($)</label>
+                <input type="number" id="stage19_24" min="0" max="20000" step="500" value="4000" />
+              </div>
+            </div>
+            <button type="button" class="btn" id="btnApplyStages" onclick="applyStagesToPropioB()" style="width:100%;">
+              Aplicar etapas a las 24 casillas mensuales
+            </button>
+          </div>
+
+          <!-- Desplegable con las 24 casillas mensuales individuales -->
+          <details style="margin-bottom:0.9rem; background:var(--bg-sand); padding:0.65rem 0.8rem; border-radius:8px; border:1px solid var(--border);">
+            <summary style="cursor:pointer; font-weight:700; font-size:0.84rem; color:var(--coffee-900);">
+              Editar inversión mes por mes (Mes 1 a Mes 24)
+            </summary>
+            <div class="month-grid-24" id="gridMesesPropioB">
+              <!-- 24 inputs generados por JS -->
+            </div>
+          </details>
+
+          <!-- Cambios Comerciales en Plan Propio B -->
+          <div class="pack-box" style="margin-top:0; margin-bottom:0.9rem;">
+            <label class="checkbox-row">
+              <input type="checkbox" id="chkSimPolPack" checked onchange="updateSimulador24m()" />
+              <span>Activar Pack 3 bolsas ($48) y cobro de envío ($4,50 bajo $45) en Plan Propio B</span>
+            </label>
+
+            <div class="control-group" style="margin-top:0.65rem; margin-bottom:0.55rem;">
+              <div class="control-header">
+                <label for="selSimMesActPack">Mes de activación del cambio comercial</label>
+              </div>
+              <select id="selSimMesActPack" class="sim-select" style="width:100%;" onchange="updateSimulador24m()">
+                <!-- Mes 1 a Mes 24 generados por JS -->
+              </select>
+            </div>
+
+            <div class="control-group" style="margin-bottom:0.55rem;">
+              <div class="control-header">
+                <label for="selSimAlcancePack">Alcance sobre cohortes desde activación</label>
+              </div>
+              <select id="selSimAlcancePack" class="sim-select" style="width:100%;" onchange="updateSimulador24m()">
+                <option value="all_orders" selected>Afecta todos los pedidos sueltos desde ese mes (incluye recompras de cohortes previas)</option>
+                <option value="new_cohorts_only">Afecta solo cohortes adquiridas desde ese mes (cohortes previas mantienen condiciones)</option>
+              </select>
+              <div class="control-hint">
+                Si se activa en el Mes 1, ambas opciones coinciden porque no hay cohortes nuevas previas al Mes 1 (los clientes existentes mantienen fija su serie <code>$9.000 × 0,97^(t-1)</code>).
+              </div>
+            </div>
+
+            <div class="control-group" style="margin-bottom:0;">
+              <div class="control-header">
+                <label for="numSimAdopPack">Supuesto adopción Pack (1er pedido suelto)</label>
+                <span id="lblSimAdopPack">20,0%</span>
+              </div>
+              <div class="control-inputs">
+                <input type="range" id="rngSimAdopPack" min="0" max="100" step="5" value="20" oninput="syncSimAdopPack(this.value)" />
+                <input type="number" id="numSimAdopPack" min="0" max="100" step="1" value="20" oninput="syncSimAdopPack(this.value)" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Decisión Opcional y Separada: Segunda Tostadora ($14.000) -->
+          <div class="pack-box" style="margin-top:0; margin-bottom:0.9rem; background:#FFF9F2;">
+            <label class="checkbox-row">
+              <input type="checkbox" id="chkSimTostadora" onchange="updateSimulador24m()" />
+              <span>Decisión opcional separada: Comprar 2ª tostadora ($14.000) en Plan Propio B</span>
+            </label>
+            <div class="control-group" style="margin-top:0.5rem; margin-bottom:0;">
+              <div class="control-header">
+                <label for="selSimMesTostadora">Mes de compra de la tostadora ($14.000)</label>
+              </div>
+              <select id="selSimMesTostadora" class="sim-select" style="width:100%;" onchange="updateSimulador24m()">
+                <!-- Mes 1 a 24 generados por JS, por defecto Mes 12 -->
+              </select>
+              <div class="control-hint">No se descuenta por defecto porque las reglas base del simulador no exigen comprarla.</div>
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-restore" id="btnResetPropioB" onclick="resetPropioB()" style="width:100%; margin-left:0;">
+            ↺ Restaurar Plan Propio B ($4.000/mes + Pack Mes 1)
+          </button>
+        </aside>
+
+        <!-- Columna Derecha: Gráfico de Caja 24M + Selector de Plan para Tabla Mensual -->
+        <div class="live-results">
+          <div class="chart-card">
+            <h4>Evolución de la Caja Final Mes a Mes (Mes 0 a Mes 24) vs. Piso de Seguridad ($5.000)</h4>
+            <p class="chart-caption">
+              Arranca en $35.000 en el Mes 0. La línea horizontal roja marca el piso mínimo de $5.000 exigido por Camila. Si un plan cae bajo $0, deja de ser financiable sin inyección de capital adicional.
+            </p>
+            <div class="canvas-wrap" style="height:320px;">
+              <canvas id="chartCaja24m"></canvas>
+            </div>
+          </div>
+
+          <!-- Barra de selección de Plan para inspeccionar las 24 filas mensuales y exportar CSV -->
+          <div class="preset-bar" style="margin-bottom:0;">
+            <label for="selInspectPlan" class="preset-label">Inspeccionar detalle de 24 meses del plan:</label>
+            <select id="selInspectPlan" class="sim-select" onchange="updateSimulador24m()">
+              <option value="propioB" selected>Plan 4: Propio B (Editable — $4.000 + Pack y Envío)</option>
+              <option value="propioA">Plan 3: Propio A ($4.000 fijos, condiciones originales)</option>
+              <option value="base8k">Plan 1: Base Actual ($8.000 fijos, condiciones originales)</option>
+              <option value="agenciaAll">Plan 2a: Agencia ($16.000 + 30% BF en cada cohorte, por defecto)</option>
+              <option value="agenciaM1">Plan 2b: Agencia Variante ($16.000 + 30% BF solo en Mes 1)</option>
+            </select>
+            <button type="button" class="btn btn-restore" id="btnExportCsv24m" onclick="exportSelectedPlanCSV()" style="margin-left:auto;">
+              ⬇ Exportar CSV (24 meses)
+            </button>
+          </div>
+
+          <!-- 4 Tarjetas KPI del Plan Inspeccionado -->
+          <div class="kpi-grid">
+            <div class="kpi-card highlight">
+              <div class="kpi-label">Caja Mínima y Mes</div>
+              <div class="kpi-val" id="kpiSimCajaMin">$35.386,98</div>
+              <div class="kpi-sub" id="kpiSimCajaMinSub">Ocurre en el Mes 1 (Piso: $5.000)</div>
+            </div>
+
+            <div class="kpi-card highlight">
+              <div class="kpi-label">Caja Final (Mes 24)</div>
+              <div class="kpi-val" id="kpiSimCajaM24">$134.058,51</div>
+              <div class="kpi-sub" id="kpiSimCajaM24Sub">Arranca en $35.000 en Mes 0</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-label">Suscriptores Activos Mes 24</div>
+              <div class="kpi-val" id="kpiSimSuscM24">219,52</div>
+              <div class="kpi-sub">Solo de cohortes modeladas (base previa desconocida)</div>
+            </div>
+
+            <div class="kpi-card" id="cardSimEstado">
+              <div class="kpi-label">Estado del Plan y Restricciones</div>
+              <div class="kpi-val" id="kpiSimEstado">VÁLIDO</div>
+              <div class="kpi-sub" id="kpiSimEstadoSub">Cumple piso ≥ $5.000 y regla Mes 13–24</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5.5 TABLA DETALLADA DE LOS 24 MESES DEL PLAN SELECCIONADO -->
+      <h3 style="margin: 0 0 0.65rem; font-size: 1.05rem; color: var(--coffee-900);">
+        Tabla Mensual Detallada (Mes 1 a Mes 24) — <span id="lblTituloTabla24m">Plan 4: Propio B (Editable)</span>
+      </h3>
+      <div class="table-responsive" style="margin-bottom:1.6rem;">
+        <table id="tablaDetalle24m">
+          <thead>
+            <tr>
+              <th>Mes</th>
+              <th class="num">Inversión Meta ($)</th>
+              <th class="num">Clientes Meta</th>
+              <th class="num">Clientes Orgánicos</th>
+              <th class="num">Total Cohorte Mes</th>
+              <th class="num">Suscriptores Activos (Cohortes)</th>
+              <th class="num">Contribución Existentes ($)</th>
+              <th class="num">Contribución Nuevas Cohortes ($)</th>
+              <th class="num">Salidas Totales ($)</th>
+              <th class="num">Caja Final ($)</th>
+              <th>Estado / Alerta del Mes</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyDetalle24m">
+            <!-- 24 filas generadas dinámicamente por JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 5.6 PITCH DE 2 MINUTOS ANTE UN INVERSIONISTA / PRÉSTAMO DEL TÍO DE DIEGO -->
+      <div style="border-top:2px solid var(--bg-sand); padding-top:1.3rem;">
+        <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:0.8rem; margin-bottom:0.5rem;">
+          <div>
+            <span class="section-step">Pitch Ejecutivo de 2 Minutos (Pág. 10)</span>
+            <h3 style="font-size:1.15rem; color:var(--coffee-900);">
+              Defensa del Plan ante un Inversionista (o Préstamo del Tío de Diego)
+            </h3>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <label for="selPitchPlan" style="font-size:0.84rem; font-weight:700; color:var(--coffee-800);">Generar pitch con datos de:</label>
+            <select id="selPitchPlan" class="sim-select" onchange="updateSimulador24m()">
+              <option value="winner" selected>Mejor plan válido entre los comparados (Automático)</option>
+              <option value="propioB">Plan 4: Propio B (Editable)</option>
+              <option value="propioA">Plan 3: Propio A ($4.000 fijos, sin cambios comerciales)</option>
+              <option value="base8k">Plan 1: Base Actual ($8.000 fijos)</option>
+            </select>
+          </div>
+        </div>
+        <div class="pitch-grid" id="pitchContainer24m">
+          <!-- Rellenado dinámicamente con los números del plan elegido -->
+        </div>
+      </div>
+
+      <!-- 5.7 TABLA DE CONTROLES DE VERIFICACIÓN TÉCNICA DEL NIVEL 3 -->
+      <h3 style="margin: 1.6rem 0 0.65rem; font-size: 1.02rem; color: var(--coffee-900);">
+        Controles Automáticos de Verificación del Simulador de 24 Meses (Nivel 3)
+      </h3>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Control Técnico del Nivel 3</th>
+              <th class="num">Resultado del Simulador</th>
+              <th class="num">Criterio / Referencia Esperada</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyVerificacionNivel3">
+            <!-- Generado automáticamente por JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
   </main>
 
   <footer class="footer-note" id="cdnFooterNote">
-    Nota técnica: Los 4 gráficos interactivos se renderizan mediante Chart.js desde CDN (requieren conexión a internet); todos los cálculos, controles y tablas funcionan 100% en local.
+    Nota técnica: Los gráficos interactivos se renderizan mediante Chart.js desde CDN (requieren conexión a internet); todos los cálculos, controles, tablas y el simulador de 24 meses funcionan 100% en local.
   </footer>
 
   <script>
@@ -2167,10 +2564,727 @@
       tbody.innerHTML = rowsHtml;
     }
 
+    // =========================================================================
+    // NIVEL 3: MOTOR DEL SIMULADOR DE CAJA DE 24 MESES
+    // =========================================================================
+    const CAJA_INICIAL_24M = 35000.0;
+    const PISO_CAJA_24M = 5000.0;
+    const COSTOS_FIJOS_24M = 6500.0;
+    const FEE_AGENCIA_24M = 1000.0;
+    const CLIENTES_ORGANICOS_24M = 47.0;
+    const MIX_SUELTO_24M = 0.85;
+    const MIX_SUSC_24M = 0.15;
+    const PERMANENCIA_SUSC_24M = 0.91;
+    const COSTO_TOSTADORA_24M = 14000.0;
+
+    let chartCaja24mInstance = null;
+    let lastSimPlansMap = {};
+
+    function getActividadSueltoPorEdad(edad) {
+      if (edad >= 1 && edad <= 12) return BASE_SUELTO_CURVE[edad - 1];
+      if (edad >= 13 && edad <= 24) return 0.10;
+      return 0.0;
+    }
+
+    // Reutiliza exactamente las fórmulas verificadas del Nivel 2 para calcular los 24 meses de un plan
+    function simulate24Months(config) {
+      const investments = config.investments.map(v => Number(v) || 0);
+      const descBF = Number(config.descBF) || 0.0; // ej. 30.0 para 30%
+      const bfMode = config.bfMode || 'all_cohorts'; // 'all_cohorts' | 'month1_only'
+      const polPack = Boolean(config.polPack);
+      const mesActPack = Number(config.mesActPack) || 1;
+      const packScope = config.packScope || 'all_orders'; // 'all_orders' | 'new_cohorts_only'
+      const adopPack = Math.max(0, Math.min(100, Number(config.adopPack ?? 20))) / 100.0;
+      const buyTostadora = Boolean(config.buyTostadora);
+      const mesTostadora = Number(config.mesTostadora) || 12;
+
+      // Parámetros unitarios base verificados en Nivel 2
+      const precio2B = 34.00;
+      const cafe2B = 10.88;
+      const cafe3B = 16.32;
+      const contribSueltoBase = precio2B * (1.0 - PASARELA_RATE) - cafe2B - EMPAQUE_2B - 4.50; // $15,89
+      const contribSuscUnit = (precio2B * 0.90) * (1.0 - PASARELA_RATE) - cafe2B - EMPAQUE_2B - 4.50; // $12,643
+      const contribPackUnit = PRECIO_PACK_3B * (1.0 - PASARELA_RATE) - cafe3B - EMPAQUE_3B - 4.50; // $23,62
+
+      const avgInv1_12 = investments.slice(0, 12).reduce((a, b) => a + b, 0) / 12.0;
+      const minInv13_24 = Math.min(...investments.slice(12, 24));
+
+      let cajaActual = CAJA_INICIAL_24M;
+      const cohorts = [];
+      const rows = [];
+      const serieCajaConMes0 = [CAJA_INICIAL_24M];
+
+      const mesesViolRango = [];
+      const mesesViolPiso = [];
+      const mesesViolNegativa = [];
+      const mesesViolRegla13 = [];
+
+      for (let t = 1; t <= 24; t++) {
+        const rawInv = investments[t - 1];
+        const violRango = rawInv < 0 || rawInv > 20000;
+        if (violRango) mesesViolRango.push(t);
+        const inv = Math.max(0, Math.min(20000, rawInv));
+
+        const cliMeta = interpolateClientes(inv);
+        const cliOrg = CLIENTES_ORGANICOS_24M;
+        const cliTot = cliMeta + cliOrg;
+
+        cohorts.push({
+          c: t,
+          nTot: cliTot,
+          nSuelto: MIX_SUELTO_24M * cliTot,
+          nSusc: MIX_SUSC_24M * cliTot
+        });
+
+        // Contribución existente: $9.000 * 0,97^(t-1) (ya es contribución neta)
+        const contribExist = 9000.0 * Math.pow(0.97, t - 1);
+
+        // Contribución de todas las cohortes nuevas activas en el mes t (c = 1 .. t)
+        let contribNuevas = 0.0;
+        let suscActivosModelados = 0.0;
+
+        for (let idx = 0; idx < cohorts.length; idx++) {
+          const coh = cohorts[idx];
+          const c = coh.c;
+          const edad = t - c + 1;
+
+          // ¿Aplica política de Pack y envío a esta cohorte c en el mes t?
+          let aplicaPolPack = false;
+          if (polPack && t >= mesActPack) {
+            aplicaPolPack = (packScope === 'all_orders') ? true : (c >= mesActPack);
+          }
+
+          // ¿Aplica descuento de Black Friday en el 1er pedido suelto (edad = 1)?
+          let aplicaBF = false;
+          if (edad === 1 && descBF > 0) {
+            aplicaBF = (bfMode === 'all_cohorts') || (bfMode === 'month1_only' && c === 1);
+          }
+
+          const descRate = aplicaBF ? (descBF / 100.0) : 0.0;
+          const subtotal2B = precio2B * (1.0 - descRate);
+
+          let contribSueltoUnit;
+          if (edad === 1) {
+            if (!aplicaPolPack) {
+              contribSueltoUnit = subtotal2B * (1.0 - PASARELA_RATE) - cafe2B - EMPAQUE_2B - 4.50;
+            } else {
+              // Regla Nivel 2: umbral de $45 evaluado después del descuento y antes del envío
+              const envioCobrado = subtotal2B < UMBRAL_ENVIO_GRATIS ? ENVIO_COBRADO_2B : 0.0;
+              const contrib2BConRegla = (subtotal2B + envioCobrado) * (1.0 - PASARELA_RATE) - cafe2B - EMPAQUE_2B - 4.50;
+              contribSueltoUnit = (1.0 - adopPack) * contrib2BConRegla + adopPack * contribPackUnit;
+            }
+          } else {
+            if (!aplicaPolPack) {
+              contribSueltoUnit = contribSueltoBase;
+            } else {
+              const envioCobradoRec = precio2B < UMBRAL_ENVIO_GRATIS ? ENVIO_COBRADO_2B : 0.0;
+              contribSueltoUnit = (precio2B + envioCobradoRec) * (1.0 - PASARELA_RATE) - cafe2B - EMPAQUE_2B - 4.50;
+            }
+          }
+
+          const pedidosSueltosCoh = coh.nSuelto * getActividadSueltoPorEdad(edad);
+          const suscActivosCoh = coh.nSusc * Math.pow(PERMANENCIA_SUSC_24M, edad - 1);
+
+          suscActivosModelados += suscActivosCoh;
+          contribNuevas += pedidosSueltosCoh * contribSueltoUnit + suscActivosCoh * contribSuscUnit;
+        }
+
+        const feeAgencia = inv > 0 ? FEE_AGENCIA_24M : 0.0;
+        const gastoTostadora = (buyTostadora && t === mesTostadora) ? COSTO_TOSTADORA_24M : 0.0;
+        const salidas = inv + feeAgencia + COSTOS_FIJOS_24M + gastoTostadora;
+
+        const cajaAnterior = cajaActual;
+        cajaActual = cajaAnterior + contribExist + contribNuevas - salidas;
+        serieCajaConMes0.push(cajaActual);
+
+        const violPiso = cajaActual < PISO_CAJA_24M - 1e-9;
+        const violNeg = cajaActual < -1e-9;
+        const violRegla13 = (t >= 13) && (inv + 1e-9 < avgInv1_12);
+
+        if (violPiso) mesesViolPiso.push(t);
+        if (violNeg) mesesViolNegativa.push(t);
+        if (violRegla13) mesesViolRegla13.push(t);
+
+        const alertasMes = [];
+        if (violRango) alertasMes.push('Inversión fuera de $0–$20.000');
+        if (violNeg) alertasMes.push('Caja negativa (no financiable sin capital extra)');
+        else if (violPiso) alertasMes.push('Bajo piso de $5.000');
+        if (violRegla13) alertasMes.push(`Inv. < prom. M1–12 (${fmtUSD(avgInv1_12, 0)})`);
+        if (gastoTostadora > 0) alertasMes.push('Incluye compra 2ª tostadora (-$14.000)');
+
+        rows.push({
+          t,
+          inv,
+          cliMeta,
+          cliOrg,
+          cliTot,
+          suscActivosModelados,
+          contribExist,
+          contribNuevas,
+          feeAgencia,
+          gastoTostadora,
+          salidas,
+          cajaFinal: cajaActual,
+          violRango,
+          violPiso,
+          violNeg,
+          violRegla13,
+          alertaTexto: alertasMes.length > 0 ? alertasMes.join(' · ') : 'OK (Cumple reglas)'
+        });
+      }
+
+      // Encontrar caja mínima y el primer mes en que ocurre
+      let minCaja = rows[0].cajaFinal;
+      let mesMinCaja = 1;
+      rows.forEach(r => {
+        if (r.cajaFinal < minCaja) {
+          minCaja = r.cajaFinal;
+          mesMinCaja = r.t;
+        }
+      });
+
+      const motivosInvalidez = [];
+      if (mesesViolRango.length > 0) {
+        motivosInvalidez.push(`Inversión fuera de $0–$20.000 (meses: ${mesesViolRango.join(', ')})`);
+      }
+      if (mesesViolPiso.length > 0) {
+        motivosInvalidez.push(`Caja final < $5.000 en ${mesesViolPiso.length} mes(es) (desde Mes ${mesesViolPiso[0]})`);
+      }
+      if (mesesViolNegativa.length > 0) {
+        motivosInvalidez.push(`Caja negativa desde el Mes ${mesesViolNegativa[0]} (no financiable sin dinero adicional)`);
+      }
+      if (mesesViolRegla13.length > 0) {
+        motivosInvalidez.push(`Inversión en mes(es) ${mesesViolRegla13.join(', ')} menor al promedio M1–12 (${fmtUSD(avgInv1_12, 0)})`);
+      }
+
+      const valid = mesesViolRango.length === 0 && mesesViolPiso.length === 0 && mesesViolRegla13.length === 0;
+
+      return {
+        id: config.id,
+        name: config.name,
+        shortName: config.shortName || config.name,
+        rows,
+        serieCajaConMes0,
+        avgInv1_12,
+        minInv13_24,
+        cajaMes1: rows[0].cajaFinal,
+        minCaja,
+        mesMinCaja,
+        cajaMes24: rows[23].cajaFinal,
+        suscMes24: rows[23].suscActivosModelados,
+        valid,
+        financiable: mesesViolNegativa.length === 0,
+        motivosInvalidez,
+        motivosResumen: valid ? 'VÁLIDO (Cumple todas las reglas)' : `INVÁLIDO: ${motivosInvalidez.join('; ')}`,
+        config
+      };
+    }
+
+    function initSimulador24mControls() {
+      const grid = document.getElementById('gridMesesPropioB');
+      if (grid) {
+        let html = '';
+        for (let m = 1; m <= 24; m++) {
+          html += `
+            <div class="month-cell">
+              <label for="invPropioB_m${m}">Mes ${m} ($)</label>
+              <input type="number" id="invPropioB_m${m}" min="0" max="20000" step="250" value="4000" oninput="updateSimulador24m()" />
+            </div>
+          `;
+        }
+        grid.innerHTML = html;
+      }
+
+      const selAct = document.getElementById('selSimMesActPack');
+      const selTost = document.getElementById('selSimMesTostadora');
+      if (selAct && selTost) {
+        let optsAct = '';
+        let optsTost = '';
+        for (let m = 1; m <= 24; m++) {
+          optsAct += `<option value="${m}" ${m === 1 ? 'selected' : ''}>Mes ${m}</option>`;
+          optsTost += `<option value="${m}" ${m === 12 ? 'selected' : ''}>Mes ${m}</option>`;
+        }
+        selAct.innerHTML = optsAct;
+        selTost.innerHTML = optsTost;
+      }
+    }
+
+    function syncSimAdopPack(val) {
+      const r = document.getElementById('rngSimAdopPack');
+      const n = document.getElementById('numSimAdopPack');
+      if (r && r.value !== String(val)) r.value = val;
+      if (n && n.value !== String(val)) n.value = val;
+      document.getElementById('lblSimAdopPack').textContent = `${fmtNum(parseFloat(val) || 0, 1)}%`;
+      updateSimulador24m();
+    }
+
+    function applyStagesToPropioB() {
+      const s1 = Math.max(0, Math.min(20000, parseFloat(document.getElementById('stage1_6').value) || 0));
+      const s2 = Math.max(0, Math.min(20000, parseFloat(document.getElementById('stage7_12').value) || 0));
+      const s3 = Math.max(0, Math.min(20000, parseFloat(document.getElementById('stage13_18').value) || 0));
+      const s4 = Math.max(0, Math.min(20000, parseFloat(document.getElementById('stage19_24').value) || 0));
+
+      for (let m = 1; m <= 24; m++) {
+        const el = document.getElementById(`invPropioB_m${m}`);
+        if (!el) continue;
+        if (m <= 6) el.value = s1;
+        else if (m <= 12) el.value = s2;
+        else if (m <= 18) el.value = s3;
+        else el.value = s4;
+      }
+      updateSimulador24m();
+    }
+
+    function resetPropioB() {
+      ['stage1_6', 'stage7_12', 'stage13_18', 'stage19_24'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = 4000;
+      });
+      for (let m = 1; m <= 24; m++) {
+        const el = document.getElementById(`invPropioB_m${m}`);
+        if (el) el.value = 4000;
+      }
+      document.getElementById('chkSimPolPack').checked = true;
+      document.getElementById('selSimMesActPack').value = '1';
+      document.getElementById('selSimAlcancePack').value = 'all_orders';
+      document.getElementById('rngSimAdopPack').value = '20';
+      document.getElementById('numSimAdopPack').value = '20';
+      document.getElementById('lblSimAdopPack').textContent = '20,0%';
+      document.getElementById('chkSimTostadora').checked = false;
+      document.getElementById('selSimMesTostadora').value = '12';
+      updateSimulador24m();
+    }
+
+    function readPropioBConfig() {
+      const invs = [];
+      for (let m = 1; m <= 24; m++) {
+        const el = document.getElementById(`invPropioB_m${m}`);
+        invs.push(el ? (parseFloat(el.value) || 0) : 4000);
+      }
+      return {
+        id: 'propioB',
+        name: 'Plan 4: Propio B (Editable — Meta + Política Pack/Envío)',
+        shortName: 'Propio B (Editable)',
+        investments: invs,
+        descBF: 0.0,
+        bfMode: 'all_cohorts',
+        polPack: document.getElementById('chkSimPolPack').checked,
+        mesActPack: parseInt(document.getElementById('selSimMesActPack').value, 10) || 1,
+        packScope: document.getElementById('selSimAlcancePack').value || 'all_orders',
+        adopPack: parseFloat(document.getElementById('numSimAdopPack').value) || 20.0,
+        buyTostadora: document.getElementById('chkSimTostadora').checked,
+        mesTostadora: parseInt(document.getElementById('selSimMesTostadora').value, 10) || 12
+      };
+    }
+
+    function updateSimulador24m() {
+      const planBase8k = simulate24Months({
+        id: 'base8k',
+        name: 'Plan 1: Base Actual ($8.000 fijos, condiciones originales)',
+        shortName: 'Base ($8.000)',
+        investments: Array(24).fill(8000),
+        descBF: 0.0,
+        polPack: false
+      });
+
+      const planAgenciaAll = simulate24Months({
+        id: 'agenciaAll',
+        name: 'Plan 2a: Agencia ($16.000 fijos + 30% BF en 1er pedido de cada cohorte)',
+        shortName: 'Agencia ($16k + BF 24M)',
+        investments: Array(24).fill(16000),
+        descBF: 30.0,
+        bfMode: 'all_cohorts',
+        polPack: false
+      });
+
+      const planAgenciaM1 = simulate24Months({
+        id: 'agenciaM1',
+        name: 'Plan 2b: Agencia Variante ($16.000 fijos + 30% BF solo en Mes 1)',
+        shortName: 'Agencia Var. (BF solo M1)',
+        investments: Array(24).fill(16000),
+        descBF: 30.0,
+        bfMode: 'month1_only',
+        polPack: false
+      });
+
+      const planPropioA = simulate24Months({
+        id: 'propioA',
+        name: 'Plan 3: Propio A ($4.000 fijos, condiciones originales)',
+        shortName: 'Propio A ($4.000)',
+        investments: Array(24).fill(4000),
+        descBF: 0.0,
+        polPack: false
+      });
+
+      const planPropioB = simulate24Months(readPropioBConfig());
+
+      lastSimPlansMap = {
+        base8k: planBase8k,
+        agenciaAll: planAgenciaAll,
+        agenciaM1: planAgenciaM1,
+        propioA: planPropioA,
+        propioB: planPropioB
+      };
+
+      // Verificar control Mes 1 ($31.765,4254)
+      const diffM1 = Math.abs(planBase8k.cajaMes1 - 31765.4254);
+      document.getElementById('lblCheckMes1Calc').textContent = fmtUSD(planBase8k.cajaMes1, 4);
+      const badgeM1 = document.getElementById('badgeCheckMes1');
+      if (diffM1 < 1e-6) {
+        badgeM1.className = 'badge-ok';
+        badgeM1.textContent = `OK Exacto (Dif. $${fmtNum(diffM1, 6)})`;
+      } else {
+        badgeM1.className = 'badge-danger';
+        badgeM1.textContent = `Diferencia: $${fmtNum(diffM1, 6)}`;
+      }
+
+      // Determinar el mejor plan válido entre los comparados (sin declarar "óptimo" sin búsqueda global)
+      const allPlans = [planBase8k, planAgenciaAll, planAgenciaM1, planPropioA, planPropioB];
+      const validPlans = allPlans.filter(p => p.valid);
+      validPlans.sort((a, b) => {
+        if (Math.abs(b.cajaMes24 - a.cajaMes24) > 1e-6) return b.cajaMes24 - a.cajaMes24;
+        return b.suscMes24 - a.suscMes24;
+      });
+
+      const winnerPlan = validPlans.length > 0 ? validPlans[0] : null;
+      const bannerGan = document.getElementById('bannerGanador24m');
+      const titGan = document.getElementById('tituloGanador24m');
+      const descGan = document.getElementById('descGanador24m');
+
+      if (winnerPlan) {
+        bannerGan.className = 'semaforo-banner green';
+        titGan.textContent = `Mejor entre los planes comparados: ${winnerPlan.name}`;
+        descGan.textContent =
+          `Termina el Mes 24 con ${fmtUSD(winnerPlan.cajaMes24, 2)} en el banco (caja mínima de ${fmtUSD(winnerPlan.minCaja, 2)} en el Mes ${winnerPlan.mesMinCaja}, siempre ≥ $5.000) y ${fmtNum(winnerPlan.suscMes24, 2)} suscriptores activos de las cohortes modeladas. Nota: se presenta como el mejor entre los planes comparados; los planes inválidos (como la propuesta de la Agencia, que hunde la caja a ${fmtUSD(planAgenciaAll.cajaMes24, 2)}) quedan descartados por romper el piso de $5.000.`;
+      } else {
+        bannerGan.className = 'semaforo-banner red';
+        titGan.textContent = 'Ningún plan comparado cumple actualmente todas las restricciones';
+        descGan.textContent = 'Revisa las restricciones de piso de caja ($5.000) o la regla de continuidad de inversión en meses 13 a 24.';
+      }
+
+      // Renderizar tabla comparativa de los planes
+      const tbodyPlanes = document.getElementById('tbodyPlanes24m');
+      tbodyPlanes.innerHTML = allPlans.map(p => {
+        const isWin = winnerPlan && p.id === winnerPlan.id;
+        const rowCls = isWin ? 'row-winner' : (!p.valid ? 'row-violation' : '');
+        const badgeCls = p.valid ? 'badge-ok' : 'badge-danger';
+        const winTag = isWin ? ' 🏆 <strong>(Mejor entre comparados)</strong>' : '';
+        return `
+          <tr class="${rowCls}">
+            <td><strong>${p.name}</strong>${winTag}</td>
+            <td class="num">${fmtUSD(p.avgInv1_12, 0)}</td>
+            <td class="num">${fmtUSD(p.minInv13_24, 0)}</td>
+            <td class="num">${fmtUSD(p.cajaMes1, 2)}</td>
+            <td class="num">${fmtUSD(p.minCaja, 2)} (Mes ${p.mesMinCaja})</td>
+            <td class="num"><strong>${fmtUSD(p.cajaMes24, 2)}</strong></td>
+            <td class="num">${fmtNum(p.suscMes24, 2)}</td>
+            <td><span class="${badgeCls}">${p.motivosResumen}</span></td>
+          </tr>
+        `;
+      }).join('');
+
+      // Actualizar KPIs y tabla de 24 meses del plan inspeccionado
+      const inspectKey = document.getElementById('selInspectPlan').value || 'propioB';
+      const inspected = lastSimPlansMap[inspectKey] || planPropioB;
+
+      document.getElementById('lblTituloTabla24m').textContent = inspected.name;
+      document.getElementById('kpiSimCajaMin').textContent = fmtUSD(inspected.minCaja, 2);
+      document.getElementById('kpiSimCajaMinSub').textContent =
+        `Ocurre en el Mes ${inspected.mesMinCaja} (${inspected.minCaja >= PISO_CAJA_24M ? 'Cumple ≥ $5.000' : 'Rompe piso de $5.000'})`;
+
+      document.getElementById('kpiSimCajaM24').textContent = fmtUSD(inspected.cajaMes24, 2);
+      const deltaCaja = inspected.cajaMes24 - CAJA_INICIAL_24M;
+      document.getElementById('kpiSimCajaM24Sub').textContent =
+        `Variación neta 24M: ${deltaCaja >= 0 ? '+' : ''}${fmtUSD(deltaCaja, 2)} vs. $35.000 inicial`;
+
+      document.getElementById('kpiSimSuscM24').textContent = fmtNum(inspected.suscMes24, 2);
+
+      const estadoEl = document.getElementById('kpiSimEstado');
+      const estadoSubEl = document.getElementById('kpiSimEstadoSub');
+      if (inspected.valid) {
+        estadoEl.textContent = 'VÁLIDO';
+        estadoEl.style.color = 'var(--green)';
+        estadoSubEl.textContent = 'Cumple rango $0–$20k, piso ≥ $5.000 y regla Mes 13–24';
+      } else {
+        estadoEl.textContent = 'INVÁLIDO';
+        estadoEl.style.color = 'var(--red)';
+        estadoSubEl.textContent = inspected.motivosInvalidez.join(' | ');
+      }
+
+      const tbodyDet = document.getElementById('tbodyDetalle24m');
+      tbodyDet.innerHTML = inspected.rows.map(r => {
+        const hasViol = r.violRango || r.violPiso || r.violRegla13;
+        const trCls = hasViol ? 'row-violation' : '';
+        const badgeCls = hasViol ? 'badge-danger' : 'badge-ok';
+        return `
+          <tr class="${trCls}">
+            <td><strong>Mes ${r.t}</strong></td>
+            <td class="num">${fmtUSD(r.inv, 0)}</td>
+            <td class="num">${fmtNum(r.cliMeta, 2)}</td>
+            <td class="num">${fmtNum(r.cliOrg, 0)}</td>
+            <td class="num">${fmtNum(r.cliTot, 2)}</td>
+            <td class="num">${fmtNum(r.suscActivosModelados, 2)}</td>
+            <td class="num">${fmtUSD(r.contribExist, 2)}</td>
+            <td class="num">${fmtUSD(r.contribNuevas, 2)}</td>
+            <td class="num">${fmtUSD(r.salidas, 2)}</td>
+            <td class="num"><strong>${fmtUSD(r.cajaFinal, 2)}</strong></td>
+            <td><span class="${badgeCls}">${r.alertaTexto}</span></td>
+          </tr>
+        `;
+      }).join('');
+
+      // Renderizar gráfico de caja de 24 meses
+      renderChartCaja24m(allPlans);
+
+      // Renderizar Pitch de 2 minutos
+      renderPitch2Minutos(winnerPlan || planPropioA, allPlans);
+
+      // Renderizar tabla de verificación técnica del Nivel 3
+      renderVerificationNivel3(planBase8k, planAgenciaAll, planPropioA);
+    }
+
+    function renderChartCaja24m(allPlans) {
+      if (typeof Chart === 'undefined') return;
+      const canvas = document.getElementById('chartCaja24m');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (chartCaja24mInstance) chartCaja24mInstance.destroy();
+
+      const labels = Array.from({ length: 25 }, (_, i) => `Mes ${i}`);
+      const lineaPiso = Array(25).fill(PISO_CAJA_24M);
+      const lineaCero = Array(25).fill(0);
+
+      const colors = {
+        base8k: { border: '#3B2318', dash: [4, 3], width: 2.2 },
+        agenciaAll: { border: '#B8332A', dash: [], width: 2.2 },
+        agenciaM1: { border: '#D9822B', dash: [3, 3], width: 1.8 },
+        propioA: { border: '#1F5A73', dash: [], width: 2.6 },
+        propioB: { border: '#2E6F40', dash: [], width: 3.4 }
+      };
+
+      const datasets = allPlans.map(p => {
+        const st = colors[p.id] || { border: '#C85A32', dash: [], width: 2 };
+        return {
+          label: p.shortName,
+          data: p.serieCajaConMes0,
+          borderColor: st.border,
+          backgroundColor: st.border,
+          borderDash: st.dash,
+          borderWidth: st.width,
+          pointRadius: 2.5,
+          tension: 0.12,
+          fill: false
+        };
+      });
+
+      datasets.push({
+        label: 'Piso de Seguridad ($5.000)',
+        data: lineaPiso,
+        borderColor: '#B8332A',
+        borderWidth: 2,
+        borderDash: [7, 4],
+        pointRadius: 0,
+        fill: false
+      });
+
+      datasets.push({
+        label: 'Línea Cero ($0 — Límite de solvencia)',
+        data: lineaCero,
+        borderColor: '#666666',
+        borderWidth: 1.3,
+        borderDash: [3, 3],
+        pointRadius: 0,
+        fill: false
+      });
+
+      chartCaja24mInstance = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+            tooltip: {
+              callbacks: {
+                label: c => `${c.dataset.label}: ${fmtUSD(c.parsed.y, 2)}`
+              }
+            }
+          },
+          scales: {
+            y: {
+              title: { display: true, text: 'Saldo de Caja al Final del Mes ($)' },
+              ticks: { callback: v => '$' + Number(v).toLocaleString('es-ES') }
+            }
+          }
+        }
+      });
+    }
+
+    function renderPitch2Minutos(winnerPlan, allPlans) {
+      const sel = document.getElementById('selPitchPlan').value || 'winner';
+      const chosen = (sel === 'winner') ? winnerPlan : (lastSimPlansMap[sel] || winnerPlan);
+      const base8k = lastSimPlansMap.base8k;
+      const agencia = lastSimPlansMap.agenciaAll;
+
+      const diffVsBase = chosen.cajaMes24 - base8k.cajaMes24;
+      const container = document.getElementById('pitchContainer24m');
+      if (!container) return;
+
+      const usaPack = chosen.config && chosen.config.polPack;
+      const textoRiesgo = usaPack
+        ? `El plan incluye el Pack de 3 bolsas ($48) y cobro de envío ($4,50 en pedidos sueltos menores a $45) desde el Mes ${chosen.config.mesActPack}. El riesgo comercial es que cobrar envío reduzca la conversión de anuncios o la frecuencia de recompra. Pero incluso sin esos cambios comerciales (en el Plan Propio A de $4.000 fijos), la caja final llega a <strong>${fmtUSD(lastSimPlansMap.propioA.cajaMes24, 2)}</strong> sin bajar nunca de <strong>${fmtUSD(lastSimPlansMap.propioA.minCaja, 2)}</strong>.`
+        : `Este plan no depende de supuestos de adopción de packs ni de cobrar envío: usa exactamente los precios y costos actuales del caso. El único riesgo operativo es el declive natural de los clientes antiguos (-3% mensual), que queda totalmente compensado desde el primer semestre por las cohortes nuevas adquiridas a un CAC real de $50,00.`;
+
+      container.innerHTML = `
+        <div class="pitch-card">
+          <h4>1. Qué presupuesto asignamos (0:00 – 0:30)</h4>
+          <p>
+            “Tío: no necesitamos endeudarnos para duplicar anuncios en Black Friday. Con el plan <strong>${chosen.name}</strong> invertimos un promedio de <strong>${fmtUSD(chosen.avgInv1_12, 0)}/mes</strong> en el año 1 y al menos <strong>${fmtUSD(chosen.minInv13_24, 0)}/mes</strong> en el año 2. Así operamos en el tramo más eficiente de Meta ($40 de anuncio por cliente nuevo en lugar de pagar $114,29 por cliente extra).”
+          </p>
+        </div>
+
+        <div class="pitch-card">
+          <h4>2. Por qué funciona en caja real (0:30 – 1:00)</h4>
+          <p>
+            “Si aceptáramos la propuesta de la agencia ($16.000 + 30% descuento), perforaríamos el piso de $5.000 en el Mes 3, nos quedaríamos sin dinero en el Mes 4 y cerraríamos el mes 24 en <strong>${fmtUSD(agencia.cajaMes24, 2)}</strong>. Con nuestro plan, la caja mínima es de <strong>${fmtUSD(chosen.minCaja, 2)} (Mes ${chosen.mesMinCaja})</strong> y cerramos el mes 24 con <strong>${fmtUSD(chosen.cajaMes24, 2)}</strong> en el banco (<strong>+${fmtUSD(diffVsBase, 2)}</strong> más que invirtiendo $8.000/mes) y <strong>${fmtNum(chosen.suscMes24, 1)} suscriptores activos</strong> nuevos.”
+          </p>
+        </div>
+
+        <div class="pitch-card">
+          <h4>3. Cuál es el riesgo y cómo nos cubrimos (1:00 – 1:30)</h4>
+          <p>
+            ${textoRiesgo}
+          </p>
+        </div>
+
+        <div class="pitch-card">
+          <h4>4. Condiciones para subir el presupuesto (1:30 – 2:00)</h4>
+          <p>
+            “Solo subiremos la inversión mensual de $4.000 a $8.000 si en una prueba piloto de 60 días se cumplen dos condiciones verificables: (1) que el cobro de envío bajo $45 y el Pack de $48 mantengan el LTV promedio por encima de <strong>$66 por cliente</strong> sin reducir los 100 clientes nuevos del primer tramo, y (2) que el saldo en banco supere los <strong>$50.000</strong> para financiar la segunda tostadora ($14.000) al contado sin acercarnos jamás al piso de $5.000.”
+          </p>
+        </div>
+      `;
+    }
+
+    function renderVerificationNivel3(planBase8k, planAgenciaAll, planPropioA) {
+      // Prueba puntual de inversión $0 para verificar que el fee de agencia es $0
+      const planCero = simulate24Months({
+        id: 'cero',
+        name: 'Inversión $0',
+        investments: Array(24).fill(0),
+        descBF: 0.0,
+        polPack: false
+      });
+
+      // Prueba de incumplimiento de regla del Mes 13 (ej. $8.000 en M1-12 y $4.000 en M13-24)
+      const planViolaM13 = simulate24Months({
+        id: 'viola13',
+        name: 'Prueba Regla M13',
+        investments: [...Array(12).fill(8000), ...Array(12).fill(4000)],
+        descBF: 0.0,
+        polPack: false
+      });
+
+      const checksN3 = [
+        {
+          label: 'Verificación Mes 1 ($8.000 fijos): 165 Meta + 47 org = 212 clientes; Contribución nueva $3.265,4254; Caja final',
+          calc: fmtUSD(planBase8k.cajaMes1, 4),
+          ref: '$31.765,4254',
+          ok: Math.abs(planBase8k.cajaMes1 - 31765.4254) < 1e-6
+        },
+        {
+          label: 'Inversión $0 sin fee de agencia: en Mes 1 con Meta = $0, Salidas = $0 + $0 agencia + $6.500 fijos',
+          calc: fmtUSD(planCero.rows[0].salidas, 2),
+          ref: '$6.500,00 (Fee agencia = $0)',
+          ok: Math.abs(planCero.rows[0].salidas - 6500.0) < 1e-6 && planCero.rows[0].cliTot === 47
+        },
+        {
+          label: 'Continuidad de recompras sueltas en edades 13 a 24 (0,10 pedidos/mes por comprador suelto)',
+          calc: `${fmtNum(getActividadSueltoPorEdad(13), 2)} a ${fmtNum(getActividadSueltoPorEdad(24), 2)} pedidos/mes`,
+          ref: '0,10 pedidos/mes en edades 13 a 24',
+          ok: getActividadSueltoPorEdad(13) === 0.10 && getActividadSueltoPorEdad(24) === 0.10
+        },
+        {
+          label: 'Detección de ruptura de piso ($5.000) y solvencia negativa en Plan Agencia ($16.000 + 30% BF)',
+          calc: `${planAgenciaAll.valid ? 'VÁLIDO' : 'INVÁLIDO'} (Caja M24: ${fmtUSD(planAgenciaAll.cajaMes24, 2)})`,
+          ref: 'INVÁLIDO (Rompe piso en Mes 3 y cae < $0 en Mes 4)',
+          ok: !planAgenciaAll.valid && !planAgenciaAll.financiable && planAgenciaAll.rows[2].violPiso && planAgenciaAll.rows[3].violNeg
+        },
+        {
+          label: 'Detección de regla de continuidad desde Mes 13 (Inv. M13–24 >= Promedio M1–12)',
+          calc: planViolaM13.valid ? 'VÁLIDO' : `INVÁLIDO (${planViolaM13.rows[12].alertaTexto})`,
+          ref: 'INVÁLIDO cuando Inv. Mes 13 ($4.000) < Promedio M1–12 ($8.000)',
+          ok: !planViolaM13.valid && planViolaM13.rows[12].violRegla13
+        }
+      ];
+
+      const tbody = document.getElementById('tbodyVerificacionNivel3');
+      if (!tbody) return;
+      tbody.innerHTML = checksN3.map(c => `
+        <tr>
+          <td><strong>${c.label}</strong></td>
+          <td class="num">${c.calc}</td>
+          <td class="num">${c.ref}</td>
+          <td><span class="${c.ok ? 'badge-ok' : 'badge-danger'}">${c.ok ? 'OK Verificado' : 'REVISAR'}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function exportSelectedPlanCSV() {
+      const inspectKey = document.getElementById('selInspectPlan').value || 'propioB';
+      const plan = lastSimPlansMap[inspectKey];
+      if (!plan) return;
+
+      const headers = [
+        'Mes',
+        'Inversion_Meta_USD',
+        'Clientes_Meta',
+        'Clientes_Organicos',
+        'Clientes_Nuevos_Totales',
+        'Suscriptores_Activos_Cohortes',
+        'Contribucion_Existentes_USD',
+        'Contribucion_Nuevas_Cohortes_USD',
+        'Salidas_Totales_USD',
+        'Caja_Final_USD',
+        'Estado_Mes'
+      ];
+
+      const lines = [headers.join(',')];
+      plan.rows.forEach(r => {
+        lines.push([
+          r.t,
+          r.inv.toFixed(2),
+          r.cliMeta.toFixed(4),
+          r.cliOrg.toFixed(0),
+          r.cliTot.toFixed(4),
+          r.suscActivosModelados.toFixed(4),
+          r.contribExist.toFixed(4),
+          r.contribNuevas.toFixed(4),
+          r.salidas.toFixed(2),
+          r.cajaFinal.toFixed(4),
+          `"${r.alertaTexto.replace(/"/g, '""')}"`
+        ].join(','));
+      });
+
+      const csvContent = '\uFEFF' + lines.join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Tueste_Simulador24M_${plan.id}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
     // Inicializar al cargar el DOM
     window.addEventListener('DOMContentLoaded', () => {
       renderVerificationTable();
       loadPreset('actual');
+      initSimulador24mControls();
+      updateSimulador24m();
     });
   </script>
 </body>
