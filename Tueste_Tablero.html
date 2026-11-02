@@ -888,7 +888,7 @@
                 <input type="range" id="rngAdopcionPack" min="0" max="100" step="5" value="20" oninput="syncControl('AdopcionPack', this.value)" />
                 <input type="number" id="numAdopcionPack" min="0" max="100" step="1" value="20" oninput="syncControl('AdopcionPack', this.value)" />
               </div>
-              <div class="control-hint">Supuesto de sensibilidad editable (no es un dato original del PDF). Suscripciones mantienen envío gratis.</div>
+              <div class="control-hint">Regla de envío: cobra $4,50 únicamente si el subtotal de productos del pedido suelto (evaluado después del descuento y antes del envío) es inferior a $45; desde $45 el envío es gratis (aplica al 1er pedido y a recompras). Suscripciones mantienen envío gratis según el supuesto existente.</div>
             </div>
           </div>
         </aside>
@@ -1007,6 +1007,7 @@
               <p class="chart-caption">
                 <strong>Aclaración metodológica:</strong> El ROAS histórico de Meta (3,0x) incluye ventas atribuidas a clientes previos (retargeting y vistas de 1 día), mientras que el ROAS del 1er pedido cuenta solo la primera compra de clientes nuevos. Compararlos explica por qué baja el banco, pero no demuestra causalidad ni que Meta haya causado todas las ventas.
               </p>
+              <div id="chartTrampaNotice" style="display:none; background:var(--amber-soft); border:1px solid var(--amber); color:#6B3D08; padding:0.55rem 0.75rem; border-radius:8px; font-size:0.79rem; font-weight:600;"></div>
               <div class="canvas-wrap">
                 <canvas id="chartTrampa"></canvas>
               </div>
@@ -1079,9 +1080,9 @@
         <div class="info-box">
           <h4>Pack de 3 Bolsas ($48), Política de Envío y Sensibilidad (Pág. 6)</h4>
           <ul>
-            <li><strong>Contribución unitaria del Pack ($48):</strong> $48,00 cobrado (envío gratis desde $45) − $2,16 pasarela (4,5%) − $16,32 café (3 × $5,44) − $1,40 caja grande − $4,50 envío = <strong>$23,62 por pack (49,21%)</strong>.</li>
-            <li><strong>Pedido suelto de 2 bolsas cobrando envío ($4,50):</strong> el cliente paga $34,00 + $4,50 = $38,50. Menos 4,5% pasarela ($1,7325) y $16,58 de costos, la contribución sube de $15,89 a <strong>$20,1875 por pedido</strong>.</li>
-            <li><strong>Supuesto explícito en suscripciones:</strong> se mantiene envío gratis en suscripciones ($30,60/mes, contribución $12,643), pues cobrarles $4,50 subiría su precio a $35,10 (más caro que comprar suelto a $34). Aun así, esto <strong>no garantiza conservar el 91% de retención</strong>.</li>
+            <li><strong>Contribución unitaria del Pack ($48):</strong> $48,00 cobrado (envío gratis porque el subtotal es ≥ $45) − $2,16 pasarela (4,5%) − $16,32 café (3 × $5,44) − $1,40 caja grande − $4,50 envío = <strong>$23,62 por pack (49,21%)</strong>.</li>
+            <li><strong>Regla de la política de envío ($4,50 bajo $45):</strong> cuando la política está activa, se cobra $4,50 de envío al cliente únicamente si el subtotal de productos del pedido suelto es inferior a $45; desde $45 el envío es gratis. <strong>El umbral de $45 se evalúa después del descuento y antes del envío</strong>, y aplica tanto al primer pedido como a las recompras (con el precio base de $34 &lt; $45, el cliente paga $34,00 + $4,50 = $38,50 y la contribución sube de $15,89 a <strong>$20,1875 por pedido</strong>; si el subtotal del pedido suelto alcanza o supera $45, el envío es gratis).</li>
+            <li><strong>Supuesto explícito en suscripciones:</strong> se mantiene envío gratis en suscripciones ($30,60/mes, contribución $12,643) según el supuesto existente, pues cobrarles $4,50 subiría su precio a $35,10 (más caro que comprar suelto a $34). Aun así, esto <strong>no garantiza conservar el 91% de retención</strong>.</li>
             <li><strong>Sensibilidad separada de 2 packs por año:</strong> si quien compra el Pack lleva 3 bolsas por vez y consume las mismas 6 bolsas al año haciendo solo <strong>2 pedidos anuales del Pack</strong> (en vez de 3 pedidos de 2 bolsas), su contribución anual suelta es <strong>2 × $23,62 = $47,24</strong> (inferior a los $47,67 actuales).</li>
             <li><strong>Advertencia comercial:</strong> cobrar envío bajo $45 puede reducir la tasa de conversión de los anuncios y la frecuencia de recompra. No son mejoras garantizadas; requieren prueba piloto.</li>
           </ul>
@@ -1131,6 +1132,7 @@
     const EMPAQUE_3B = 1.40;
     const PRECIO_PACK_3B = 48.00;
     const ENVIO_COBRADO_2B = 4.50;
+    const UMBRAL_ENVIO_GRATIS = 45.00;
 
     const PRESETS = {
       actual: {
@@ -1260,23 +1262,30 @@
       const cobroSueltoBase = precio2B;
       const contribSueltoBase = cobroSueltoBase * (1.0 - PASARELA_RATE) - cafe2B - EMPAQUE_2B - costoEnvio;
 
-      // Pedido suelto de 2 bolsas cobrando $4,50 de envío al cliente
-      const cobroSueltoConEnvio = precio2B + ENVIO_COBRADO_2B;
+      // Regla de política de envío para pedidos sueltos:
+      // Cobra $4,50 únicamente si el subtotal de productos (después del descuento y antes del envío) es < $45; desde $45 el envío es gratis.
+      const subtotal2BRecompra = precio2B;
+      const envioCobradoRecompra = subtotal2BRecompra < UMBRAL_ENVIO_GRATIS ? ENVIO_COBRADO_2B : 0.0;
+      const cobroSueltoConEnvio = subtotal2BRecompra + envioCobradoRecompra;
       const contribSueltoConEnvio = cobroSueltoConEnvio * (1.0 - PASARELA_RATE) - cafe2B - EMPAQUE_2B - costoEnvio;
 
-      // Pack de 3 bolsas a $48
-      const cobroPack = PRECIO_PACK_3B;
+      // Pack de 3 bolsas a $48 (subtotal $48 >= $45, por lo que tiene envío gratis para el cliente)
+      const subtotalPack = PRECIO_PACK_3B;
+      const envioCobradoPack = subtotalPack < UMBRAL_ENVIO_GRATIS ? ENVIO_COBRADO_2B : 0.0;
+      const cobroPack = subtotalPack + envioCobradoPack;
       const contribPack = cobroPack * (1.0 - PASARELA_RATE) - cafe3B - EMPAQUE_3B - costoEnvio;
 
       // Primer pedido suelto (Mes 1) y recompras sueltas (Meses 2 a 12)
+      const subtotal2BM1 = precio2B * (1.0 - descBF);
       let cobroSueltoM1, contribSueltoM1, cobroSueltoRecompra, contribSueltoRecompra;
       if (!polPack) {
-        cobroSueltoM1 = precio2B * (1.0 - descBF);
+        cobroSueltoM1 = subtotal2BM1;
         contribSueltoM1 = cobroSueltoM1 * (1.0 - PASARELA_RATE) - cafe2B - EMPAQUE_2B - costoEnvio;
         cobroSueltoRecompra = cobroSueltoBase;
         contribSueltoRecompra = contribSueltoBase;
       } else {
-        const cobro2BM1 = precio2B * (1.0 - descBF) + ENVIO_COBRADO_2B;
+        const envioCobrado2BM1 = subtotal2BM1 < UMBRAL_ENVIO_GRATIS ? ENVIO_COBRADO_2B : 0.0;
+        const cobro2BM1 = subtotal2BM1 + envioCobrado2BM1;
         const contrib2BM1 = cobro2BM1 * (1.0 - PASARELA_RATE) - cafe2B - EMPAQUE_2B - costoEnvio;
         cobroSueltoM1 = (1.0 - adopPack) * cobro2BM1 + adopPack * cobroPack;
         contribSueltoM1 = (1.0 - adopPack) * contrib2BM1 + adopPack * contribPack;
@@ -1519,9 +1528,44 @@
     let chartTrampaInstance = null;
 
     function updateCharts(liveRes, refScenarios) {
+      // Actualizar aviso visible del Gráfico 4 cuando ROAS de equilibrio es "No alcanzable" o ROAS 1er pedido es "No aplica"
+      const trampaNoticeEl = document.getElementById('chartTrampaNotice');
+      if (trampaNoticeEl) {
+        const msgs = [];
+        if (liveRes.roasEqPondM1 === null) {
+          msgs.push('• ROAS de Equilibrio Ponderado = "No alcanzable" (valor nulo, no es 0x): la contribución ponderada del 1er pedido es ≤ $0, por lo que ninguna cifra de ventas empataría los costos variables.');
+        }
+        if (liveRes.roas1erPedido === null) {
+          msgs.push('• ROAS Real del 1er Pedido = "No aplica" (valor nulo, no es 0x): la inversión en Meta Ads es $0, por lo que no existe gasto publicitario sobre el cual dividir.');
+        }
+        if (msgs.length > 0) {
+          trampaNoticeEl.style.display = 'block';
+          trampaNoticeEl.innerHTML = msgs.join('<br/>');
+        } else {
+          trampaNoticeEl.style.display = 'none';
+          trampaNoticeEl.innerHTML = '';
+        }
+      }
+
       if (typeof Chart === 'undefined') {
-        document.getElementById('cdnStatus').innerHTML =
-          '⚠️ Sin conexión al CDN de Chart.js: los cálculos y tablas están 100% activos; conéctate a internet para visualizar los 4 lienzos gráficos.';
+        const statusEl = document.getElementById('cdnStatus');
+        if (statusEl) {
+          statusEl.style.background = '#FCEAE8';
+          statusEl.style.color = '#6E140E';
+          statusEl.style.borderColor = '#B8332A';
+          statusEl.style.fontWeight = '700';
+          statusEl.innerHTML =
+            '⚠️ Aviso: Chart.js no se pudo cargar (sin conexión al CDN). Todos los controles, resultados en vivo y tablas comparativas siguen funcionando al 100%.';
+        }
+        document.querySelectorAll('.canvas-wrap').forEach(wrap => {
+          if (!wrap.querySelector('.chart-offline-fallback')) {
+            const msg = document.createElement('div');
+            msg.className = 'chart-offline-fallback';
+            msg.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:1rem;text-align:center;background:#FAF6F0;border:1px dashed #C85A32;border-radius:8px;color:#3B2318;font-size:0.85rem;font-weight:600;';
+            msg.textContent = 'Lienzo gráfico no disponible sin Chart.js (los cálculos y tablas del tablero siguen activos en vivo).';
+            wrap.appendChild(msg);
+          }
+        });
         return;
       }
 
@@ -1601,10 +1645,30 @@
         }
       });
 
-      // 2. Gráfico LTV frente a CAC con líneas 1:1 y 3:1
+      // 2. Gráfico LTV frente a CAC con líneas 1:1 y 3:1 (límites dinámicos en X e Y)
       const ctxLtvCac = document.getElementById('chartLtvCac').getContext('2d');
       if (chartLtvCacInstance) chartLtvCacInstance.destroy();
-      const maxCacAxis = Math.max(90, (liveRes.cacReal || 60) * 1.15);
+
+      const allScenariosForBounds = [
+        refScenarios.actual,
+        refScenarios.agencia,
+        refScenarios.cambio1,
+        refScenarios.cambio2,
+        refScenarios.combinado
+      ];
+      if (liveRes.cacReal !== null) {
+        allScenariosForBounds.push(liveRes);
+      }
+
+      const maxPointCac = Math.max(...allScenariosForBounds.map(s => s.cacReal || 0), 75);
+      const maxPointLtv = Math.max(...allScenariosForBounds.map(s => s.ltvPond || 0), 100);
+      const minPointLtv = Math.min(0, ...allScenariosForBounds.map(s => s.ltvPond || 0));
+
+      const maxCacAxis = Math.ceil(maxPointCac * 1.15);
+      // Asegura que ni los puntos de LTV ni las rectas de umbral 1×CAC y 3×CAC en el rango de CAC de los escenarios queden recortados
+      const maxYAxis = Math.ceil(Math.max(maxPointLtv * 1.15, maxCacAxis * 3.05));
+      const minYAxis = minPointLtv < 0 ? Math.floor(minPointLtv * 1.15) : 0;
+
       chartLtvCacInstance = new Chart(ctxLtvCac, {
         type: 'scatter',
         data: {
@@ -1633,6 +1697,12 @@
               label: 'Cambio 1 ($4k)',
               data: [{ x: refScenarios.cambio1.cacReal, y: refScenarios.cambio1.ltvPond }],
               backgroundColor: '#D9822B',
+              pointRadius: 6
+            },
+            {
+              label: 'Cambio 2 ($8k + Pack)',
+              data: [{ x: refScenarios.cambio2.cacReal, y: refScenarios.cambio2.ltvPond }],
+              backgroundColor: '#7D5642',
               pointRadius: 6
             },
             {
@@ -1682,8 +1752,8 @@
               ticks: { callback: v => '$' + v }
             },
             y: {
-              min: 0,
-              max: 180,
+              min: minYAxis,
+              max: maxYAxis,
               title: { display: true, text: 'LTV Contribución 12M ($)' },
               ticks: { callback: v => '$' + v }
             }
@@ -1759,19 +1829,21 @@
       });
 
       // 4. Gráfico La Trampa: ROAS Meta 3,0 vs ROAS 1er Pedido y ROAS de Equilibrio
+      // Usa valores nulos (null) cuando el indicador es "No alcanzable" o "No aplica", nunca 0.
       const ctxTrampa = document.getElementById('chartTrampa').getContext('2d');
       if (chartTrampaInstance) chartTrampaInstance.destroy();
       const valRoasMeta = 3.00;
-      const valRoasEq = liveRes.roasEqPondM1 !== null ? liveRes.roasEqPondM1 : 0;
-      const valRoas1er = liveRes.roas1erPedido !== null ? liveRes.roas1erPedido : 0;
+      const valRoasEq = liveRes.roasEqPondM1; // null si contribución <= 0 ("No alcanzable")
+      const valRoas1er = liveRes.roas1erPedido; // null si inversión = $0 ("No aplica")
+      const maxRoasForScale = Math.max(3.6, (valRoasEq || 0) * 1.15, (valRoas1er || 0) * 1.15);
 
       chartTrampaInstance = new Chart(ctxTrampa, {
         type: 'bar',
         data: {
           labels: [
             'ROAS Reportado por Meta (Sept.)',
-            'ROAS de Equilibrio Ponderado (Break-even)',
-            'ROAS Real del 1er Pedido (Adquisición)'
+            valRoasEq !== null ? 'ROAS de Equilibrio Ponderado (Break-even)' : 'ROAS de Equilibrio (No alcanzable)',
+            valRoas1er !== null ? 'ROAS Real del 1er Pedido (Adquisición)' : 'ROAS Real del 1er Pedido (No aplica)'
           ],
           datasets: [
             {
@@ -1791,14 +1863,14 @@
             legend: { display: false },
             tooltip: {
               callbacks: {
-                label: ctx => `${fmtNum(ctx.parsed.y, 2)}x`
+                label: ctx => ctx.parsed.y === null ? 'No aplicable / No alcanzable' : `${fmtNum(ctx.parsed.y, 2)}x`
               }
             }
           },
           scales: {
             y: {
               min: 0,
-              max: Math.max(3.6, valRoasEq * 1.15),
+              max: maxRoasForScale,
               title: { display: true, text: 'ROAS (x)' },
               ticks: { callback: v => fmtNum(v, 1) + 'x' }
             }
@@ -2085,3 +2157,4 @@
   </script>
 </body>
 </html>
+
