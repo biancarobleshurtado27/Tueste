@@ -1,27 +1,37 @@
-# Caso A - Tueste: Sistema de Decisiones (Niveles 1, 2 y 3)
+# Caso A - Tueste: Sistema de Decisiones (React + Vite, Express y SQLite + Respaldo HTML y Excel)
 
-## Archivos en el Repositorio
+## Estructura del Proyecto
 
-1. **[`Tueste_Tablero.html`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/Tueste_Tablero.html)**: **Niveles 2 y 3 — Tablero Interactivo de Decisiones (12M) y Simulador de Caja de 24 Meses** en un único archivo autocontenido (`HTML + CSS + JS` con `Chart.js` vía CDN). Se abre directamente con doble clic en cualquier navegador sin instalar dependencias ni servidor. Incluye navegación directa a la sección **`5. Simulador de Caja de 24 Meses (Nivel 3)`** (`#simulador24m`), verificación paso a paso del Mes 1 (`$31.765,4254`), comparación de planes (`Base $8.000`, `Agencia $16.000 + 30% BF` en ambas variantes, `Propio A $4.000` y `Propio B Editable`), validación de las 3 restricciones, exportación CSV de las 24 filas mensuales y Pitch de 2 minutos.
-2. **[`Tueste_Nivel1_Sistema_Decisiones.xlsx`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/Tueste_Nivel1_Sistema_Decisiones.xlsx)**: **Nivel 1 — Sistema en Excel `.xlsx`** con las 6 pestañas del Nivel 1, fórmulas vinculadas sin cifras estáticas contradictorias, validación de rango `$0–$20.000` en inversiones de Meta, protección contra errores cuando la inversión es `$0`, controles de CAC marginal separados y gráfico de líneas nativo (`Mes 0` a `Mes 12`, excluyendo la fila de totales).
-3. **[`Tueste_Nivel1_Sistema_Decisiones_v1_anterior.xlsx`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/Tueste_Nivel1_Sistema_Decisiones_v1_anterior.xlsx)**: Copia conservada de la primera versión para trazabilidad.
-4. **Carpeta [`sheets/`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/sheets)**: Las 6 pestañas sincronizadas en formato `.tsv` ([`01_Inicio.tsv`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/sheets/01_Inicio.tsv) a [`06_Recomendacion.tsv`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/sheets/06_Recomendacion.tsv)).
+1. **[`shared/tuesteModel.js`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/shared/tuesteModel.js)**: **Módulo Matemático y de Validación Compartido** entre el frontend React y el backend Express. Contiene todas las fórmulas sin redondeos intermedios (economía unitaria, interpolación de Meta Ads, curva de contribución acumulada Mes 0 a Mes 12, LTV, Payback y Simulador de Caja de 24 Meses con seguimiento de cohortes por edad 1 a 24).
+2. **[`server/app.js`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/server/app.js) y [`server/db.js`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/server/db.js)**: **Backend Node.js + Express con SQLite Local** (`node:sqlite` con consultas parametrizadas `?`). Recalcula siempre en el servidor usando `shared/tuesteModel.js` y almacena escenarios propios en **`data/tueste.sqlite`**.
+3. **[`src/`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/src/App.jsx)**: **Frontend React + Vite** organizado en tres secciones (**1. Calculadora**, **2. Tablero de decisiones**, **3. Simulador de caja de 24 meses**) más el panel de persistencia SQLite (**Guardar, Cargar, Duplicar, Actualizar y Eliminar con confirmación**, con soporte de cálculo local si el backend no está disponible).
+4. **[`Tueste_Tablero.html`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/Tueste_Tablero.html)**: **Respaldo HTML estático autocontenido** conservado intacto.
+5. **[`Tueste_Nivel1_Sistema_Decisiones.xlsx`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/Tueste_Nivel1_Sistema_Decisiones.xlsx)**: **Nivel 1 — Sistema en Excel `.xlsx`** con las 6 pestañas originales.
 
 ---
 
-## Los 12 Controles Independientes en `Verificación` (Separados y Vinculados)
+## Cómo Iniciar el Backend y el Frontend (Uso Local)
 
-| # | Control Independiente | Valor de Referencia | Celda en `.xlsx` | Valor Calculado |
-| :- | :--- | :--- | :--- | :--- |
-| 1 | Contribución pedido suelto (2 bolsas, \$34) | `$15,89` | `Supuestos!B56` | **`$15,89`** |
-| 2 | Contribución suscripción mensual (2 bolsas, \$30,60) | `$12,643` | `Supuestos!B60` | **`$12,643`** |
-| 3 | Contribución 1er pedido suelto con 30% desc. BF | `$6,149` | `Supuestos!B65` | **`$6,149`** |
-| 4 | Contribución Pack de 3 bolsas (\$48) | `$23,62` | `Supuestos!B68` | **`$23,62`** |
-| 5 | CAC real actual (\$9.000 / 165) | `$54,5454545...` | `Calculadora!B18` | **`$54,5455`** |
-| 6 | Suma de actividad del suscriptor (meses 1 a 12) | `7,528050139848837` | `Supuestos!C52` | **`7,528050139848837`** |
-| 7 | LTV promedio actual a 12 meses (meses 1 a 12) | `$54,79607068771632` | `Calculadora!B22` | **`$54,79607068771632`** |
-| 8 | Payback actual (meses discretos, Mes 0 = `-CAC`) | `Mes 12` | `Calculadora!B24` | **`12`** |
-| 9 | CAC real a \$4.000 con agencia y Payback Cambio 1 Solo | `$50,00` y `Mes 11` | `Calculadora!D18` y `D24` | **`$50,00`** y **`11`** |
-| 10 | CAC real propuesta agencia (\$17.000 / 235) | `$72,3404255...` | `Calculadora!C18` | **`$72,3404`** |
-| 11 | CAC marginal del tramo histórico \$8.000 a \$12.000 | `$4.000 / 45` | `Supuestos!E35` | **`$88,8889`** |
-| 12 | CAC incremental de \$8.000 a \$16.000 | `$8.000 / 70` | `Calculadora!C26` | **`$114,2857`** |
+1. **Instalar dependencias (primera vez):**
+   ```powershell
+   npm install
+   ```
+2. **Iniciar el Backend (Node.js + Express + SQLite en `http://127.0.0.1:3001`):**
+   ```powershell
+   npm run server
+   ```
+   - La base de datos SQLite local se crea y guarda automáticamente en:
+     `c:\Users\NVGWf\OneDrive\Documents\Programacion\BackEnd\semana3\10-30\Tueste\data\tueste.sqlite`
+3. **Iniciar el Frontend (React + Vite en `http://127.0.0.1:5173`):**
+   En otra terminal:
+   ```powershell
+   npm run dev
+   ```
+   Abre `http://127.0.0.1:5173` en el navegador.
+
+---
+
+## Scripts de Verificación Automatizada
+
+- `npm run test:model` (`node shared/verifySharedModel.js`): Verifica los resultados exactos del módulo compartido (Escenario actual, Meta `$4.000`, Agencia, Simulador 24M Base `$8.000`, `$4.000` sin cambios, `$4.000` con Pack y Agencia) y las validaciones de rango.
+- `npm run test:backend` (`node server/verifyBackend.js`): Verifica los endpoints REST, consultas parametrizadas SQLite, rechazo `400` de entradas inválidas, guardado de planes inviables que rompen el piso de `$5.000`, protección `403` de referencias originales y persistencia tras reinicio del servidor.

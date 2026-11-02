@@ -1,0 +1,26 @@
+{
+  "name": "tueste-sistema-decisiones",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Caso A - Tueste: Calculadora, Tablero de Decisiones (12M) y Simulador de Caja (24M) con React + Vite, Express y SQLite",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173",
+    "client": "vite --host 127.0.0.1 --port 5173",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4173",
+    "server": "node server/index.js",
+    "test:model": "node shared/verifySharedModel.js",
+    "test:backend": "node server/verifyBackend.js"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.1",
+    "express": "^4.21.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}
