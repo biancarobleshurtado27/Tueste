@@ -1,10 +1,11 @@
-# Caso A - Tueste: Sistema de Decisiones (Nivel 1 Corregido y Verificado)
+# Caso A - Tueste: Sistema de Decisiones (Nivel 1 y Nivel 2)
 
 ## Archivos en el Repositorio
 
-1. **[`Tueste_Nivel1_Sistema_Decisiones.xlsx`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/Tueste_Nivel1_Sistema_Decisiones.xlsx)**: Archivo Excel `.xlsx` con las 6 pestañas del Nivel 1, fórmulas vinculadas sin cifras estáticas contradictorias, validación de rango `$0–$20.000` en inversiones de Meta, protección contra errores cuando la inversión es `$0`, controles de CAC marginal separados y gráfico de líneas nativo (`Mes 0` a `Mes 12`, excluyendo la fila de totales).
-2. **[`Tueste_Nivel1_Sistema_Decisiones_v1_anterior.xlsx`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/Tueste_Nivel1_Sistema_Decisiones_v1_anterior.xlsx)**: Copia conservada de la primera versión para trazabilidad.
-3. **Carpeta [`sheets/`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/sheets)**: Las 6 pestañas sincronizadas en formato `.tsv` ([`01_Inicio.tsv`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/sheets/01_Inicio.tsv) a [`06_Recomendacion.tsv`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/sheets/06_Recomendacion.tsv)).
+1. **[`Tueste_Tablero.html`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/Tueste_Tablero.html)**: **Nivel 2 — Tablero Interactivo de Decisiones** en un único archivo autocontenido (`HTML + CSS + JS` con `Chart.js` vía CDN). Se abre directamente con doble clic en cualquier navegador sin instalar dependencias ni servidor.
+2. **[`Tueste_Nivel1_Sistema_Decisiones.xlsx`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/Tueste_Nivel1_Sistema_Decisiones.xlsx)**: **Nivel 1 — Sistema en Excel `.xlsx`** con las 6 pestañas del Nivel 1, fórmulas vinculadas sin cifras estáticas contradictorias, validación de rango `$0–$20.000` en inversiones de Meta, protección contra errores cuando la inversión es `$0`, controles de CAC marginal separados y gráfico de líneas nativo (`Mes 0` a `Mes 12`, excluyendo la fila de totales).
+3. **[`Tueste_Nivel1_Sistema_Decisiones_v1_anterior.xlsx`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/Tueste_Nivel1_Sistema_Decisiones_v1_anterior.xlsx)**: Copia conservada de la primera versión para trazabilidad.
+4. **Carpeta [`sheets/`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/sheets)**: Las 6 pestañas sincronizadas en formato `.tsv` ([`01_Inicio.tsv`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/sheets/01_Inicio.tsv) a [`06_Recomendacion.tsv`](file:///c:/Users/NVGWf/OneDrive/Documents/Programacion/BackEnd/semana3/10-30/Tueste/sheets/06_Recomendacion.tsv)).
 
 ---
 

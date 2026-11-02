@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tueste · Tablero Interactivo de Decisiones (Nivel 2)</title>
+  <!-- Chart.js desde CDN (requiere conexión a internet para renderizar los lienzos gráficos) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-cream: #FAF6F0;
+      --bg-card: #FFFFFF;
+      --bg-sand: #F2EAE0;
+      --coffee-900: #24150E;
+      --coffee-800: #3B2318;
+      --coffee-700: #593728;
+      --coffee-500: #7D5642;
+      --terracotta: #C85A32;
+      --terracotta-dark: #A64420;
+      --terracotta-soft: #FBEAE2;
+      --amber: #D9822B;
+      --amber-soft: #FDF3E6;
+      --green: #2E6F40;
+      --green-soft: #E6F4EA;
+      --red: #B8332A;
+      --red-soft: #FCEAE8;
+      --border: #E2D5C5;
+      --shadow: 0 6px 20px rgba(36, 21, 14, 0.07);
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background-color: var(--bg-cream);
+      color: var(--coffee-900);
+      line-height: 1.5;
+      padding-bottom: 3rem;
+    }
+
+    /* Encabezado Principal */
+    header {
+      background: linear-gradient(135deg, var(--coffee-900) 0%, var(--coffee-800) 100%);
+      color: var(--bg-cream);
+      padding: 1.5rem 2rem;
+      border-bottom: 4px solid var(--terracotta);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    }
+
+    .header-inner {
+      max-width: 1380px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .brand-badge {
+      background: var(--terracotta);
+      color: #fff;
+      font-weight: 800;
+      padding: 0.45rem 0.8rem;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+    }
+
+    .brand h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .brand p {
+      font-size: 0.85rem;
+      color: #D8C7B8;
+    }
+
+    .cdn-notice {
+      font-size: 0.78rem;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      color: #EEDCC9;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    /* Navegación de Secciones */
+    .nav-bar {
+      background: var(--bg-sand);
+      border-bottom: 1px solid var(--border);
+      padding: 0.65rem 2rem;
+    }
+
+    .nav-inner {
+      max-width: 1380px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--coffee-800);
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      transition: all 0.18s ease;
+    }
+
+    .nav-links a:hover {
+      background: var(--terracotta);
+      color: #fff;
+    }
+
+    /* Contenedor Principal */
+    .container {
+      max-width: 1380px;
+      margin: 1.5rem auto;
+      padding: 0 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2.2rem;
+    }
+
+    .section-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.6rem;
+      box-shadow: var(--shadow);
+      scroll-margin-top: 95px;
+    }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 2px solid var(--bg-sand);
+    }
+
+    .section-step {
+      display: inline-block;
+      background: var(--terracotta-soft);
+      color: var(--terracotta-dark);
+      font-weight: 700;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 99px;
+      margin-bottom: 0.3rem;
+    }
+
+    .section-title {
+      font-size: 1.35rem;
+      color: var(--coffee-900);
+      font-weight: 800;
+    }
+
+    .section-subtitle {
+      font-size: 0.92rem;
+      color: var(--coffee-700);
+      max-width: 850px;
+    }
+
+    /* Tarjetas de Diagnóstico */
+    .diag-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .diag-card {
+      background: var(--bg-cream);
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--coffee-700);
+      border-radius: 10px;
+      padding: 1.1rem;
+    }
+
+    .diag-card.alert {
+      border-left-color: var(--terracotta);
+      background: var(--terracotta-soft);
+    }
+
+    .diag-card.good {
+      border-left-color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .diag-card h3 {
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--coffee-700);
+      margin-bottom: 0.4rem;
+    }
+
+    .diag-card .big-num {
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: var(--coffee-900);
+      margin-bottom: 0.35rem;
+    }
+
+    .diag-card p {
+      font-size: 0.86rem;
+      color: var(--coffee-800);
+    }
+
+    /* Barra de Escenarios Predefinidos */
+    .preset-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+      background: var(--bg-sand);
+      padding: 0.9rem 1.1rem;
+      border-radius: 10px;
+      margin-bottom: 1.4rem;
+      border: 1px solid var(--border);
+    }
+
+    .preset-label {
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--coffee-800);
+      margin-right: 0.3rem;
+    }
+
+    .btn {
+      cursor: pointer;
+      border: 1px solid var(--coffee-700);
+      background: #fff;
+      color: var(--coffee-900);
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.5rem 0.85rem;
+      border-radius: 8px;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover {
+      background: var(--coffee-800);
+      color: #fff;
+    }
+
+    .btn.active {
+      background: var(--coffee-900);
+      color: #fff;
+      border-color: var(--coffee-900);
+    }
+
+    .btn-restore {
+      background: var(--terracotta);
+      color: #fff;
+      border-color: var(--terracotta-dark);
+      margin-left: auto;
+      font-weight: 700;
+    }
+
+    .btn-restore:hover {
+      background: var(--terracotta-dark);
+    }
+
+    /* Layout del Laboratorio */
+    .lab-layout {
+      display: grid;
+      grid-template-columns: 370px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .lab-layout {
+        grid-template-columns: 1fr;
+      }
+      .btn-restore {
+        margin-left: 0;
+      }
+    }
+
+    /* Panel de Controles */
+    .controls-panel {
+      background: var(--bg-cream);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.2rem;
+    }
+
+    .controls-panel h3 {
+      font-size: 1rem;
+      color: var(--coffee-900);
+      margin-bottom: 0.9rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .control-group {
+      margin-bottom: 0.95rem;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--coffee-800);
+      margin-bottom: 0.3rem;
+    }
+
+    .control-inputs {
+      display: grid;
+      grid-template-columns: 1fr 90px;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--terracotta);
+      cursor: pointer;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 0.35rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--coffee-900);
+      background: #fff;
+      text-align: right;
+    }
+
+    .control-hint {
+      font-size: 0.75rem;
+      color: var(--coffee-500);
+      margin-top: 0.2rem;
+    }
+
+    .pack-box {
+      margin-top: 1rem;
+      padding: 0.9rem;
+      background: var(--bg-sand);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--coffee-900);
+      cursor: pointer;
+    }
+
+    .checkbox-row input {
+      margin-top: 0.2rem;
+      accent-color: var(--terracotta);
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Resultados en Vivo y Semáforo */
+    .live-results {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .semaforo-banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+    }
+
+    .semaforo-banner.red {
+      background: var(--red-soft);
+      border-color: var(--red);
+      color: #6E140E;
+    }
+
+    .semaforo-banner.yellow {
+      background: var(--amber-soft);
+      border-color: var(--amber);
+      color: #6B3D08;
+    }
+
+    .semaforo-banner.green {
+      background: var(--green-soft);
+      border-color: var(--green);
+      color: #154222;
+    }
+
+    .semaforo-Banner-neutral {
+      background: var(--bg-sand);
+      border-color: var(--coffee-500);
+      color: var(--coffee-900);
+    }
+
+    .semaforo-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .semaforo-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 4px rgba(0,0,0,0.08);
+    }
+
+    .red .semaforo-dot { background: var(--red); }
+    .yellow .semaforo-dot { background: var(--amber); }
+    .green .semaforo-dot { background: var(--green); }
+    .semaforo-Banner-neutral .semaforo-dot { background: var(--coffee-500); }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
+      gap: 0.9rem;
+    }
+
+    .kpi-card {
+      background: var(--bg-cream);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.95rem 1rem;
+    }
+
+    .kpi-card.highlight {
+      background: #FFF9F2;
+      border-color: var(--terracotta);
+    }
+
+    .kpi-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--coffee-700);
+      margin-bottom: 0.25rem;
+    }
+
+    .kpi-val {
+      font-size: 1.38rem;
+      font-weight: 800;
+      color: var(--coffee-900);
+    }
+
+    .kpi-sub {
+      font-size: 0.8rem;
+      color: var(--coffee-500);
+      margin-top: 0.2rem;
+    }
+
+    /* Cuadrícula de los 4 Gráficos */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+      margin-top: 0.5rem;
+    }
+
+    @media (max-width: 980px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .chart-card h4 {
+      font-size: 0.96rem;
+      color: var(--coffee-900);
+    }
+
+    .chart-card p.chart-caption {
+      font-size: 0.8rem;
+      color: var(--coffee-700);
+    }
+
+    .canvas-wrap {
+      position: relative;
+      height: 270px;
+      width: 100%;
+    }
+
+    /* Tablas limpias y adaptables */
+    .table-responsive {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.87rem;
+      background: #fff;
+    }
+
+    th, td {
+      padding: 0.65rem 0.85rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--coffee-800);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    th.num, td.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    tr:nth-child(even) td {
+      background: #FCF9F5;
+    }
+
+    td.live-col, th.live-col {
+      background: var(--terracotta-soft);
+      font-weight: 700;
+    }
+
+    th.live-col {
+      background: var(--terracotta);
+      color: #fff;
+    }
+
+    .badge-ok {
+      display: inline-block;
+      background: var(--green-soft);
+      color: var(--green);
+      font-weight: 700;
+      padding: 0.15rem 0.55rem;
+      border-radius: 99px;
+      font-size: 0.76rem;
+    }
+
+    .badge-warn {
+      display: inline-block;
+      background: var(--amber-soft);
+      color: #8A4F08;
+      font-weight: 700;
+      padding: 0.15rem 0.55rem;
+      border-radius: 99px;
+      font-size: 0.76rem;
+    }
+
+    .badge-danger {
+      display: inline-block;
+      background: var(--red-soft);
+      color: var(--red);
+      font-weight: 700;
+      padding: 0.15rem 0.55rem;
+      border-radius: 99px;
+      font-size: 0.76rem;
+    }
+
+    .info-columns {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 1.1rem;
+      margin-top: 1rem;
+    }
+
+    .info-box {
+      background: var(--bg-cream);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem;
+    }
+
+    .info-box h4 {
+      color: var(--coffee-900);
+      margin-bottom: 0.5rem;
+      font-size: 0.98rem;
+    }
+
+    .info-box ul {
+      padding-left: 1.15rem;
+      font-size: 0.85rem;
+      color: var(--coffee-800);
+    }
+
+    .info-box li {
+      margin-bottom: 0.4rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-badge">TUESTE</span>
+        <div>
+          <h1>Tablero Interactivo de Decisiones · Nivel 2</h1>
+          <p>Caso A · Café de especialidad DTC — Adquisición, Contribución y Retención a 12 Meses</p>
+        </div>
+      </div>
+      <div class="cdn-notice" id="cdnStatus">
+        Nota: Los 4 gráficos interactivos usan Chart.js desde CDN (requieren conexión a internet). Los cálculos funcionan 100% en local.
+      </div>
+    </div>
+  </header>
+
+  <nav class="nav-bar">
+    <div class="nav-inner">
+      <div class="nav-links">
+        <a href="#diagnostico">1. Diagnóstico</a>
+        <a href="#laboratorio">2. Laboratorio Interactivo</a>
+        <a href="#comparacion">3. Comparación de Escenarios</a>
+        <a href="#supuestos">4. Supuestos, Pack y Verificación Excel</a>
+      </div>
+      <span style="font-size:0.82rem; color:var(--coffee-700); font-weight:600;">
+        Meta de Diego: decidir antes del viernes si firma o no la propuesta de Black Friday
+      </span>
+    </div>
+  </nav>
+
+  <main class="container">
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 1: DIAGNÓSTICO                                                -->
+    <!-- ===================================================================== -->
+    <section class="section-block" id="diagnostico">
+      <div class="section-header">
+        <div>
+          <span class="section-step">Sección 1 · Diagnóstico del Caso</span>
+          <h2 class="section-title">¿Los anuncios venden o dejan dinero?</h2>
+          <p class="section-subtitle">
+            En septiembre, Meta Ads reportó un ROAS de 3,0x ($24.000 en compras sobre $8.000 invertidos), pero Tueste cerró el mes con <strong>$3.200 menos en el banco</strong> que en agosto. Aquí están las 3 causas numéricas de esa discrepancia (Págs. 2 a 5 del PDF).
+          </p>
+        </div>
+      </div>
+
+      <div class="diag-grid">
+        <div class="diag-card alert">
+          <h3>1. La trampa de atribución de Meta</h3>
+          <div class="big-num">706 vs. 165</div>
+          <p>
+            Meta se adjudicó <strong>706 compras ($24.000)</strong> porque suma campañas de retargeting a clientes que ya compraban (<em>Visitantes 30d</em> y <em>Compradores 180d</em>) y vistas de 1 día sin clic. En realidad, por Meta llegaron solo <strong>165 clientes nuevos</strong> (Pág. 4).
+          </p>
+        </div>
+
+        <div class="diag-card">
+          <h3>2. Ventas no son contribución</h3>
+          <div class="big-num">$15,89 / $34</div>
+          <p>
+            De un pedido suelto de 2 bolsas (<strong>$34,00</strong>), Tueste paga $10,88 de café, $4,50 de envío, $1,20 de empaque y $1,53 de pasarela (4,5%). Quedan <strong>$15,89 de contribución (46,74%)</strong>. En suscripción ($30,60) quedan <strong>$12,643 (41,32%)</strong> (Pág. 3).
+          </p>
+        </div>
+
+        <div class="diag-card">
+          <h3>3. El primer pedido no paga el CAC</h3>
+          <div class="big-num">$15,40 vs. $54,55</div>
+          <p>
+            Con $8.000 en Meta + $1.000 de agencia para 165 clientes nuevos, el <strong>CAC real es $54,55</strong>. En su primer mes un cliente promedio deja <strong>$15,40 de contribución</strong>: cada cliente nuevo abre un hueco inicial de caja de <strong>-$39,14</strong> que tarda <strong>12 meses</strong> en empatarse.
+          </p>
+        </div>
+
+        <div class="diag-card good">
+          <h3>4. Por qué duplicar a $16.000 + 30% BF falla</h3>
+          <div class="big-num">-$25,82 / cliente</div>
+          <p>
+            Subir de $8.000 a $16.000 solo trae <strong>70 clientes extra</strong> (de 165 a 235: cada cliente adicional cuesta <strong>$114,29</strong> en anuncios) y el 30% de descuento baja la contribución del 1er pedido suelto a <strong>$6,149</strong>. El LTV ($46,52) queda debajo del CAC real ($72,34).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 2: LABORATORIO INTERACTIVO                                    -->
+    <!-- ===================================================================== -->
+    <section class="section-block" id="laboratorio">
+      <div class="section-header">
+        <div>
+          <span class="section-step">Sección 2 · Laboratorio en Vivo</span>
+          <h2 class="section-title">Simulador de Adquisición, Precios y Retención</h2>
+          <p class="section-subtitle">
+            Mueve cualquier deslizador o carga un escenario predefinido. Todos los indicadores y los 4 gráficos se recalculan al instante sin redondeos intermedios.
+          </p>
+        </div>
+      </div>
+
+      <!-- Barra de Escenarios y Restauración -->
+      <div class="preset-bar">
+        <span class="preset-label">Cargar escenario en el laboratorio:</span>
+        <button type="button" class="btn active" id="btnPresetActual" onclick="loadPreset('actual')">Actual ($8.000)</button>
+        <button type="button" class="btn" id="btnPresetAgencia" onclick="loadPreset('agencia')">Agencia ($16.000 + 30% BF)</button>
+        <button type="button" class="btn" id="btnPresetCambio1" onclick="loadPreset('cambio1')">Cambio 1 ($4.000)</button>
+        <button type="button" class="btn" id="btnPresetCambio2" onclick="loadPreset('cambio2')">Cambio 2 (Pack $48 + Envío)</button>
+        <button type="button" class="btn" id="btnPresetCombinado" onclick="loadPreset('combinado')">Combinado ($4.000 + Pack/Envío)</button>
+        <button type="button" class="btn btn-restore" id="btnRestaurar" onclick="loadPreset('actual')">↺ Restaurar datos del caso</button>
+      </div>
+
+      <div class="lab-layout">
+        <!-- Columna Izquierda: Los 9 Controles Obligatorios + Pack -->
+        <aside class="controls-panel">
+          <h3>Controles del Escenario de Trabajo</h3>
+
+          <!-- 1. Inversión Meta -->
+          <div class="control-group">
+            <div class="control-header">
+              <label for="numInversion">1. Inversión mensual en Meta ($)</label>
+              <span id="lblInversion">$8.000</span>
+            </div>
+            <div class="control-inputs">
+              <input type="range" id="rngInversion" min="0" max="20000" step="500" value="8000" oninput="syncControl('Inversion', this.value)" />
+              <input type="number" id="numInversion" min="0" max="20000" step="100" value="8000" oninput="syncControl('Inversion', this.value)" />
+            </div>
+            <div class="control-hint">Rango histórico válido: $0 a $20.000 (interpolación lineal por tramos).</div>
+          </div>
+
+          <!-- 2. Precio por bolsa -->
+          <div class="control-group">
+            <div class="control-header">
+              <label for="numPrecioBolsa">2. Precio por bolsa ($)</label>
+              <span id="lblPrecioBolsa">$17,00</span>
+            </div>
+            <div class="control-inputs">
+              <input type="range" id="rngPrecioBolsa" min="10" max="30" step="0.5" value="17" oninput="syncControl('PrecioBolsa', this.value)" />
+              <input type="number" id="numPrecioBolsa" min="5" max="50" step="0.25" value="17" oninput="syncControl('PrecioBolsa', this.value)" />
+            </div>
+            <div class="control-hint">Pedido típico: 2 bolsas ($<span id="hintPrecio2B">34,00</span>). Suscripción 2 bolsas (-10%): $<span id="hintPrecioSusc">30,60</span>.</div>
+          </div>
+
+          <!-- 3. Costo del café por bolsa -->
+          <div class="control-group">
+            <div class="control-header">
+              <label for="numCostoCafe">3. Costo del café por bolsa ($)</label>
+              <span id="lblCostoCafe">$5,44</span>
+            </div>
+            <div class="control-inputs">
+              <input type="range" id="rngCostoCafe" min="2" max="12" step="0.08" value="5.44" oninput="syncControl('CostoCafe', this.value)" />
+              <input type="number" id="numCostoCafe" min="0" max="30" step="0.01" value="5.44" oninput="syncControl('CostoCafe', this.value)" />
+            </div>
+            <div class="control-hint">2 bolsas = $<span id="hintCafe2B">10,88</span>. No baja cuando se hacen descuentos.</div>
+          </div>
+
+          <!-- 4. Costo del envío -->
+          <div class="control-group">
+            <div class="control-header">
+              <label for="numCostoEnvio">4. Costo del envío pagado por Tueste ($)</label>
+              <span id="lblCostoEnvio">$4,50</span>
+            </div>
+            <div class="control-inputs">
+              <input type="range" id="rngCostoEnvio" min="0" max="12" step="0.25" value="4.50" oninput="syncControl('CostoEnvio', this.value)" />
+              <input type="number" id="numCostoEnvio" min="0" max="25" step="0.10" value="4.50" oninput="syncControl('CostoEnvio', this.value)" />
+            </div>
+            <div class="control-hint">Más $1,20 de caja/empaque en pedidos de 2 bolsas y 4,5% de pasarela.</div>
+          </div>
+
+          <!-- 5. Porcentaje de suscriptores -->
+          <div class="control-group">
+            <div class="control-header">
+              <label for="numPctSusc">5. Porcentaje de suscriptores (%)</label>
+              <span id="lblPctSusc">15,0%</span>
+            </div>
+            <div class="control-inputs">
+              <input type="range" id="rngPctSusc" min="0" max="100" step="1" value="15" oninput="syncControl('PctSusc', this.value)" />
+              <input type="number" id="numPctSusc" min="0" max="100" step="1" value="15" oninput="syncControl('PctSusc', this.value)" />
+            </div>
+            <div class="control-hint">Compradores sueltos: <span id="hintPctSuelto">85,0%</span> de los clientes nuevos.</div>
+          </div>
+
+          <!-- 6. Cancelación mensual de suscriptores -->
+          <div class="control-group">
+            <div class="control-header">
+              <label for="numChurn">6. Cancelación mensual suscriptores (%)</label>
+              <span id="lblChurn">9,0%</span>
+            </div>
+            <div class="control-inputs">
+              <input type="range" id="rngChurn" min="0" max="100" step="1" value="9" oninput="syncControl('Churn', this.value)" />
+              <input type="number" id="numChurn" min="0" max="100" step="0.5" value="9" oninput="syncControl('Churn', this.value)" />
+            </div>
+            <div class="control-hint">Permanencia mensual: <span id="hintPermanencia">91,0%</span> (<span id="hintMesesSusc">7,53</span> pagos esperados en 12M).</div>
+          </div>
+
+          <!-- 7. Pedidos del comprador suelto en 12 meses -->
+          <div class="control-group">
+            <div class="control-header">
+              <label for="numPedidosSuelto">7. Pedidos comprador suelto en 12M</label>
+              <span id="lblPedidosSuelto">3,00</span>
+            </div>
+            <div class="control-inputs">
+              <input type="range" id="rngPedidosSuelto" min="1" max="8" step="0.1" value="3.0" oninput="syncControl('PedidosSuelto', this.value)" />
+              <input type="number" id="numPedidosSuelto" min="1" max="12" step="0.1" value="3.0" oninput="syncControl('PedidosSuelto', this.value)" />
+            </div>
+            <div class="control-hint">Mínimo 1 pedido (Mes 1 = 1,00 fijo; escala proporcionalmente meses 2 a 12).</div>
+          </div>
+
+          <!-- 8. Fee de agencia -->
+          <div class="control-group">
+            <div class="control-header">
+              <label for="numFeeAgencia">8. Fee mensual de agencia ($)</label>
+              <span id="lblFeeAgencia">$1.000</span>
+            </div>
+            <div class="control-inputs">
+              <input type="range" id="rngFeeAgencia" min="0" max="3000" step="100" value="1000" oninput="syncControl('FeeAgencia', this.value)" />
+              <input type="number" id="numFeeAgencia" min="0" max="10000" step="100" value="1000" oninput="syncControl('FeeAgencia', this.value)" />
+            </div>
+            <div class="control-hint">Se cobra solo si la inversión en Meta es mayor a $0.</div>
+          </div>
+
+          <!-- 9. Descuento del primer pedido suelto -->
+          <div class="control-group">
+            <div class="control-header">
+              <label for="numDescuentoBF">9. Descuento 1er pedido suelto (%)</label>
+              <span id="lblDescuentoBF">0,0%</span>
+            </div>
+            <div class="control-inputs">
+              <input type="range" id="rngDescuentoBF" min="0" max="60" step="5" value="0" oninput="syncControl('DescuentoBF', this.value)" />
+              <input type="number" id="numDescuentoBF" min="0" max="100" step="1" value="0" oninput="syncControl('DescuentoBF', this.value)" />
+            </div>
+            <div class="control-hint">Aplica únicamente al primer pedido de compradores sueltos (Mes 1).</div>
+          </div>
+
+          <!-- Control Opcional: Política de Pack $48 y Envío -->
+          <div class="pack-box">
+            <label class="checkbox-row">
+              <input type="checkbox" id="chkPolPack" onchange="updateDashboard()" />
+              <span>Activar Pack 3 bolsas ($48) y cobrar envío ($4,50) en pedidos sueltos menores a $45</span>
+            </label>
+            <div class="control-group" style="margin-top:0.75rem; margin-bottom:0;">
+              <div class="control-header">
+                <label for="numAdopcionPack">Supuesto adopción Pack (1er pedido suelto)</label>
+                <span id="lblAdopcionPack">20,0%</span>
+              </div>
+              <div class="control-inputs">
+                <input type="range" id="rngAdopcionPack" min="0" max="100" step="5" value="20" oninput="syncControl('AdopcionPack', this.value)" />
+                <input type="number" id="numAdopcionPack" min="0" max="100" step="1" value="20" oninput="syncControl('AdopcionPack', this.value)" />
+              </div>
+              <div class="control-hint">Supuesto de sensibilidad editable (no es un dato original del PDF). Suscripciones mantienen envío gratis.</div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Columna Derecha: Semáforo + Resultados en Vivo + 4 Gráficos -->
+        <div class="live-results">
+
+          <!-- Semáforo LTV:CAC -->
+          <div class="semaforo-banner yellow" id="semaforoBanner">
+            <div class="semaforo-indicator">
+              <div class="semaforo-dot"></div>
+              <div>
+                <div style="font-weight:800; font-size:1.05rem;" id="semaforoTitulo">Semáforo LTV:CAC — AMARILLO (1,00x: entre 1,0x y 3,0x)</div>
+                <div style="font-size:0.84rem;" id="semaforoDesc">
+                  El cliente apenas recupera su CAC en el mes 12. Advertencia: este semáforo mide solo contribución frente a CAC; un color amarillo o verde no garantiza caja suficiente ni beneficio neto después de cubrir los $6.500/mes de costos fijos.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tarjetas de Resultados en Vivo -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-label">Contribución 1er Pedido Suelto</div>
+              <div class="kpi-val" id="kpiContribSuelto">$15,89</div>
+              <div class="kpi-sub" id="kpiContribSueltoPct">46,74% del cobro ($34,00)</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-label">Contribución Suscripción (Mes)</div>
+              <div class="kpi-val" id="kpiContribSusc">$12,643</div>
+              <div class="kpi-sub" id="kpiContribSuscPct">41,32% del cobro ($30,60)</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-label">ROAS de Equilibrio (Break-even)</div>
+              <div class="kpi-val" id="kpiRoasEqPond">2,18x</div>
+              <div class="kpi-sub" id="kpiRoasEqDetalle">Suelto: 2,14x · Suscr.: 2,42x</div>
+            </div>
+
+            <div class="kpi-card highlight">
+              <div class="kpi-label">CAC Real (con Agencia)</div>
+              <div class="kpi-val" id="kpiCacReal">$54,55</div>
+              <div class="kpi-sub" id="kpiCacDetalle">CAC Anuncios: $48,48 · 165 clientes</div>
+            </div>
+
+            <div class="kpi-card highlight">
+              <div class="kpi-label">LTV Contribución (12 Meses)</div>
+              <div class="kpi-val" id="kpiLtvPond">$54,80</div>
+              <div class="kpi-sub" id="kpiLtvDetalle">Suelto: $47,67 · Suscr.: $95,18</div>
+            </div>
+
+            <div class="kpi-card highlight">
+              <div class="kpi-label">Ratio LTV:CAC y Payback</div>
+              <div class="kpi-val" id="kpiLtvCacPayback">1,00x · Mes 12</div>
+              <div class="kpi-sub" id="kpiNetoCliente">Neto 12M: +$0,25/cliente (+$41,35 cohorte)</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-label">ROAS Real del 1er Pedido</div>
+              <div class="kpi-val" id="kpiRoas1erPedido">0,69x</div>
+              <div class="kpi-sub" id="kpiRoas1erDetalle">Solo clientes nuevos vs. 3,00x Meta</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-label">CAC Marginal del Tramo Histórico</div>
+              <div class="kpi-val" id="kpiCacMarginalTramo">$61,54</div>
+              <div class="kpi-sub" id="kpiCacMarginalDesc">Tramo $4.000 a $8.000 ($4.000 / 65)</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-label">CAC Incremental vs. Base ($8.000)</div>
+              <div class="kpi-val" id="kpiCacIncremental">No aplica</div>
+              <div class="kpi-sub" id="kpiCacIncrementalDesc">Compara inversión elegida contra $8.000</div>
+            </div>
+          </div>
+
+          <!-- Los 4 Gráficos Obligatorios -->
+          <div class="charts-grid">
+            <!-- Gráfico 1 -->
+            <div class="chart-card">
+              <h4>1. Curva de Caja Acumulada de un Cliente (Mes 0 a Mes 12)</h4>
+              <p class="chart-caption">
+                El Mes 0 muestra exclusivamente el desembolso de adquisición (-CAC real). El Payback ocurre en el primer mes donde la curva cruza la línea cero.
+              </p>
+              <div class="canvas-wrap">
+                <canvas id="chartCurva"></canvas>
+              </div>
+            </div>
+
+            <!-- Gráfico 2 -->
+            <div class="chart-card">
+              <h4>2. LTV a 12 Meses frente a CAC Real (Umbrales 1:1 y 3:1)</h4>
+              <p class="chart-caption">
+                Debajo de la línea roja (LTV = CAC) se pierde dinero en 12 meses. Entre la línea roja y la verde (LTV = 3×CAC) es zona amarilla.
+              </p>
+              <div class="canvas-wrap">
+                <canvas id="chartLtvCac"></canvas>
+              </div>
+            </div>
+
+            <!-- Gráfico 3 -->
+            <div class="chart-card">
+              <h4>3. Clientes Nuevos según Inversión y CAC Marginal por Tramo</h4>
+              <p class="chart-caption">
+                Rendimientos decrecientes del historial (Pág. 5): cada tramo de $4.000 trae menos clientes adicionales y dispara el CAC marginal.
+              </p>
+              <div class="canvas-wrap">
+                <canvas id="chartHistorial"></canvas>
+              </div>
+            </div>
+
+            <!-- Gráfico 4 -->
+            <div class="chart-card">
+              <h4>4. La Trampa a la Vista: ROAS Meta (3,0x) vs. ROAS 1er Pedido y Break-even</h4>
+              <p class="chart-caption">
+                <strong>Aclaración metodológica:</strong> El ROAS histórico de Meta (3,0x) incluye ventas atribuidas a clientes previos (retargeting y vistas de 1 día), mientras que el ROAS del 1er pedido cuenta solo la primera compra de clientes nuevos. Compararlos explica por qué baja el banco, pero no demuestra causalidad ni que Meta haya causado todas las ventas.
+              </p>
+              <div class="canvas-wrap">
+                <canvas id="chartTrampa"></canvas>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 3: COMPARACIÓN DE ESCENARIOS                                  -->
+    <!-- ===================================================================== -->
+    <section class="section-block" id="comparacion">
+      <div class="section-header">
+        <div>
+          <span class="section-step">Sección 3 · Comparación Lado a Lado</span>
+          <h2 class="section-title">Escenarios Fijos de Referencia vs. Tu Escenario de Trabajo</h2>
+          <p class="section-subtitle">
+            Los 5 escenarios del Nivel 1 permanecen fijos con los datos originales del caso para que siempre tengas un punto de comparación intacto mientras experimentas en la última columna.
+          </p>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table id="tablaComparacion">
+          <thead>
+            <tr>
+              <th>Indicador / Métrica</th>
+              <th class="num">Actual ($8.000)</th>
+              <th class="num">Agencia ($16.000 + 30% BF)</th>
+              <th class="num">Cambio 1 Solo (Meta $4.000)</th>
+              <th class="num">Cambio 2 Solo (Pack + Envío, $8k)</th>
+              <th class="num">Combinado ($4k + Pack/Envío)</th>
+              <th class="num live-col">Tu Escenario en Vivo</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyComparacion">
+            <!-- Rellenado dinámicamente por JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 4: SUPUESTOS, CUENTAS, SENSIBILIDAD DEL PACK Y VERIFICACIÓN   -->
+    <!-- ===================================================================== -->
+    <section class="section-block" id="supuestos">
+      <div class="section-header">
+        <div>
+          <span class="section-step">Sección 4 · Transparencia, Supuestos y Verificación</span>
+          <h2 class="section-title">Supuestos Explícitos, Sensibilidad del Pack y Contraste con el Excel (Nivel 1)</h2>
+          <p class="section-subtitle">
+            Distinción estricta entre datos originales del PDF, propuestas comerciales, supuestos de sensibilidad e incertidumbres que requieren validación empírica.
+          </p>
+        </div>
+      </div>
+
+      <div class="info-columns">
+        <div class="info-box">
+          <h4>Datos Originales y Reglas de Cálculo (Págs. 3 a 7)</h4>
+          <ul>
+            <li><strong>Pedido suelto típico (Pág. 3):</strong> 2 bolsas a $17 = $34,00. Costo café: 2 × $5,44 = $10,88 (no baja si hay descuento). Empaque: $1,20. Envío pagado por Tueste: $4,50. Pasarela: 4,5% sobre lo cobrado ($1,53). <strong>Contribución = $15,89 (46,74%)</strong>.</li>
+            <li><strong>Suscripción mensual (Pág. 3 y 5):</strong> 2 bolsas con 10% de descuento = $30,60/mes. Pasarela (4,5%): $1,377. Café: $10,88. Empaque: $1,20. Envío: $4,50. <strong>Contribución = $12,643 (41,32%)</strong>.</li>
+            <li><strong>Mezcla y actividad en 12 meses (Pág. 5):</strong> 85% sueltos y 15% suscriptores. El comprador suelto realiza 3,00 pedidos en los meses 1 a 12: <code>[1, 0.15, 0.20, 0.20, 0.20, 0.20, 0.20, 0.15, 0.15, 0.15, 0.20, 0.20]</code>. El suscriptor tiene permanencia mensual de 91% (<code>0,91^(m-1)</code> en meses 1 a 12, sumando <strong>7,52805014 pagos esperados</strong>).</li>
+            <li><strong>Supuesto al editar pedidos anuales sueltos:</strong> se conserva el primer pedido en 1,00 en el mes 1 y se escalan proporcionalmente las recompras de los meses 2 a 12 por <code>(Pedidos_Totales - 1) / 2</code>.</li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <h4>Pack de 3 Bolsas ($48), Política de Envío y Sensibilidad (Pág. 6)</h4>
+          <ul>
+            <li><strong>Contribución unitaria del Pack ($48):</strong> $48,00 cobrado (envío gratis desde $45) − $2,16 pasarela (4,5%) − $16,32 café (3 × $5,44) − $1,40 caja grande − $4,50 envío = <strong>$23,62 por pack (49,21%)</strong>.</li>
+            <li><strong>Pedido suelto de 2 bolsas cobrando envío ($4,50):</strong> el cliente paga $34,00 + $4,50 = $38,50. Menos 4,5% pasarela ($1,7325) y $16,58 de costos, la contribución sube de $15,89 a <strong>$20,1875 por pedido</strong>.</li>
+            <li><strong>Supuesto explícito en suscripciones:</strong> se mantiene envío gratis en suscripciones ($30,60/mes, contribución $12,643), pues cobrarles $4,50 subiría su precio a $35,10 (más caro que comprar suelto a $34). Aun así, esto <strong>no garantiza conservar el 91% de retención</strong>.</li>
+            <li><strong>Sensibilidad separada de 2 packs por año:</strong> si quien compra el Pack lleva 3 bolsas por vez y consume las mismas 6 bolsas al año haciendo solo <strong>2 pedidos anuales del Pack</strong> (en vez de 3 pedidos de 2 bolsas), su contribución anual suelta es <strong>2 × $23,62 = $47,24</strong> (inferior a los $47,67 actuales).</li>
+            <li><strong>Advertencia comercial:</strong> cobrar envío bajo $45 puede reducir la tasa de conversión de los anuncios y la frecuencia de recompra. No son mejoras garantizadas; requieren prueba piloto.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Tabla de Verificación contra el Excel del Nivel 1 -->
+      <h3 style="margin: 1.5rem 0 0.75rem; font-size: 1.05rem; color: var(--coffee-900);">
+        Tabla de Verificación Automática contra el Excel Final del Nivel 1 (Diferencia &lt; 1%)
+      </h3>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Control de Verificación (Nivel 1 Excel vs. Nivel 2 Tablero)</th>
+              <th class="num">Valor Calculado por el Tablero</th>
+              <th class="num">Valor de Referencia (Excel Nivel 1)</th>
+              <th class="num">Diferencia Absoluta</th>
+              <th class="num">Diferencia (%)</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyVerificacion">
+            <!-- Generado automáticamente por JS al inicializar -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // DATOS ORIGINALES DEL CASO TUESTE (NIVEL 1 / PDF PÁGS. 3-7)
+    // =========================================================================
+    const BASE_SUELTO_CURVE = [1.00, 0.15, 0.20, 0.20, 0.20, 0.20, 0.20, 0.15, 0.15, 0.15, 0.20, 0.20];
+    const META_HISTORY = [
+      { inv: 0,     clientes: 0   },
+      { inv: 4000,  clientes: 100 },
+      { inv: 8000,  clientes: 165 },
+      { inv: 12000, clientes: 210 },
+      { inv: 16000, clientes: 235 },
+      { inv: 20000, clientes: 250 }
+    ];
+    const PASARELA_RATE = 0.045;
+    const EMPAQUE_2B = 1.20;
+    const EMPAQUE_3B = 1.40;
+    const PRECIO_PACK_3B = 48.00;
+    const ENVIO_COBRADO_2B = 4.50;
+
+    const PRESETS = {
+      actual: {
+        inversion: 8000,
+        precioBolsa: 17.00,
+        costoCafe: 5.44,
+        costoEnvio: 4.50,
+        pctSusc: 15.0,
+        churn: 9.0,
+        pedidosSuelto: 3.0,
+        feeAgencia: 1000,
+        descuentoBF: 0.0,
+        polPack: false,
+        adopcionPack: 20.0
+      },
+      agencia: {
+        inversion: 16000,
+        precioBolsa: 17.00,
+        costoCafe: 5.44,
+        costoEnvio: 4.50,
+        pctSusc: 15.0,
+        churn: 9.0,
+        pedidosSuelto: 3.0,
+        feeAgencia: 1000,
+        descuentoBF: 30.0,
+        polPack: false,
+        adopcionPack: 20.0
+      },
+      cambio1: {
+        inversion: 4000,
+        precioBolsa: 17.00,
+        costoCafe: 5.44,
+        costoEnvio: 4.50,
+        pctSusc: 15.0,
+        churn: 9.0,
+        pedidosSuelto: 3.0,
+        feeAgencia: 1000,
+        descuentoBF: 0.0,
+        polPack: false,
+        adopcionPack: 20.0
+      },
+      cambio2: {
+        inversion: 8000,
+        precioBolsa: 17.00,
+        costoCafe: 5.44,
+        costoEnvio: 4.50,
+        pctSusc: 15.0,
+        churn: 9.0,
+        pedidosSuelto: 3.0,
+        feeAgencia: 1000,
+        descuentoBF: 0.0,
+        polPack: true,
+        adopcionPack: 20.0
+      },
+      combinado: {
+        inversion: 4000,
+        precioBolsa: 17.00,
+        costoCafe: 5.44,
+        costoEnvio: 4.50,
+        pctSusc: 15.0,
+        churn: 9.0,
+        pedidosSuelto: 3.0,
+        feeAgencia: 1000,
+        descuentoBF: 0.0,
+        polPack: true,
+        adopcionPack: 20.0
+      }
+    };
+
+    // =========================================================================
+    // MOTOR MATEMÁTICO (SIN REDONDEOS INTERMEDIOS, IDÉNTICO AL EXCEL NIVEL 1)
+    // =========================================================================
+    function interpolateClientes(invInput) {
+      const inv = Math.max(0, Math.min(20000, Number(invInput) || 0));
+      if (inv <= 0) return 0;
+      for (let i = 1; i < META_HISTORY.length; i++) {
+        const p0 = META_HISTORY[i - 1];
+        const p1 = META_HISTORY[i];
+        if (inv <= p1.inv) {
+          return p0.clientes + ((inv - p0.inv) * (p1.clientes - p0.clientes)) / (p1.inv - p0.inv);
+        }
+      }
+      return META_HISTORY[META_HISTORY.length - 1].clientes;
+    }
+
+    function getMarginalTramoInfo(invInput) {
+      const inv = Math.max(0, Math.min(20000, Number(invInput) || 0));
+      if (inv <= 0) {
+        return { val: null, label: "No aplica (Inversión $0)" };
+      }
+      for (let i = 1; i < META_HISTORY.length; i++) {
+        const p0 = META_HISTORY[i - 1];
+        const p1 = META_HISTORY[i];
+        if (inv <= p1.inv) {
+          const deltaInv = p1.inv - p0.inv;
+          const deltaCli = p1.clientes - p0.clientes;
+          return {
+            val: deltaInv / deltaCli,
+            label: `Tramo $${p0.inv.toLocaleString('es-ES')} a $${p1.inv.toLocaleString('es-ES')} ($${deltaInv.toLocaleString('es-ES')} / ${deltaCli})`
+          };
+        }
+      }
+      return { val: null, label: "No aplica" };
+    }
+
+    function computeScenario(params) {
+      const inv = Math.max(0, Math.min(20000, Number(params.inversion) || 0));
+      const precioBolsa = Math.max(0, Number(params.precioBolsa) || 0);
+      const costoCafe = Math.max(0, Number(params.costoCafe) || 0);
+      const costoEnvio = Math.max(0, Number(params.costoEnvio) || 0);
+      const mixSusc = Math.max(0, Math.min(100, Number(params.pctSusc) || 0)) / 100.0;
+      const mixSuelto = 1.0 - mixSusc;
+      const churn = Math.max(0, Math.min(100, Number(params.churn) || 0)) / 100.0;
+      const permanencia = 1.0 - churn;
+      const pedidosSuelto = Math.max(1.0, Number(params.pedidosSuelto) || 1.0);
+      const feeUnit = Math.max(0, Number(params.feeAgencia) || 0);
+      const descBF = Math.max(0, Math.min(100, Number(params.descuentoBF) || 0)) / 100.0;
+      const polPack = Boolean(params.polPack);
+      const adopPack = Math.max(0, Math.min(100, Number(params.adopcionPack) || 0)) / 100.0;
+
+      // Costos y precios base para 2 bolsas
+      const precio2B = 2.0 * precioBolsa;
+      const cafe2B = 2.0 * costoCafe;
+      const cafe3B = 3.0 * costoCafe;
+
+      // Pedido suelto normal (sin política de cobro de envío)
+      const cobroSueltoBase = precio2B;
+      const contribSueltoBase = cobroSueltoBase * (1.0 - PASARELA_RATE) - cafe2B - EMPAQUE_2B - costoEnvio;
+
+      // Pedido suelto de 2 bolsas cobrando $4,50 de envío al cliente
+      const cobroSueltoConEnvio = precio2B + ENVIO_COBRADO_2B;
+      const contribSueltoConEnvio = cobroSueltoConEnvio * (1.0 - PASARELA_RATE) - cafe2B - EMPAQUE_2B - costoEnvio;
+
+      // Pack de 3 bolsas a $48
+      const cobroPack = PRECIO_PACK_3B;
+      const contribPack = cobroPack * (1.0 - PASARELA_RATE) - cafe3B - EMPAQUE_3B - costoEnvio;
+
+      // Primer pedido suelto (Mes 1) y recompras sueltas (Meses 2 a 12)
+      let cobroSueltoM1, contribSueltoM1, cobroSueltoRecompra, contribSueltoRecompra;
+      if (!polPack) {
+        cobroSueltoM1 = precio2B * (1.0 - descBF);
+        contribSueltoM1 = cobroSueltoM1 * (1.0 - PASARELA_RATE) - cafe2B - EMPAQUE_2B - costoEnvio;
+        cobroSueltoRecompra = cobroSueltoBase;
+        contribSueltoRecompra = contribSueltoBase;
+      } else {
+        const cobro2BM1 = precio2B * (1.0 - descBF) + ENVIO_COBRADO_2B;
+        const contrib2BM1 = cobro2BM1 * (1.0 - PASARELA_RATE) - cafe2B - EMPAQUE_2B - costoEnvio;
+        cobroSueltoM1 = (1.0 - adopPack) * cobro2BM1 + adopPack * cobroPack;
+        contribSueltoM1 = (1.0 - adopPack) * contrib2BM1 + adopPack * contribPack;
+        cobroSueltoRecompra = cobroSueltoConEnvio;
+        contribSueltoRecompra = contribSueltoConEnvio;
+      }
+
+      const pctContribSueltoM1 = cobroSueltoM1 > 0 ? (contribSueltoM1 / cobroSueltoM1) : 0;
+      const roasEqSueltoM1 = contribSueltoM1 > 0 ? (cobroSueltoM1 / contribSueltoM1) : null;
+
+      // Suscripción mensual (2 bolsas con 10% de descuento sobre precio de lista de 2 bolsas)
+      const cobroSusc = precio2B * 0.90;
+      const contribSusc = cobroSusc * (1.0 - PASARELA_RATE) - cafe2B - EMPAQUE_2B - costoEnvio;
+      const pctContribSusc = cobroSusc > 0 ? (contribSusc / cobroSusc) : 0;
+      const roasEqSusc = contribSusc > 0 ? (cobroSusc / contribSusc) : null;
+
+      // Ponderados del 1er pedido (Mes 1)
+      const ingresoPondM1 = mixSuelto * cobroSueltoM1 + mixSusc * cobroSusc;
+      const contribPondM1 = mixSuelto * contribSueltoM1 + mixSusc * contribSusc;
+      const roasEqPondM1 = contribPondM1 > 0 ? (ingresoPondM1 / contribPondM1) : null;
+
+      // Clientes nuevos y CAC
+      const clientesNuevos = interpolateClientes(inv);
+      const feeEfectivo = inv > 0 ? feeUnit : 0.0;
+      const gastoTotalAdq = inv + feeEfectivo;
+      const cacAnuncios = (inv > 0 && clientesNuevos > 0) ? (inv / clientesNuevos) : null;
+      const cacReal = (inv > 0 && clientesNuevos > 0) ? (gastoTotalAdq / clientesNuevos) : null;
+      const roas1erPedido = (inv > 0 && clientesNuevos > 0) ? ((clientesNuevos * ingresoPondM1) / inv) : null;
+
+      // Curva de actividad de meses 1 a 12
+      // Escala proporcionalmente meses 2 a 12 conservando Mes 1 = 1.00
+      const scaleRecompras = (pedidosSuelto - 1.0) / 2.0;
+      const actSuelto = BASE_SUELTO_CURVE.map((val, idx) => idx === 0 ? 1.0 : val * scaleRecompras);
+      const actSusc = [];
+      for (let m = 1; m <= 12; m++) {
+        // Con churn 100% (permanencia = 0), m=1 es 1.0 y m>=2 es 0.0. Con churn 0% (permanencia = 1), todos son 1.0.
+        actSusc.push(m === 1 ? 1.0 : Math.pow(permanencia, m - 1));
+      }
+      const sumActSuelto = actSuelto.reduce((a, b) => a + b, 0);
+      const sumActSusc = actSusc.reduce((a, b) => a + b, 0);
+
+      // LTV de contribución a 12 meses (suma exacta de meses 1 a 12)
+      const ltvSuelto = actSuelto[0] * contribSueltoM1 + (sumActSuelto - actSuelto[0]) * contribSueltoRecompra;
+      const ltvSusc = sumActSusc * contribSusc;
+      const ltvPond = mixSuelto * ltvSuelto + mixSusc * ltvSusc;
+
+      const ltvCac = (cacReal !== null && cacReal > 0) ? (ltvPond / cacReal) : null;
+
+      // Curva acumulada de Mes 0 a Mes 12
+      // Mes 0 = -CAC real (o 0 si no aplica CAC), sin compras
+      const curvaMensual = [0.0];
+      const curvaAcumulada = [cacReal !== null ? -cacReal : 0.0];
+      let acum = curvaAcumulada[0];
+      let payback = null;
+
+      for (let m = 1; m <= 12; m++) {
+        const cSueltoMes = (m === 1) ? contribSueltoM1 : contribSueltoRecompra;
+        const contribMes = mixSuelto * actSuelto[m - 1] * cSueltoMes + mixSusc * actSusc[m - 1] * contribSusc;
+        curvaMensual.push(contribMes);
+        acum += contribMes;
+        curvaAcumulada.push(acum);
+        if (cacReal !== null && payback === null && acum >= 0) {
+          payback = m;
+        }
+      }
+
+      let paybackLabel;
+      if (cacReal === null) {
+        paybackLabel = "No aplica";
+      } else if (payback === null) {
+        paybackLabel = "No recupera en 12 meses";
+      } else {
+        paybackLabel = `Mes ${payback}`;
+      }
+
+      // CAC marginal del tramo histórico y CAC incremental vs $8.000 base
+      const margTramo = getMarginalTramoInfo(inv);
+      let cacIncremental = null;
+      let cacIncrementalLabel = "No aplica (igual a base $8.000 o inv. $0)";
+      if (inv > 0 && inv !== 8000 && clientesNuevos !== 165) {
+        cacIncremental = (inv - 8000.0) / (clientesNuevos - 165.0);
+        const dInv = Math.abs(inv - 8000);
+        const dCli = Math.abs(clientesNuevos - 165);
+        cacIncrementalLabel = `De $8.000 a $${inv.toLocaleString('es-ES')} ($${dInv.toLocaleString('es-ES')} / ${fmtNum(dCli, 1)} clientes)`;
+      }
+
+      const netoPorCliente = cacReal !== null ? (ltvPond - cacReal) : null;
+      const netoCohorte = netoPorCliente !== null ? (clientesNuevos * netoPorCliente) : 0.0;
+
+      return {
+        inv,
+        precio2B,
+        cobroSusc,
+        cafe2B,
+        clientesNuevos,
+        feeEfectivo,
+        gastoTotalAdq,
+        cobroSueltoM1,
+        contribSueltoM1,
+        pctContribSueltoM1,
+        roasEqSueltoM1,
+        contribSusc,
+        pctContribSusc,
+        roasEqSusc,
+        ingresoPondM1,
+        contribPondM1,
+        roasEqPondM1,
+        cacAnuncios,
+        cacReal,
+        roas1erPedido,
+        sumActSuelto,
+        sumActSusc,
+        ltvSuelto,
+        ltvSusc,
+        ltvPond,
+        ltvCac,
+        payback,
+        paybackLabel,
+        curvaMensual,
+        curvaAcumulada,
+        margTramo,
+        cacIncremental,
+        cacIncrementalLabel,
+        netoPorCliente,
+        netoCohorte,
+        contribPack,
+        contribSueltoConEnvio
+      };
+    }
+
+    // =========================================================================
+    // FORMATEADORES DE PRESENTACIÓN (SIN AFECTAR PRECISIÓN INTERNA)
+    // =========================================================================
+    function fmtNum(val, dec = 2) {
+      if (val === null || val === undefined || Number.isNaN(val)) return "No aplica";
+      return Number(val).toLocaleString('es-ES', {
+        minimumFractionDigits: dec,
+        maximumFractionDigits: dec
+      });
+    }
+
+    function fmtUSD(val, dec = 2) {
+      if (val === null || val === undefined || Number.isNaN(val)) return "No aplica";
+      const sign = val < 0 ? "-" : "";
+      return `${sign}$${fmtNum(Math.abs(val), dec)}`;
+    }
+
+    function fmtPct(val, dec = 2) {
+      if (val === null || val === undefined || Number.isNaN(val)) return "No aplica";
+      return `${fmtNum(val * 100, dec)}%`;
+    }
+
+    function fmtRoas(val, emptyLabel = "No alcanzable") {
+      if (val === null || val === undefined || Number.isNaN(val)) return emptyLabel;
+      return `${fmtNum(val, 2)}x`;
+    }
+
+    // =========================================================================
+    // SINCRONIZACIÓN DE CONTROLES E INTERFAZ
+    // =========================================================================
+    function syncControl(name, val) {
+      const rng = document.getElementById('rng' + name);
+      const num = document.getElementById('num' + name);
+      if (rng && rng.value !== String(val)) rng.value = val;
+      if (num && num.value !== String(val)) num.value = val;
+      clearPresetActiveButtons();
+      updateDashboard();
+    }
+
+    function clearPresetActiveButtons() {
+      ['Actual', 'Agencia', 'Cambio1', 'Cambio2', 'Combinado'].forEach(k => {
+        const b = document.getElementById('btnPreset' + k);
+        if (b) b.classList.remove('active');
+      });
+    }
+
+    function loadPreset(presetKey) {
+      const p = PRESETS[presetKey];
+      if (!p) return;
+
+      const map = {
+        Inversion: p.inversion,
+        PrecioBolsa: p.precioBolsa,
+        CostoCafe: p.costoCafe,
+        CostoEnvio: p.costoEnvio,
+        PctSusc: p.pctSusc,
+        Churn: p.churn,
+        PedidosSuelto: p.pedidosSuelto,
+        FeeAgencia: p.feeAgencia,
+        DescuentoBF: p.descuentoBF,
+        AdopcionPack: p.adopcionPack
+      };
+
+      Object.keys(map).forEach(k => {
+        const r = document.getElementById('rng' + k);
+        const n = document.getElementById('num' + k);
+        if (r) r.value = map[k];
+        if (n) n.value = map[k];
+      });
+
+      document.getElementById('chkPolPack').checked = p.polPack;
+
+      clearPresetActiveButtons();
+      const btnMap = {
+        actual: 'btnPresetActual',
+        agencia: 'btnPresetAgencia',
+        cambio1: 'btnPresetCambio1',
+        cambio2: 'btnPresetCambio2',
+        combinado: 'btnPresetCombinado'
+      };
+      if (btnMap[presetKey]) {
+        document.getElementById(btnMap[presetKey]).classList.add('active');
+      }
+
+      updateDashboard();
+    }
+
+    function readLiveParams() {
+      return {
+        inversion: parseFloat(document.getElementById('numInversion').value) || 0,
+        precioBolsa: parseFloat(document.getElementById('numPrecioBolsa').value) || 0,
+        costoCafe: parseFloat(document.getElementById('numCostoCafe').value) || 0,
+        costoEnvio: parseFloat(document.getElementById('numCostoEnvio').value) || 0,
+        pctSusc: parseFloat(document.getElementById('numPctSusc').value) || 0,
+        churn: parseFloat(document.getElementById('numChurn').value) || 0,
+        pedidosSuelto: Math.max(1, parseFloat(document.getElementById('numPedidosSuelto').value) || 1),
+        feeAgencia: parseFloat(document.getElementById('numFeeAgencia').value) || 0,
+        descuentoBF: parseFloat(document.getElementById('numDescuentoBF').value) || 0,
+        polPack: document.getElementById('chkPolPack').checked,
+        adopcionPack: parseFloat(document.getElementById('numAdopcionPack').value) || 0
+      };
+    }
+
+    // =========================================================================
+    // INSTANCIAS DE GRÁFICOS CHART.JS
+    // =========================================================================
+    let chartCurvaInstance = null;
+    let chartLtvCacInstance = null;
+    let chartHistorialInstance = null;
+    let chartTrampaInstance = null;
+
+    function updateCharts(liveRes, refScenarios) {
+      if (typeof Chart === 'undefined') {
+        document.getElementById('cdnStatus').innerHTML =
+          '⚠️ Sin conexión al CDN de Chart.js: los cálculos y tablas están 100% activos; conéctate a internet para visualizar los 4 lienzos gráficos.';
+        return;
+      }
+
+      const labelsMeses = Array.from({ length: 13 }, (_, i) => `Mes ${i}`);
+      const lineaCero = Array(13).fill(0);
+
+      // 1. Gráfico Curva Acumulada (Mes 0 a 12)
+      const ctxCurva = document.getElementById('chartCurva').getContext('2d');
+      if (chartCurvaInstance) chartCurvaInstance.destroy();
+      chartCurvaInstance = new Chart(ctxCurva, {
+        type: 'line',
+        data: {
+          labels: labelsMeses,
+          datasets: [
+            {
+              label: 'Tu Escenario en Vivo',
+              data: liveRes.curvaAcumulada,
+              borderColor: '#C85A32',
+              backgroundColor: 'rgba(200, 90, 50, 0.12)',
+              borderWidth: 3.5,
+              pointRadius: 4,
+              tension: 0.15
+            },
+            {
+              label: 'Actual ($8.000)',
+              data: refScenarios.actual.curvaAcumulada,
+              borderColor: '#3B2318',
+              borderWidth: 2,
+              borderDash: [4, 3],
+              pointRadius: 2.5,
+              tension: 0.15
+            },
+            {
+              label: 'Agencia ($16.000 + 30% BF)',
+              data: refScenarios.agencia.curvaAcumulada,
+              borderColor: '#B8332A',
+              borderWidth: 2,
+              pointRadius: 2.5,
+              tension: 0.15
+            },
+            {
+              label: 'Combinado ($4k + Pack/Envío)',
+              data: refScenarios.combinado.curvaAcumulada,
+              borderColor: '#2E6F40',
+              borderWidth: 2,
+              pointRadius: 2.5,
+              tension: 0.15
+            },
+            {
+              label: 'Línea Cero (Equilibrio CAC)',
+              data: lineaCero,
+              borderColor: '#666666',
+              borderWidth: 1.5,
+              borderDash: [6, 4],
+              pointRadius: 0,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+            tooltip: {
+              callbacks: {
+                label: ctx => `${ctx.dataset.label}: ${fmtUSD(ctx.parsed.y, 2)}`
+              }
+            }
+          },
+          scales: {
+            y: {
+              title: { display: true, text: 'Acumulado Neto por Cliente ($)' },
+              ticks: { callback: v => '$' + v }
+            }
+          }
+        }
+      });
+
+      // 2. Gráfico LTV frente a CAC con líneas 1:1 y 3:1
+      const ctxLtvCac = document.getElementById('chartLtvCac').getContext('2d');
+      if (chartLtvCacInstance) chartLtvCacInstance.destroy();
+      const maxCacAxis = Math.max(90, (liveRes.cacReal || 60) * 1.15);
+      chartLtvCacInstance = new Chart(ctxLtvCac, {
+        type: 'scatter',
+        data: {
+          datasets: [
+            {
+              label: 'Tu Escenario en Vivo',
+              data: liveRes.cacReal !== null ? [{ x: liveRes.cacReal, y: liveRes.ltvPond }] : [],
+              backgroundColor: '#C85A32',
+              borderColor: '#24150E',
+              borderWidth: 2,
+              pointRadius: 9
+            },
+            {
+              label: 'Actual ($8k)',
+              data: [{ x: refScenarios.actual.cacReal, y: refScenarios.actual.ltvPond }],
+              backgroundColor: '#3B2318',
+              pointRadius: 6
+            },
+            {
+              label: 'Agencia ($16k + BF)',
+              data: [{ x: refScenarios.agencia.cacReal, y: refScenarios.agencia.ltvPond }],
+              backgroundColor: '#B8332A',
+              pointRadius: 6
+            },
+            {
+              label: 'Cambio 1 ($4k)',
+              data: [{ x: refScenarios.cambio1.cacReal, y: refScenarios.cambio1.ltvPond }],
+              backgroundColor: '#D9822B',
+              pointRadius: 6
+            },
+            {
+              label: 'Combinado ($4k + Pack)',
+              data: [{ x: refScenarios.combinado.cacReal, y: refScenarios.combinado.ltvPond }],
+              backgroundColor: '#2E6F40',
+              pointRadius: 6
+            },
+            {
+              label: 'Umbral LTV = 1×CAC (Mínimo)',
+              type: 'line',
+              data: [{ x: 0, y: 0 }, { x: maxCacAxis, y: maxCacAxis }],
+              borderColor: '#B8332A',
+              borderWidth: 1.8,
+              borderDash: [5, 4],
+              pointRadius: 0,
+              fill: false
+            },
+            {
+              label: 'Umbral LTV = 3×CAC (Verde)',
+              type: 'line',
+              data: [{ x: 0, y: 0 }, { x: maxCacAxis, y: maxCacAxis * 3 }],
+              borderColor: '#2E6F40',
+              borderWidth: 1.8,
+              borderDash: [5, 4],
+              pointRadius: 0,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+            tooltip: {
+              callbacks: {
+                label: ctx => `${ctx.dataset.label}: CAC ${fmtUSD(ctx.parsed.x, 2)} | LTV ${fmtUSD(ctx.parsed.y, 2)}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              min: 0,
+              max: maxCacAxis,
+              title: { display: true, text: 'CAC Real por Cliente ($)' },
+              ticks: { callback: v => '$' + v }
+            },
+            y: {
+              min: 0,
+              max: 180,
+              title: { display: true, text: 'LTV Contribución 12M ($)' },
+              ticks: { callback: v => '$' + v }
+            }
+          }
+        }
+      });
+
+      // 3. Gráfico Historial de Clientes Nuevos y CAC Marginal por Tramo
+      const ctxHist = document.getElementById('chartHistorial').getContext('2d');
+      if (chartHistorialInstance) chartHistorialInstance.destroy();
+      const labelsHist = ['$0', '$4.000', '$8.000', '$12.000', '$16.000', '$20.000'];
+      const dataClientesHist = META_HISTORY.map(p => p.clientes);
+      const dataCacMargHist = [null, 40.00, 4000 / 65, 4000 / 45, 4000 / 25, 4000 / 15];
+
+      chartHistorialInstance = new Chart(ctxHist, {
+        type: 'bar',
+        data: {
+          labels: labelsHist,
+          datasets: [
+            {
+              type: 'line',
+              label: 'Clientes Nuevos de Meta (Curva Histórica)',
+              data: dataClientesHist,
+              borderColor: '#3B2318',
+              backgroundColor: '#3B2318',
+              borderWidth: 3,
+              pointRadius: 5,
+              yAxisID: 'yClientes'
+            },
+            {
+              type: 'bar',
+              label: 'CAC Marginal del Tramo ($/cliente extra)',
+              data: dataCacMargHist,
+              backgroundColor: 'rgba(200, 90, 50, 0.75)',
+              borderColor: '#A64420',
+              borderWidth: 1,
+              yAxisID: 'yCacMarg'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+            tooltip: {
+              callbacks: {
+                label: ctx => ctx.dataset.yAxisID === 'yCacMarg'
+                  ? `CAC Marginal del tramo: ${fmtUSD(ctx.parsed.y, 2)}/cliente extra`
+                  : `Clientes nuevos reales: ${ctx.parsed.y} clientes`
+              }
+            }
+          },
+          scales: {
+            yClientes: {
+              type: 'linear',
+              position: 'left',
+              min: 0,
+              max: 280,
+              title: { display: true, text: 'Clientes Nuevos Reales' }
+            },
+            yCacMarg: {
+              type: 'linear',
+              position: 'right',
+              min: 0,
+              max: 300,
+              grid: { drawOnChartArea: false },
+              title: { display: true, text: 'CAC Marginal ($)' },
+              ticks: { callback: v => '$' + v }
+            }
+          }
+        }
+      });
+
+      // 4. Gráfico La Trampa: ROAS Meta 3,0 vs ROAS 1er Pedido y ROAS de Equilibrio
+      const ctxTrampa = document.getElementById('chartTrampa').getContext('2d');
+      if (chartTrampaInstance) chartTrampaInstance.destroy();
+      const valRoasMeta = 3.00;
+      const valRoasEq = liveRes.roasEqPondM1 !== null ? liveRes.roasEqPondM1 : 0;
+      const valRoas1er = liveRes.roas1erPedido !== null ? liveRes.roas1erPedido : 0;
+
+      chartTrampaInstance = new Chart(ctxTrampa, {
+        type: 'bar',
+        data: {
+          labels: [
+            'ROAS Reportado por Meta (Sept.)',
+            'ROAS de Equilibrio Ponderado (Break-even)',
+            'ROAS Real del 1er Pedido (Adquisición)'
+          ],
+          datasets: [
+            {
+              label: 'ROAS (Veces sobre inversión publicitaria)',
+              data: [valRoasMeta, valRoasEq, valRoas1er],
+              backgroundColor: ['#7D5642', '#D9822B', '#B8332A'],
+              borderColor: ['#3B2318', '#A65B12', '#7A1C16'],
+              borderWidth: 1.5,
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => `${fmtNum(ctx.parsed.y, 2)}x`
+              }
+            }
+          },
+          scales: {
+            y: {
+              min: 0,
+              max: Math.max(3.6, valRoasEq * 1.15),
+              title: { display: true, text: 'ROAS (x)' },
+              ticks: { callback: v => fmtNum(v, 1) + 'x' }
+            }
+          }
+        }
+      });
+    }
+
+    // =========================================================================
+    // ACTUALIZACIÓN PRINCIPAL DEL TABLERO
+    // =========================================================================
+    function updateDashboard() {
+      const liveParams = readLiveParams();
+      const live = computeScenario(liveParams);
+
+      // Escenarios fijos de referencia
+      const refScenarios = {
+        actual: computeScenario(PRESETS.actual),
+        agencia: computeScenario(PRESETS.agencia),
+        cambio1: computeScenario(PRESETS.cambio1),
+        cambio2: computeScenario(PRESETS.cambio2),
+        combinado: computeScenario(PRESETS.combinado)
+      };
+
+      // Etiquetas de controles
+      document.getElementById('lblInversion').textContent = fmtUSD(liveParams.inversion, 0);
+      document.getElementById('lblPrecioBolsa').textContent = fmtUSD(liveParams.precioBolsa, 2);
+      document.getElementById('hintPrecio2B').textContent = fmtNum(live.precio2B, 2);
+      document.getElementById('hintPrecioSusc').textContent = fmtNum(live.cobroSusc, 2);
+      document.getElementById('lblCostoCafe').textContent = fmtUSD(liveParams.costoCafe, 2);
+      document.getElementById('hintCafe2B').textContent = fmtNum(live.cafe2B, 2);
+      document.getElementById('lblCostoEnvio').textContent = fmtUSD(liveParams.costoEnvio, 2);
+      document.getElementById('lblPctSusc').textContent = `${fmtNum(liveParams.pctSusc, 1)}%`;
+      document.getElementById('hintPctSuelto').textContent = `${fmtNum(100 - liveParams.pctSusc, 1)}%`;
+      document.getElementById('lblChurn').textContent = `${fmtNum(liveParams.churn, 1)}%`;
+      document.getElementById('hintPermanencia').textContent = `${fmtNum(100 - liveParams.churn, 1)}%`;
+      document.getElementById('hintMesesSusc').textContent = fmtNum(live.sumActSusc, 2);
+      document.getElementById('lblPedidosSuelto').textContent = fmtNum(liveParams.pedidosSuelto, 2);
+      document.getElementById('lblFeeAgencia').textContent = fmtUSD(liveParams.feeAgencia, 0);
+      document.getElementById('lblDescuentoBF').textContent = `${fmtNum(liveParams.descuentoBF, 1)}%`;
+      document.getElementById('lblAdopcionPack').textContent = `${fmtNum(liveParams.adopcionPack, 1)}%`;
+
+      // Actualizar Semáforo LTV:CAC
+      const banner = document.getElementById('semaforoBanner');
+      const semTit = document.getElementById('semaforoTitulo');
+      const semDesc = document.getElementById('semaforoDesc');
+      banner.className = 'semaforo-banner';
+
+      if (live.ltvCac === null) {
+        banner.classList.add('semaforo-Banner-neutral');
+        semTit.textContent = 'Semáforo LTV:CAC — NO APLICA (Inversión $0 en Meta Ads)';
+        semDesc.textContent = 'Sin inversión en Meta Ads no hay clientes adquiridos por pauta ni CAC aplicable. Nota: el negocio aún debe cubrir $6.500/mes de costos fijos.';
+      } else if (live.ltvCac < 1.0) {
+        banner.classList.add('red');
+        semTit.textContent = `Semáforo LTV:CAC — ROJO (${fmtNum(live.ltvCac, 2)}x < 1,0x): Destruye valor en 12 meses`;
+        semDesc.textContent = `Cada cliente cuesta ${fmtUSD(live.cacReal, 2)} y solo genera ${fmtUSD(live.ltvPond, 2)} de contribución en 12 meses (${fmtUSD(live.netoPorCliente, 2)}/cliente). No recupera el CAC en 12 meses.`;
+      } else if (live.ltvCac < 3.0) {
+        banner.classList.add('yellow');
+        semTit.textContent = `Semáforo LTV:CAC — AMARILLO (${fmtNum(live.ltvCac, 2)}x: entre 1,0x y menos de 3,0x)`;
+        semDesc.textContent = `Recupera el CAC en el ${live.paybackLabel} (${fmtUSD(live.netoPorCliente, 2)} netos por cliente a 12M). Recuerda: este semáforo no garantiza caja suficiente ni beneficio después de costos fijos ($6.500/mes).`;
+      } else {
+        banner.classList.add('green');
+        semTit.textContent = `Semáforo LTV:CAC — VERDE (${fmtNum(live.ltvCac, 2)}x >= 3,0x): Adquisición muy saludable`;
+        semDesc.textContent = `Supera el umbral de 3,0x y recupera en el ${live.paybackLabel}. Aun así, verifica siempre la liquidez mensual porque el ratio LTV:CAC no descuenta costos fijos de la empresa.`;
+      }
+
+      // Actualizar tarjetas KPI en vivo
+      document.getElementById('kpiContribSuelto').textContent = fmtUSD(live.contribSueltoM1, 2);
+      document.getElementById('kpiContribSueltoPct').textContent =
+        `${fmtPct(live.pctContribSueltoM1, 2)} del cobro (${fmtUSD(live.cobroSueltoM1, 2)})`;
+
+      document.getElementById('kpiContribSusc').textContent = fmtUSD(live.contribSusc, 3);
+      document.getElementById('kpiContribSuscPct').textContent =
+        `${fmtPct(live.pctContribSusc, 2)} del cobro (${fmtUSD(live.cobroSusc, 2)})`;
+
+      document.getElementById('kpiRoasEqPond').textContent = fmtRoas(live.roasEqPondM1, 'No alcanzable');
+      document.getElementById('kpiRoasEqDetalle').textContent =
+        `Suelto: ${fmtRoas(live.roasEqSueltoM1, 'No alcanzable')} · Suscr.: ${fmtRoas(live.roasEqSusc, 'No alcanzable')}`;
+
+      document.getElementById('kpiCacReal').textContent = live.cacReal !== null ? fmtUSD(live.cacReal, 2) : 'No aplica';
+      document.getElementById('kpiCacDetalle').textContent = live.cacAnuncios !== null
+        ? `CAC Anuncios: ${fmtUSD(live.cacAnuncios, 2)} · ${fmtNum(live.clientesNuevos, 1)} clientes`
+        : 'Sin inversión ni clientes de Meta';
+
+      document.getElementById('kpiLtvPond').textContent = fmtUSD(live.ltvPond, 2);
+      document.getElementById('kpiLtvDetalle').textContent =
+        `Suelto: ${fmtUSD(live.ltvSuelto, 2)} · Suscr.: ${fmtUSD(live.ltvSusc, 2)}`;
+
+      document.getElementById('kpiLtvCacPayback').textContent = live.ltvCac !== null
+        ? `${fmtNum(live.ltvCac, 2)}x · ${live.paybackLabel}`
+        : 'No aplica · No aplica';
+      document.getElementById('kpiNetoCliente').textContent = live.netoPorCliente !== null
+        ? `Neto 12M: ${fmtUSD(live.netoPorCliente, 2)}/cli (${fmtUSD(live.netoCohorte, 2)} cohorte)`
+        : 'Sin cohorte adquirida por Meta';
+
+      document.getElementById('kpiRoas1erPedido').textContent = live.roas1erPedido !== null ? fmtRoas(live.roas1erPedido, 'No aplica') : 'No aplica';
+      document.getElementById('kpiRoas1erDetalle').textContent =
+        `Ingreso 1er pedido: ${fmtUSD(live.ingresoPondM1, 2)}/cliente`;
+
+      document.getElementById('kpiCacMarginalTramo').textContent =
+        live.margTramo.val !== null ? fmtUSD(live.margTramo.val, 2) : 'No aplica';
+      document.getElementById('kpiCacMarginalDesc').textContent = live.margTramo.label;
+
+      document.getElementById('kpiCacIncremental').textContent =
+        live.cacIncremental !== null ? fmtUSD(live.cacIncremental, 2) : 'No aplica';
+      document.getElementById('kpiCacIncrementalDesc').textContent = live.cacIncrementalLabel;
+
+      // Actualizar Tabla Comparativa (Sección 3)
+      renderComparisonTable(refScenarios, live);
+
+      // Actualizar los 4 Gráficos
+      updateCharts(live, refScenarios);
+    }
+
+    function renderComparisonTable(refs, live) {
+      const cols = [refs.actual, refs.agencia, refs.cambio1, refs.cambio2, refs.combinado, live];
+      const rowsSpec = [
+        { label: 'Inversión mensual en Meta Ads ($)', fn: s => fmtUSD(s.inv, 0) },
+        { label: 'Fee mensual de agencia ($)', fn: s => fmtUSD(s.feeEfectivo, 0) },
+        { label: 'Clientes nuevos reales de Meta', fn: s => fmtNum(s.clientesNuevos, 1) },
+        { label: 'Contribución 1er pedido — Suelto ($ / %)', fn: s => `${fmtUSD(s.contribSueltoM1, 2)} (${fmtPct(s.pctContribSueltoM1, 1)})` },
+        { label: 'Contribución mensual — Suscripción ($ / %)', fn: s => `${fmtUSD(s.contribSusc, 3)} (${fmtPct(s.pctContribSusc, 1)})` },
+        { label: 'ROAS de equilibrio — Suelto / Suscripción', fn: s => `${fmtRoas(s.roasEqSueltoM1)} / ${fmtRoas(s.roasEqSusc)}` },
+        { label: 'ROAS de equilibrio ponderado (1er pedido)', fn: s => fmtRoas(s.roasEqPondM1) },
+        { label: 'ROAS real del 1er pedido (Adquisición)', fn: s => s.roas1erPedido !== null ? fmtRoas(s.roas1erPedido, 'No aplica') : 'No aplica' },
+        { label: 'CAC de anuncios ($)', fn: s => s.cacAnuncios !== null ? fmtUSD(s.cacAnuncios, 2) : 'No aplica' },
+        { label: 'CAC real (con agencia) ($)', fn: s => s.cacReal !== null ? fmtUSD(s.cacReal, 2) : 'No aplica' },
+        { label: 'CAC marginal del tramo histórico ($)', fn: s => s.margTramo.val !== null ? fmtUSD(s.margTramo.val, 2) : 'No aplica' },
+        { label: 'CAC incremental vs. base $8.000 ($)', fn: s => s.cacIncremental !== null ? fmtUSD(s.cacIncremental, 2) : 'No aplica' },
+        { label: 'LTV Contribución 12M — Suelto ($)', fn: s => fmtUSD(s.ltvSuelto, 2) },
+        { label: 'LTV Contribución 12M — Suscriptor ($)', fn: s => fmtUSD(s.ltvSusc, 2) },
+        { label: 'LTV Contribución 12M — Ponderado ($)', fn: s => fmtUSD(s.ltvPond, 4) },
+        { label: 'Ratio LTV:CAC (con CAC real)', fn: s => s.ltvCac !== null ? `${fmtNum(s.ltvCac, 2)}x` : 'No aplica' },
+        { label: 'Payback (Mes discreto de recuperación)', fn: s => s.paybackLabel },
+        { label: 'Contribución neta cohorte a 12M (LTV - CAC) ($)', fn: s => s.netoPorCliente !== null ? fmtUSD(s.netoCohorte, 2) : 'No aplica' }
+      ];
+
+      const tbody = document.getElementById('tbodyComparacion');
+      tbody.innerHTML = rowsSpec.map(r => {
+        const tds = cols.map((sc, idx) => {
+          const cls = idx === 5 ? 'num live-col' : 'num';
+          return `<td class="${cls}">${r.fn(sc)}</td>`;
+        }).join('');
+        return `<tr><td><strong>${r.label}</strong></td>${tds}</tr>`;
+      }).join('');
+    }
+
+    // =========================================================================
+    // VERIFICACIÓN AUTOMÁTICA CONTRA EL EXCEL DEL NIVEL 1
+    // =========================================================================
+    function renderVerificationTable() {
+      const sActual = computeScenario(PRESETS.actual);
+      const sAgencia = computeScenario(PRESETS.agencia);
+      const sCambio1 = computeScenario(PRESETS.cambio1);
+      const sCambio2 = computeScenario(PRESETS.cambio2);
+
+      const checks = [
+        {
+          name: 'Contribución pedido suelto (2 bolsas, $34)',
+          calc: sActual.contribSueltoM1,
+          ref: 15.89,
+          dec: 4,
+          isCurrency: true
+        },
+        {
+          name: 'Contribución suscripción mensual (2 bolsas, $30,60)',
+          calc: sActual.contribSusc,
+          ref: 12.643,
+          dec: 4,
+          isCurrency: true
+        },
+        {
+          name: 'CAC real actual ($8.000 Meta + $1.000 agencia / 165)',
+          calc: sActual.cacReal,
+          ref: 54.5454545,
+          dec: 6,
+          isCurrency: true
+        },
+        {
+          name: 'LTV promedio ponderado actual a 12 meses',
+          calc: sActual.ltvPond,
+          ref: 54.7960706877,
+          dec: 6,
+          isCurrency: true
+        },
+        {
+          name: 'Payback actual (mes discreto)',
+          calc: sActual.payback,
+          ref: 12,
+          dec: 0,
+          isCurrency: false
+        },
+        {
+          name: 'Meta $4.000 (Cambio 1): CAC real con agencia ($5.000 / 100)',
+          calc: sCambio1.cacReal,
+          ref: 50.00,
+          dec: 4,
+          isCurrency: true
+        },
+        {
+          name: 'Meta $4.000 (Cambio 1): Payback (mes discreto)',
+          calc: sCambio1.payback,
+          ref: 11,
+          dec: 0,
+          isCurrency: false
+        },
+        {
+          name: 'Propuesta Agencia ($16.000): CAC real ($17.000 / 235)',
+          calc: sAgencia.cacReal,
+          ref: 72.3404255,
+          dec: 6,
+          isCurrency: true
+        },
+        {
+          name: 'Propuesta Agencia ($16.000 + 30% BF): LTV promedio a 12 meses',
+          calc: sAgencia.ltvPond,
+          ref: 46.5162206877,
+          dec: 6,
+          isCurrency: true
+        },
+        {
+          name: 'Propuesta Agencia: Contribución 1er pedido suelto con 30% desc. BF',
+          calc: sAgencia.contribSueltoM1,
+          ref: 6.149,
+          dec: 4,
+          isCurrency: true
+        },
+        {
+          name: 'Pack de 3 bolsas ($48): Contribución unitaria',
+          calc: sCambio2.contribPack,
+          ref: 23.62,
+          dec: 4,
+          isCurrency: true
+        },
+        {
+          name: 'Sensibilidad 2 packs por año (6 bolsas/año): Contribución anual suelta',
+          calc: 2.0 * sCambio2.contribPack,
+          ref: 47.24,
+          dec: 4,
+          isCurrency: true
+        }
+      ];
+
+      const tbody = document.getElementById('tbodyVerificacion');
+      let rowsHtml = checks.map(c => {
+        const diffAbs = Math.abs(c.calc - c.ref);
+        const diffPct = c.ref !== 0 ? (diffAbs / Math.abs(c.ref)) * 100.0 : 0.0;
+        const ok = diffPct < 1.0;
+        const fCalc = c.isCurrency ? fmtUSD(c.calc, c.dec) : fmtNum(c.calc, c.dec);
+        const fRef = c.isCurrency ? fmtUSD(c.ref, c.dec) : fmtNum(c.ref, c.dec);
+        return `
+          <tr>
+            <td><strong>${c.name}</strong></td>
+            <td class="num">${fCalc}</td>
+            <td class="num">${fRef}</td>
+            <td class="num">${fmtNum(diffAbs, 7)}</td>
+            <td class="num">${fmtNum(diffPct, 5)}%</td>
+            <td><span class="${ok ? 'badge-ok' : 'badge-danger'}">${ok ? 'OK (< 1%)' : 'REVISAR'}</span></td>
+          </tr>
+        `;
+      }).join('');
+
+      // Agregar fila de verificación de Payback Agencia ("No recupera en 12 meses")
+      const okAgenciaPb = sAgencia.paybackLabel === 'No recupera en 12 meses';
+      rowsHtml += `
+        <tr>
+          <td><strong>Propuesta Agencia ($16.000 + 30% BF): Recuperación en 12 meses</strong></td>
+          <td class="num">${sAgencia.paybackLabel}</td>
+          <td class="num">No recupera en 12 meses</td>
+          <td class="num">0</td>
+          <td class="num">0,00000%</td>
+          <td><span class="${okAgenciaPb ? 'badge-ok' : 'badge-danger'}">${okAgenciaPb ? 'OK (Exacto)' : 'REVISAR'}</span></td>
+        </tr>
+      `;
+
+      tbody.innerHTML = rowsHtml;
+    }
+
+    // Inicializar al cargar el DOM
+    window.addEventListener('DOMContentLoaded', () => {
+      renderVerificationTable();
+      loadPreset('actual');
+    });
+  </script>
+</body>
+</html>
