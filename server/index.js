@@ -1,13 +1,21 @@
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
+import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 
-// Si el entorno tiene activo Node < 22.5 (sin node:sqlite nativo), reejecutar automáticamente con Node 22 o 24 instalado localmente
-const [major, minor] = process.versions.node.split('.').map(Number);
-if (major < 22 || (major === 22 && minor < 5)) {
+// Verificar si la versión actual de Node soporta node:sqlite nativo (>= 22.5)
+let hasNativeSqlite = false;
+try {
+  await import('node:sqlite');
+  hasNativeSqlite = true;
+} catch {
+  hasNativeSqlite = false;
+}
+
+if (!hasNativeSqlite) {
   const candidates = [
-    'C:\\Users\\NVGWf\\AppData\\Local\\Author Software\\nvm\\installs\\v22.23.2\\node.exe',
-    'C:\\Users\\NVGWf\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe'
+    'C:\\Users\\NVGWf\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe',
+    'C:\\Users\\NVGWf\\AppData\\Local\\Author Software\\nvm\\installs\\v22.23.2\\node.exe'
   ];
   const modernNode = candidates.find(p => fs.existsSync(p));
   if (modernNode) {
@@ -22,15 +30,50 @@ if (major < 22 || (major === 22 && minor < 5)) {
   }
 } else {
   const { createApp } = await import('./app.js');
-  const { getDbPath } = await import('./db.js');
+  const { getDbPath, closeDb } = await import('./db.js');
 
   const PORT = Number(process.env.PORT) || 3001;
   const HOST = '127.0.0.1';
 
   const app = createApp();
+  let server = null;
 
-  app.listen(PORT, HOST, () => {
-    console.log(`[Tueste Backend] Servidor Express escuchando en http://${HOST}:${PORT}`);
-    console.log(`[Tueste Backend] Base de datos SQLite local: ${getDbPath()}`);
+  // Endpoint interno solo local (127.0.0.1) para ceder el puerto limpiamente si el usuario ejecuta otro `npm run server`
+  app.post('/api/_takeover', (req, res) => {
+    res.json({ ok: true, msg: 'Liberando puerto 3001 para la nueva instancia...' });
+    setTimeout(() => {
+      closeDb();
+      if (server) {
+        server.close(() => process.exit(0));
+      } else {
+        process.exit(0);
+      }
+    }, 50);
   });
+
+  function startListening(retry = false) {
+    server = http.createServer(app);
+
+    server.on('error', async err => {
+      if (err.code === 'EADDRINUSE' && !retry) {
+        try {
+          await fetch(`http://${HOST}:${PORT}/api/_takeover`, { method: 'POST' });
+          setTimeout(() => startListening(true), 250);
+          return;
+        } catch {
+          console.error(`[Tueste Backend] El puerto ${PORT} ya está en uso por otro proceso.`);
+          process.exit(1);
+        }
+      }
+      console.error('[Tueste Backend] Error al iniciar servidor:', err.message);
+      process.exit(1);
+    });
+
+    server.listen(PORT, HOST, () => {
+      console.log(`[Tueste Backend] Servidor Express escuchando en http://${HOST}:${PORT}`);
+      console.log(`[Tueste Backend] Base de datos SQLite local: ${getDbPath()}`);
+    });
+  }
+
+  startListening(false);
 }
