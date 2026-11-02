@@ -1263,7 +1263,7 @@
 
       <!-- 5.3 TABLA COMPARATIVA DE LOS PLANES A 24 MESES -->
       <h3 style="margin: 0 0 0.65rem; font-size: 1.05rem; color: var(--coffee-900);">
-        Comparación de Planes a 24 Meses (Ordenados por Validez, Mayor Caja Final Mes 24 y Suscriptores Activos)
+        Comparación de Planes a 24 Meses (Caja Inicial Mes 0: $35.000,00 · Ordenados por Validez, Mayor Caja Final Mes 24 y Suscriptores Activos)
       </h3>
       <div class="table-responsive" style="margin-bottom:1.5rem;">
         <table id="tablaPlanes24m">
@@ -1272,8 +1272,9 @@
               <th>Plan de 24 Meses</th>
               <th class="num">Inv. Prom. M1–12</th>
               <th class="num">Inv. Mín. M13–24</th>
+              <th class="num">Caja Inicial Mes 0 ($)</th>
               <th class="num">Caja Mes 1 ($)</th>
-              <th class="num">Caja Mínima ($ / Mes)</th>
+              <th class="num">Mínimo de Cierres Mensuales (Meses 1–24)</th>
               <th class="num">Caja Final Mes 24 ($)</th>
               <th class="num">Suscriptores Activos M24 (Cohortes)</th>
               <th>Validez y Restricciones</th>
@@ -1425,15 +1426,15 @@
           <!-- 4 Tarjetas KPI del Plan Inspeccionado -->
           <div class="kpi-grid">
             <div class="kpi-card highlight">
-              <div class="kpi-label">Caja Mínima y Mes</div>
+              <div class="kpi-label">Mínimo de Cierres Mensuales (Meses 1–24)</div>
               <div class="kpi-val" id="kpiSimCajaMin">$35.386,98</div>
-              <div class="kpi-sub" id="kpiSimCajaMinSub">Ocurre en el Mes 1 (Piso: $5.000)</div>
+              <div class="kpi-sub" id="kpiSimCajaMinSub">Mes 1 · Caja inicial (Mes 0): $35.000,00 · Piso: $5.000</div>
             </div>
 
             <div class="kpi-card highlight">
               <div class="kpi-label">Caja Final (Mes 24)</div>
               <div class="kpi-val" id="kpiSimCajaM24">$134.058,51</div>
-              <div class="kpi-sub" id="kpiSimCajaM24Sub">Arranca en $35.000 en Mes 0</div>
+              <div class="kpi-sub" id="kpiSimCajaM24Sub">Caja inicial aparte (Mes 0): $35.000,00</div>
             </div>
 
             <div class="kpi-card">
@@ -1494,6 +1495,8 @@
               <option value="propioB">Plan 4: Propio B (Editable)</option>
               <option value="propioA">Plan 3: Propio A ($4.000 fijos, sin cambios comerciales)</option>
               <option value="base8k">Plan 1: Base Actual ($8.000 fijos)</option>
+              <option value="agenciaAll">Plan 2a: Agencia ($16.000 + 30% BF continuo en cada cohorte)</option>
+              <option value="agenciaM1">Plan 2b: Agencia Variante ($16.000 + 30% BF solo en Mes 1)</option>
             </select>
           </div>
         </div>
@@ -2955,14 +2958,14 @@
         bannerGan.className = 'semaforo-banner green';
         titGan.textContent = `Mejor entre los planes comparados: ${winnerPlan.name}`;
         descGan.textContent =
-          `Termina el Mes 24 con ${fmtUSD(winnerPlan.cajaMes24, 2)} en el banco (caja mínima de ${fmtUSD(winnerPlan.minCaja, 2)} en el Mes ${winnerPlan.mesMinCaja}, siempre ≥ $5.000) y ${fmtNum(winnerPlan.suscMes24, 2)} suscriptores activos de las cohortes modeladas. Nota: se presenta como el mejor entre los planes comparados; los planes inválidos (como la propuesta de la Agencia, que hunde la caja a ${fmtUSD(planAgenciaAll.cajaMes24, 2)}) quedan descartados por romper el piso de $5.000.`;
+          `Partiendo de una caja inicial de $35.000,00 (Mes 0), termina el Mes 24 con ${fmtUSD(winnerPlan.cajaMes24, 2)} en el banco, con un mínimo de cierres mensuales (meses 1–24) de ${fmtUSD(winnerPlan.minCaja, 2)} en el Mes ${winnerPlan.mesMinCaja} (siempre ≥ $5.000) y ${fmtNum(winnerPlan.suscMes24, 2)} suscriptores activos de las cohortes modeladas. Nota: se presenta como el mejor entre los planes comparados; los planes inválidos quedan descartados por romper el piso de $5.000 (la Agencia con promoción continua cierra en ${fmtUSD(planAgenciaAll.cajaMes24, 2)} y su variante de promoción solo en el Mes 1 cierra en ${fmtUSD(planAgenciaM1.cajaMes24, 2)}).`;
       } else {
         bannerGan.className = 'semaforo-banner red';
         titGan.textContent = 'Ningún plan comparado cumple actualmente todas las restricciones';
         descGan.textContent = 'Revisa las restricciones de piso de caja ($5.000) o la regla de continuidad de inversión en meses 13 a 24.';
       }
 
-      // Renderizar tabla comparativa de los planes
+      // Renderizar tabla comparativa de los planes (incluyendo columna Caja Inicial Mes 0 = $35.000 y etiquetando Mínimo de cierres mensuales M1-24)
       const tbodyPlanes = document.getElementById('tbodyPlanes24m');
       tbodyPlanes.innerHTML = allPlans.map(p => {
         const isWin = winnerPlan && p.id === winnerPlan.id;
@@ -2974,6 +2977,7 @@
             <td><strong>${p.name}</strong>${winTag}</td>
             <td class="num">${fmtUSD(p.avgInv1_12, 0)}</td>
             <td class="num">${fmtUSD(p.minInv13_24, 0)}</td>
+            <td class="num">${fmtUSD(CAJA_INICIAL_24M, 2)}</td>
             <td class="num">${fmtUSD(p.cajaMes1, 2)}</td>
             <td class="num">${fmtUSD(p.minCaja, 2)} (Mes ${p.mesMinCaja})</td>
             <td class="num"><strong>${fmtUSD(p.cajaMes24, 2)}</strong></td>
@@ -2990,12 +2994,12 @@
       document.getElementById('lblTituloTabla24m').textContent = inspected.name;
       document.getElementById('kpiSimCajaMin').textContent = fmtUSD(inspected.minCaja, 2);
       document.getElementById('kpiSimCajaMinSub').textContent =
-        `Ocurre en el Mes ${inspected.mesMinCaja} (${inspected.minCaja >= PISO_CAJA_24M ? 'Cumple ≥ $5.000' : 'Rompe piso de $5.000'})`;
+        `Mínimo de cierres M1–24 en Mes ${inspected.mesMinCaja} (${inspected.minCaja >= PISO_CAJA_24M ? '≥ $5.000' : '< $5.000'}) · Caja inicial M0: $35.000,00`;
 
       document.getElementById('kpiSimCajaM24').textContent = fmtUSD(inspected.cajaMes24, 2);
       const deltaCaja = inspected.cajaMes24 - CAJA_INICIAL_24M;
       document.getElementById('kpiSimCajaM24Sub').textContent =
-        `Variación neta 24M: ${deltaCaja >= 0 ? '+' : ''}${fmtUSD(deltaCaja, 2)} vs. $35.000 inicial`;
+        `Caja inicial (Mes 0): $35.000,00 · Variación 24M: ${deltaCaja >= 0 ? '+' : ''}${fmtUSD(deltaCaja, 2)}`;
 
       document.getElementById('kpiSimSuscM24').textContent = fmtNum(inspected.suscMes24, 2);
 
@@ -3125,43 +3129,103 @@
       const sel = document.getElementById('selPitchPlan').value || 'winner';
       const chosen = (sel === 'winner') ? winnerPlan : (lastSimPlansMap[sel] || winnerPlan);
       const base8k = lastSimPlansMap.base8k;
-      const agencia = lastSimPlansMap.agenciaAll;
+      const agenciaAll = lastSimPlansMap.agenciaAll;
+      const agenciaM1 = lastSimPlansMap.agenciaM1;
+
+      const container = document.getElementById('pitchContainer24m');
+      if (!container || !chosen) return;
+
+      // Métricas dinámicas reales del plan elegido (sin textos fijos de otros planes)
+      const invM1 = chosen.rows[0].inv;
+      const cliMetaM1 = chosen.rows[0].cliMeta;
+      const cliTotM1 = chosen.rows[0].cliTot;
+      const feeM1 = chosen.rows[0].feeAgencia;
+      const avgInv13_24 = chosen.rows.slice(12, 24).reduce((s, r) => s + r.inv, 0) / 12.0;
+
+      const cacAnunciosM1Texto = (invM1 > 0 && cliMetaM1 > 0)
+        ? `${fmtUSD(invM1 / cliMetaM1, 2)} en anuncios por cliente nuevo de Meta`
+        : 'sin gasto en anuncios ($0 en Meta)';
+      const cacRealM1Texto = (invM1 > 0 && cliMetaM1 > 0)
+        ? `CAC real de ${fmtUSD((invM1 + feeM1) / cliMetaM1, 2)} incluyendo agencia`
+        : 'CAC de pauta no aplicable ($0 invertidos)';
 
       const diffVsBase = chosen.cajaMes24 - base8k.cajaMes24;
-      const container = document.getElementById('pitchContainer24m');
-      if (!container) return;
+      const diffVsBaseTexto = `${diffVsBase >= 0 ? '+' : ''}${fmtUSD(diffVsBase, 2)} frente al plan base de $8.000/mes (${fmtUSD(base8k.cajaMes24, 2)})`;
 
-      const usaPack = chosen.config && chosen.config.polPack;
-      const textoRiesgo = usaPack
-        ? `El plan incluye el Pack de 3 bolsas ($48) y cobro de envío ($4,50 en pedidos sueltos menores a $45) desde el Mes ${chosen.config.mesActPack}. El riesgo comercial es que cobrar envío reduzca la conversión de anuncios o la frecuencia de recompra. Pero incluso sin esos cambios comerciales (en el Plan Propio A de $4.000 fijos), la caja final llega a <strong>${fmtUSD(lastSimPlansMap.propioA.cajaMes24, 2)}</strong> sin bajar nunca de <strong>${fmtUSD(lastSimPlansMap.propioA.minCaja, 2)}</strong>.`
-        : `Este plan no depende de supuestos de adopción de packs ni de cobrar envío: usa exactamente los precios y costos actuales del caso. El único riesgo operativo es el declive natural de los clientes antiguos (-3% mensual), que queda totalmente compensado desde el primer semestre por las cohortes nuevas adquiridas a un CAC real de $50,00.`;
+      // Si el plan elegido usa Pack, calcular también cuánto daría ese mismo calendario de inversión SIN Pack/Envío
+      const usaPack = Boolean(chosen.config && chosen.config.polPack);
+      const tieneDescBF = Boolean(chosen.config && chosen.config.descBF > 0);
+      let textoRespaldoSinPack = '';
+      if (usaPack) {
+        const simMismoInvSinPack = simulate24Months({
+          ...chosen.config,
+          id: 'respaldoSinPack',
+          polPack: false
+        });
+        textoRespaldoSinPack = `Si no aplicáramos el Pack ni el cobro de envío con este mismo calendario de inversión, la caja final en el Mes 24 sería de <strong>${fmtUSD(simMismoInvSinPack.cajaMes24, 2)}</strong> (con un mínimo de cierres mensuales en meses 1–24 de <strong>${fmtUSD(simMismoInvSinPack.minCaja, 2)}</strong> en el Mes ${simMismoInvSinPack.mesMinCaja}).`;
+      }
+
+      // Riesgos específicos que corresponden al plan elegido (sin afirmar un "único riesgo" ni compensación garantizada)
+      const listaRiesgos = [];
+      listaRiesgos.push(
+        `<strong>1. Caída de la cartera existente y retención:</strong> la contribución de clientes previos cae un 3% cada mes (de $9.000,00 en el Mes 1 a $4.466,94 en el Mes 24). Que las nuevas cohortes compensen o no esa caída depende del volumen adquirido y de que se sostengan la mezcla de suscripción (15%), la permanencia mensual (91%) y las recompras sueltas (3,0 pedidos en 12M y 0,10/mes en meses 13–24).`
+      );
+      if (chosen.avgInv1_12 > 0 || avgInv13_24 > 0) {
+        listaRiesgos.push(
+          `<strong>2. Rendimientos decrecientes en Meta:</strong> el modelo interpola la curva histórica suponiendo que no hay fatiga de anuncios ni encarecimiento adicional de subastas; a mayor presupuesto mensual, cada tramo adicional trae menos clientes por dólar.`
+        );
+      }
+      if (usaPack) {
+        const adopPct = fmtNum(chosen.config.adopPack ?? 20, 1);
+        listaRiesgos.push(
+          `<strong>3. Incertidumbre comercial de Pack ($48) y envío ($4,50 bajo $45 desde Mes ${chosen.config.mesActPack}):</strong> cobrar envío puede reducir la conversión o la frecuencia de compra, la adopción real del Pack puede ser menor al supuesto (${adopPct}%), y si quien compra el Pack lleva 3 bolsas solo 2 veces al año su contribución anual baja a $47,24. ${textoRespaldoSinPack}`
+        );
+      }
+      if (tieneDescBF) {
+        const modoPromoTexto = chosen.config.bfMode === 'month1_only'
+          ? 'aplicada solo en el Mes 1'
+          : 'aplicada de forma continua al 1er pedido suelto de cada cohorte (meses 1 a 24)';
+        listaRiesgos.push(
+          `<strong>3. Erosión de margen por descuento del ${fmtNum(chosen.config.descBF, 0)}% (${modoPromoTexto}):</strong> el descuento reduce la contribución del primer pedido suelto a $6,149 mientras el costo del café, empaque y envío no baja, acelerando la salida neta de caja.`
+        );
+      }
+      if (!chosen.valid) {
+        listaRiesgos.push(
+          `<strong>⚠️ Alerta de invalidez del plan seleccionado:</strong> este plan es <strong>INVÁLIDO</strong> (${chosen.motivosResumen}) y no cumple las reglas del caso.`
+        );
+      }
+
+      const estadoPitchTexto = chosen.valid
+        ? `cumple todas las reglas del caso`
+        : `es <strong>INVÁLIDO</strong> (${chosen.motivosResumen})`;
 
       container.innerHTML = `
         <div class="pitch-card">
-          <h4>1. Qué presupuesto asignamos (0:00 – 0:30)</h4>
+          <h4>1. Presupuesto y adquisición del plan elegido (0:00 – 0:30)</h4>
           <p>
-            “Tío: no necesitamos endeudarnos para duplicar anuncios en Black Friday. Con el plan <strong>${chosen.name}</strong> invertimos un promedio de <strong>${fmtUSD(chosen.avgInv1_12, 0)}/mes</strong> en el año 1 y al menos <strong>${fmtUSD(chosen.minInv13_24, 0)}/mes</strong> en el año 2. Así operamos en el tramo más eficiente de Meta ($40 de anuncio por cliente nuevo en lugar de pagar $114,29 por cliente extra).”
+            En el plan seleccionado (<strong>${chosen.name}</strong>), la inversión en Meta del Mes 1 es de <strong>${fmtUSD(invM1, 0)}</strong>, con un promedio de <strong>${fmtUSD(chosen.avgInv1_12, 0)}/mes</strong> en los meses 1 a 12 y un promedio de <strong>${fmtUSD(avgInv13_24, 0)}/mes</strong> en los meses 13 a 24 (mínimo mensual de <strong>${fmtUSD(chosen.minInv13_24, 0)}</strong> en el año 2). En el Mes 1 este presupuesto adquiere <strong>${fmtNum(cliMetaM1, 1)} clientes nuevos por Meta</strong> más <strong>47 orgánicos</strong> (<strong>${fmtNum(cliTotM1, 1)} clientes totales</strong> en la Cohorte 1, con ${cacAnunciosM1Texto} y ${cacRealM1Texto}).
           </p>
         </div>
 
         <div class="pitch-card">
-          <h4>2. Por qué funciona en caja real (0:30 – 1:00)</h4>
+          <h4>2. Resultados en caja real y contraste (0:30 – 1:00)</h4>
           <p>
-            “Si aceptáramos la propuesta de la agencia ($16.000 + 30% descuento), perforaríamos el piso de $5.000 en el Mes 3, nos quedaríamos sin dinero en el Mes 4 y cerraríamos el mes 24 en <strong>${fmtUSD(agencia.cajaMes24, 2)}</strong>. Con nuestro plan, la caja mínima es de <strong>${fmtUSD(chosen.minCaja, 2)} (Mes ${chosen.mesMinCaja})</strong> y cerramos el mes 24 con <strong>${fmtUSD(chosen.cajaMes24, 2)}</strong> en el banco (<strong>+${fmtUSD(diffVsBase, 2)}</strong> más que invirtiendo $8.000/mes) y <strong>${fmtNum(chosen.suscMes24, 1)} suscriptores activos</strong> nuevos.”
+            Partiendo de la <strong>caja inicial de $35.000,00 (Mes 0)</strong>, este plan cierra el Mes 1 en <strong>${fmtUSD(chosen.cajaMes1, 2)}</strong>, registra un <strong>mínimo de cierres mensuales (meses 1–24) de ${fmtUSD(chosen.minCaja, 2)} en el Mes ${chosen.mesMinCaja}</strong>, y termina el Mes 24 con <strong>${fmtUSD(chosen.cajaMes24, 2)}</strong> (${diffVsBaseTexto}) y <strong>${fmtNum(chosen.suscMes24, 2)} suscriptores activos</strong> de las cohortes modeladas (${estadoPitchTexto}). En contraste, la propuesta de la Agencia ($16.000/mes) es inválida en ambas modalidades: con promoción continua del 30% en cada cohorte cierra en <strong>${fmtUSD(agenciaAll.cajaMes24, 2)}</strong>, y con promoción del 30% solo en el Mes 1 cierra en <strong>${fmtUSD(agenciaM1.cajaMes24, 2)}</strong>.
           </p>
         </div>
 
         <div class="pitch-card">
-          <h4>3. Cuál es el riesgo y cómo nos cubrimos (1:00 – 1:30)</h4>
+          <h4>3. Riesgos que corresponden a este plan (1:00 – 1:30)</h4>
           <p>
-            ${textoRiesgo}
+            ${listaRiesgos.join('<br/><br/>')}
           </p>
         </div>
 
         <div class="pitch-card">
-          <h4>4. Condiciones para subir el presupuesto (1:30 – 2:00)</h4>
+          <h4>4. Condiciones para subir inversión y reglas vs. gestión (1:30 – 2:00)</h4>
           <p>
-            “Solo subiremos la inversión mensual de $4.000 a $8.000 si en una prueba piloto de 60 días se cumplen dos condiciones verificables: (1) que el cobro de envío bajo $45 y el Pack de $48 mantengan el LTV promedio por encima de <strong>$66 por cliente</strong> sin reducir los 100 clientes nuevos del primer tramo, y (2) que el saldo en banco supere los <strong>$50.000</strong> para financiar la segunda tostadora ($14.000) al contado sin acercarnos jamás al piso de $5.000.”
+            <strong>Qué es observable en una prueba de 60 días vs. proyección:</strong> en un piloto de 60 días no puede observarse directamente el LTV de 12 meses (que sigue siendo una proyección anual); lo que sí podemos medir directamente antes de subir el presupuesto de pauta son la <strong>conversión real, el CAC real efectivo, la contribución unitaria del primer pedido, la adopción inicial del Pack y las primeras recompras de los meses 1 y 2</strong>.<br/><br/>
+            <strong>Distinción entre reglas del caso y propuesta de gestión:</strong> las <em>reglas del caso</em> exigen no bajar de <strong>$5.000 de caja</strong> y mantener en los meses 13 a 24 una inversión mensual ≥ al promedio de los meses 1 a 12 (<strong>${fmtUSD(chosen.avgInv1_12, 0)}</strong>). Adicionalmente, como <em>propuesta prudencial de gestión</em> (criterio propio del equipo, no regla del caso), recomendamos reservar un colchón de liquidez (por ejemplo, superar $50.000 en banco) antes de escalar al siguiente tramo de Meta o antes de comprar al contado la segunda tostadora opcional de $14.000.
           </p>
         </div>
       `;
