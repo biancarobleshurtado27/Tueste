@@ -1,5 +1,5 @@
 import { DecisionBrief } from './components/DecisionBrief.jsx';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   completeReferralPurchase, referralWallet,
   PRESETS_12M,
@@ -65,6 +65,8 @@ function initialReferrals() {
   try { const saved = JSON.parse(localStorage.getItem(REFERRAL_KEY)); return saved?.version === 2 && ['people','orders','redemptions','events'].every(k => Array.isArray(saved[k])) ? saved : empty; } catch { return empty; }
 }
 function ReferralInvite() {
+  const motionRoot = useRef(null);
+  const [motionPaused, setMotionPaused] = useState(false);
   const [state, setState] = useState(initialReferrals);
   const [personId, setPersonId] = useState('demo-camila');
   const [mode, setMode] = useState(() => new URLSearchParams(location.search).has('ref') ? 'friend' : 'invite');
@@ -86,6 +88,46 @@ function ReferralInvite() {
   const person = state.people.find(p => p.id === personId) || state.people[0];
   const inviter = state.people.find(p => p.id === refId);
   const wallet = referralWallet(state, person.id);
+  useEffect(() => {
+    const root = motionRoot.current;
+    if (!root) return;
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let observer, frame = 0;
+    const reset = () => {
+      observer?.disconnect(); cancelAnimationFrame(frame);
+      root.classList.remove('motion-ready');
+      root.style.setProperty('--pointer-x', '0px'); root.style.setProperty('--pointer-y', '0px');
+    };
+    const configure = () => {
+      reset();
+      if (preference.matches || motionPaused || !('IntersectionObserver' in window)) return;
+      root.classList.add('motion-ready');
+      const targets = root.querySelectorAll('.referral-layout, .referral-rewards article, .referral-checkout, .referral-owner > h2, .referral-log li');
+      observer = new IntersectionObserver(entries => entries.forEach(entry => {
+        if (entry.isIntersecting) { entry.target.classList.add('is-revealed'); observer.unobserve(entry.target); }
+      }), { threshold: 0.08 });
+      targets.forEach((target, index) => {
+        target.classList.add('reveal-item');
+        target.style.setProperty('--reveal-delay', `${Math.min(index % 3, 2) * 90}ms`);
+        observer.observe(target);
+      });
+    };
+    const move = e => {
+      if (preference.matches || motionPaused || e.pointerType === 'touch') return;
+      const hero = root.querySelector('.referral-layout');
+      if (!hero) return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const rect = hero.getBoundingClientRect();
+        root.style.setProperty('--pointer-x', `${Math.max(-8, Math.min(8, (e.clientX - rect.left - rect.width / 2) * .018))}px`);
+        root.style.setProperty('--pointer-y', `${Math.max(-5, Math.min(5, (e.clientY - rect.top - rect.height / 2) * .018))}px`);
+      });
+    };
+    const leave = () => { cancelAnimationFrame(frame); root.style.setProperty('--pointer-x','0px'); root.style.setProperty('--pointer-y','0px'); };
+    configure(); preference.addEventListener('change', configure);
+    root.addEventListener('pointermove', move, {passive:true}); root.addEventListener('pointerleave', leave);
+    return () => { reset(); preference.removeEventListener('change', configure); root.removeEventListener('pointermove', move); root.removeEventListener('pointerleave', leave); };
+  }, [mode, state.orders.length, motionPaused]);
   const uid = () => crypto.randomUUID();
   const event = (type, actor = person.id) => setState(s => ({ ...s, events: [...s.events, { id: uid(), type, actor, date: new Date().toISOString() }] }));
   const urlFor = id => { const url = new URL(location.pathname, location.origin); url.searchParams.set('tab','referidos'); url.searchParams.set('ref',id); return url.href; };
@@ -115,11 +157,11 @@ function ReferralInvite() {
     setNotice(`Canje simulado: $${credit.toFixed(2)} de crédito, ${balance.bags} bolsa(s) y ${balance.samples} muestra(s). Pedido $34, envío incluido; importe después del crédito: $${(34-credit).toFixed(2)}. Los regalos viajan dentro del pedido.`);
   };
   const uniqueEvents = type => new Set(state.events.filter(e => e.type === type).map(e => e.actor)).size;
-  return <section className="referral-page" aria-labelledby="referral-title">
+  return <section ref={motionRoot} className={`referral-page ${motionPaused ? 'motion-paused' : ''}`} aria-labelledby="referral-title">
     <div className="referral-heading"><span className="notebook-kicker">PARTE 2 / REGALA UNA PRIMERA TAZA</span><span className="referral-demo">PROTOTIPO · DATOS SIMULADOS</span></div>
-    <nav className="referral-tabs" aria-label="Recorrido de referidos"><button aria-pressed={mode === 'invite'} className="btn" onClick={() => {setMode('invite'); setNotice('');}}>Quien invita</button><button aria-pressed={mode === 'friend'} className="btn" onClick={() => openFriend(person.id)} disabled={!person.tried}>Ver como amigo</button><button aria-pressed={mode === 'owner'} className="btn" onClick={() => setMode('owner')}>Panel de Diego</button></nav>
+    <nav className="referral-tabs" aria-label="Recorrido de referidos"><button aria-pressed={mode === 'invite'} className="btn" onClick={() => {setMode('invite'); setNotice('');}}>Quien invita</button><button aria-pressed={mode === 'friend'} className="btn" onClick={() => openFriend(person.id)} disabled={!person.tried}>Ver como amigo</button><button aria-pressed={mode === 'owner'} className="btn" onClick={() => setMode('owner')}>Panel de Diego</button><button className="btn referral-motion-toggle" aria-pressed={motionPaused} onClick={() => setMotionPaused(p => !p)}>{motionPaused ? 'Activar movimiento' : 'Pausar movimiento'}</button></nav>
     {persistError && <p role="alert">El navegador bloqueó el guardado local. Mantené esta pestaña abierta: el avance podría perderse al recargar.</p>}
-    <div role="status" aria-live="polite" className="referral-notice">{notice}</div>
+    <div key={notice} role="status" aria-live="polite" className="referral-notice">{notice}</div>
     {mode === 'invite' && <>
       <label className="referral-person-label" htmlFor="ref-person">Estás viendo la cuenta de</label><select id="ref-person" value={person.id} onChange={e => {setPersonId(e.target.value);setNotice('');}}>{state.people.map(p => <option key={p.id} value={p.id}>{p.name} · simulado</option>)}</select>
       <div className="referral-layout"><div className="referral-story"><span className="referral-eyebrow">01 / DE TU TAZA A LA SUYA</span><h1 id="referral-title"><span>El buen café</span><br/><em>se comparte.</em></h1><p>Tu amigo recibe una muestra de 100 g con su primera compra. Vos ganás $5 para tu próximo pedido cuando compra.</p><p className="referral-story-note">Probalo. Disfrutalo. Compartilo.</p><svg className="referral-art" viewBox="0 0 460 150" role="img" aria-label="Dos bolsas de café Tueste, un regalo compartido"><ellipse cx="230" cy="80" rx="210" ry="60" fill="none" stroke="#B8D7CC" strokeOpacity=".22"/><circle cx="413" cy="53" r="5" fill="#D47A4A"/><path d="M22 132H438" stroke="#CFC3AF"/><g transform="translate(77 15) rotate(-7 55 55)"><path d="M10 8H112L120 114H0Z" fill="#DDD0BA" stroke="#9E8B70"/><path d="M10 8H112L107 23H16Z" fill="#BCA98B"/><rect x="18" y="41" width="85" height="46" fill="#F9F5EC"/><text x="60" y="62" textAnchor="middle" fill="#302820" fontSize="15" fontFamily="Georgia">TUESTE</text><text x="60" y="77" textAnchor="middle" fill="#566148" fontSize="7" letterSpacing="2">DE ORIGEN</text></g><path d="M231 48V96M207 72H255" stroke="#A78D6B" strokeWidth="1.5"/><g transform="translate(300 43) rotate(8 34 40)"><path d="M5 0H65L71 81H0Z" fill="#566148"/><path d="M5 0H65L61 13H9Z" fill="#3D4832"/><text x="35" y="39" textAnchor="middle" fill="#F5EBDD" fontSize="11" fontFamily="Georgia">TUESTE</text><text x="35" y="55" textAnchor="middle" fill="#F5EBDD" fontSize="8">100 g</text></g></svg><small className="referral-art-note">Ilustración de la propuesta · muestra incluida en un pedido</small></div><div className="referral-invite">

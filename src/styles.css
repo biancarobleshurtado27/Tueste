@@ -1522,3 +1522,29 @@ html,body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;f
 @media(hover:hover) and (prefers-reduced-motion:no-preference){.referral-layout:hover .referral-art{transform:translateY(-3px) rotate(-1deg)}}
 @media(max-width:800px){.referral-layout{padding:1.5rem;gap:1.5rem;min-height:0}.referral-story h1{font-size:clamp(2.7rem,10vw,4.4rem)}.referral-invite{padding:1.3rem}.referral-art{max-width:270px}.referral-checkout{padding:1.5rem 1.2rem}.referral-tabs{gap:1rem}.referral-tabs .btn{font-size:.61rem;letter-spacing:.06em}.referral-owner h1{font-size:2.8rem}.referral-layout .referral-story>p{font-size:.9rem}.referral-page .notebook-kicker{line-height:1.7}}
 @media(prefers-reduced-motion:reduce){.referral-art{transition:none!important;transform:none!important}}
+
+/* Movimiento inspirado en las referencias: entrada, órbita y respuesta táctil. */
+@keyframes tueste-rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tueste-float{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-7px) rotate(1deg)}}
+@keyframes tueste-orbit{from{transform:rotate(-8deg)}to{transform:rotate(352deg)}}
+@keyframes tueste-notice{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:no-preference){
+ .referral-page:not(.motion-paused) .referral-story h1 span{display:inline-block;animation:tueste-rise .85s cubic-bezier(.2,.8,.15,1) both}
+ .referral-page:not(.motion-paused) .referral-story h1 em{animation:tueste-rise .9s .12s cubic-bezier(.2,.8,.15,1) both}
+ .referral-page:not(.motion-paused) .referral-invite{animation:tueste-rise .7s .18s cubic-bezier(.2,.8,.15,1) both}
+ .referral-page:not(.motion-paused) .referral-art{animation:tueste-float 7s ease-in-out infinite;translate:var(--pointer-x,0px) var(--pointer-y,0px);transition:translate .65s ease;will-change:transform}
+ .referral-page:not(.motion-paused) .referral-art>ellipse{transform-box:fill-box;transform-origin:center;animation:tueste-orbit 45s linear infinite}
+ .referral-page:not(.motion-paused) .referral-notice:not(:empty){animation:tueste-notice .35s ease-out both}
+ .referral-page.motion-ready .reveal-item{transition:opacity .65s ease,transform .75s cubic-bezier(.2,.8,.15,1);transition-delay:var(--reveal-delay,0ms)}
+ .referral-page.motion-ready .reveal-item:not(.is-revealed){opacity:0;transform:translateY(22px)}
+ .referral-page.motion-ready .reveal-item:focus-within{opacity:1;transform:none;transition-delay:0ms}
+ .referral-page .btn,.referral-page .referral-share{transition:background .25s,color .25s,transform .25s,box-shadow .25s}
+ .referral-page .btn:active:not(:disabled),.referral-page .referral-share:active{transform:translateY(1px) scale(.985)}
+ .referral-checkout fieldset label{transition:border-color .25s,background .25s,box-shadow .25s}
+ .referral-checkout fieldset label:has(input:checked){box-shadow:inset 3px 0 #476363}
+}
+.referral-motion-toggle{margin-left:auto!important;font-size:.6rem!important;letter-spacing:.04em!important;color:var(--ink-secondary)!important}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.referral-page .btn:hover:not(:disabled),.referral-page .referral-share:hover{transform:translateY(-2px)}.referral-tabs .btn:hover:not(:disabled){transform:none}.referral-rewards article{transition:background .35s}.referral-rewards article:hover{background:#DDE8DD40}}
+.referral-page.motion-paused *{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){.referral-page *{animation:none!important;transition:none!important}.referral-art{translate:none!important}.referral-page .reveal-item{opacity:1!important;transform:none!important}}
+@media(max-width:600px){.referral-motion-toggle{margin-left:0!important}.referral-tabs{column-gap:1rem;row-gap:0}}
