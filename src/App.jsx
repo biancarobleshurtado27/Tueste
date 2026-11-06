@@ -58,16 +58,43 @@ function readDraft() {
 }
 const initialDraft = readDraft();
 
+function ReferralInvite() {
+  const [tried, setTried] = useState(() => localStorage.getItem('tueste.referral.tried') === 'yes');
+  const [notice, setNotice] = useState('');
+  const referralUrl = new URL(window.location.pathname, window.location.origin);
+  referralUrl.searchParams.set('tab', 'referidos');
+  referralUrl.searchParams.set('ref', 'demo-camila');
+  const message = `Te invito a probar Tueste: recibí una muestra de café de 100 g con tu primera compra. ${referralUrl.href} (demostración simulada)`;
+  const confirmTried = () => { setTried(true); localStorage.setItem('tueste.referral.tried', 'yes'); };
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(referralUrl.href); setNotice('Enlace copiado. Es una invitación de demostración local.'); }
+    catch { setNotice('No se pudo copiar automáticamente. Seleccioná el enlace y copialo manualmente.'); }
+  };
+  return <section className="referral-page" aria-labelledby="referral-title">
+    <div className="referral-heading"><span className="notebook-kicker">PARTE 2 / REGALA UNA PRIMERA TAZA</span><span className="referral-demo">Demostración simulada · paso 1</span></div>
+    <div className="referral-layout">
+      <div className="referral-story"><h1 id="referral-title">El buen café<br /><em>se comparte.</em></h1><p>Si Tueste ya es parte de tus mañanas, invitá a alguien a descubrirlo. Tu amigo recibe una muestra de 100 g con su primera compra y vos ganás $5 para tu próximo pedido.</p><div className="referral-stamp">340 g de origen.<br />Una nueva historia en cada taza.</div><p className="control-note">Cliente de ejemplo: Camila · simulado. No se han realizado compras ni emitido recompensas reales.</p></div>
+      <div className="referral-invite">
+        {!tried ? <><span className="decision-label">PRIMERO, DISFRUTALO VOS</span><h2>¿Ya recibiste y probaste tu café?</h2><p>La invitación llega después de la experiencia. En esta demostración podés confirmar la entrega y la prueba para continuar.</p><button className="btn btn-olive" onClick={confirmTried}>Sí, ya lo recibí y lo probé · simulado</button></> : <><span className="decision-label">TU INVITACIÓN ESTÁ LISTA</span><h2>Una primera taza, de tu parte.</h2><div className="referral-message">{message}</div><a className="btn btn-olive referral-share" href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">Preparar mensaje en WhatsApp ↗</a><button className="btn" onClick={copy}>Copiar mi enlace</button><label htmlFor="referral-link">Enlace personal · simulado</label><input id="referral-link" readOnly value={referralUrl.href} onFocus={e => e.target.select()} /><p className="control-note">WhatsApp abre el mensaje; vos decidís si enviarlo. Este enlace usa la dirección local: para probarlo en otro dispositivo hace falta publicar o compartir el servidor.</p><p className="control-note">La página de compra del amigo se construirá en el siguiente paso. Este enlace abre por ahora la demostración de referidos.</p></>}
+        <div role="status" aria-live="polite">{notice}</div>
+      </div>
+    </div>
+    <div className="referral-rewards"><article><span>01 / TU AMIGO</span><h3>Una muestra de 100 g</h3><p>Incluida en su primera compra. Sin envío adicional para el regalo.</p></article><article><span>02 / PARA VOS</span><h3>$5 para volver</h3><p>Al completar la compra elegible de un amigo nuevo. No se acredita por compartir.</p></article><article><span>03 / TRES AMIGOS</span><h3>Una bolsa de 340 g</h3><p>Un premio por cada ciclo de tres amigos compradores distintos, dentro de tu próximo pedido.</p></article></div>
+    <details className="notebook-details"><summary>Condiciones de esta propuesta</summary><p>Si un amigo inicia una suscripción pagada, recibís además una muestra de 100 g en tu próximo pedido. Una compra se cuenta una sola vez; no cuentan autorreferidos. Los regalos viajan dentro de pedidos y el saldo se usa en un próximo pedido. Las recompensas y el seguimiento se implementarán en la siguiente etapa.</p><p>Costo máximo conservador por referido que dispara todos los premios: $1,60 + $5 + $5,44 + $1,60 = $13,64. Tope del caso: $25. Condiciones propuestas para demostración.</p></details>
+    <button className="btn btn-text" onClick={() => { if (window.confirm('¿Reiniciar únicamente esta demostración de invitación?')) { localStorage.removeItem('tueste.referral.tried'); setTried(false); setNotice(''); } }}>Reiniciar esta demostración</button>
+  </section>;
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const t = params.get('tab');
-      if (t === 'calculadora' || t === 'tablero' || t === 'simulador24m' || t === 'todas') {
+      if (t === 'calculadora' || t === 'tablero' || t === 'simulador24m' || t === 'todas' || t === 'referidos') {
         return t;
       }
     }
-    return ['calculadora','tablero','simulador24m','todas'].includes(initialDraft.activeTab) ? initialDraft.activeTab : 'tablero';
+    return ['calculadora','tablero','simulador24m','todas','referidos'].includes(initialDraft.activeTab) ? initialDraft.activeTab : 'tablero';
   }); // 'calculadora' | 'tablero' | 'simulador24m' | 'todas'
 
   const [showScenariosPanel, setShowScenariosPanel] = useState(() => {
@@ -446,6 +473,7 @@ export default function App() {
             >
               Caja a 24 meses
             </button>
+            <button type="button" className={`roaster-nav-btn ${activeTab === 'referidos' ? 'active' : ''}`} onClick={() => setActiveTab('referidos')}>Referidos</button>
           </nav>
 
           <div className="roaster-actions">
@@ -509,6 +537,7 @@ export default function App() {
 
         {(activeTab === 'tablero' || activeTab === 'todas') && <DecisionBrief onExplore={() => document.getElementById('seccion-tablero')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />}
 
+        {activeTab === 'referidos' && <ReferralInvite />}
         {/* Sección 1: Calculadora */}
         {(activeTab === 'calculadora' || activeTab === 'todas') && (
           <CalculadoraSection
