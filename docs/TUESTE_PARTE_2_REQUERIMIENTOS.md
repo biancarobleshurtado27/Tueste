@@ -109,3 +109,7 @@ Pruebas realizadas: compilación; regresión Parte 1; reglas de seis compras y d
 
 ## Pendientes reales de entrega
 Revisión por otra persona desde celular. Pulido visual posterior. Ficha de growth de una página en Google Docs o Sheets (este documento todavía no la sustituye). El prototipo es local y simulado; no prometer un sistema de referidos productivo o enlaces públicos. Si se exige una matriz con ejes del curso, confirmar esos ejes antes de entregar.
+
+## Dirección visual combinada · noviembre 2026
+Referencias aportadas: Cherrybeam Coffee (verde mineral, papel, cobre y detalles orbitales), observatorio Three Body (composición editorial, líneas finas y metadatos) y Fernwork (Inter, contraste entre pesos 200 y 600, espacio y jerarquía). Se adaptan a Tueste: no se importan marcas, métricas ficticias, escenarios alienígenas ni una simulación de gravedad.
+Tipografía: Inter 200/300/400/500/600 desde Google Fonts, con alternativa sans-serif si falla internet. Contenido y lógica de Tueste conservados. No se agrega Tailwind CDN ni Three.js a la aplicación React porque no aportan al recorrido del caso. Los adornos son SVG locales y no bloquean los controles. Movimiento mínimo con respeto a reducción de movimiento. La invitación, compra, recompensas y panel siguen siendo las funciones centrales.
