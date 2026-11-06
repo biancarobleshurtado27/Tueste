@@ -116,3 +116,6 @@ Tipografía: Inter 200/300/400/500/600 desde Google Fonts, con alternativa sans-
 
 ## Animaciones
 Entradas escalonadas, aparición al desplazarse, flotación y órbita SVG, respuesta leve al puntero, transiciones de botones y avisos. Incluye Pausar movimiento y respeta prefers-reduced-motion. Sin loader ni esperas obligatorias. Verificado en navegador móvil: animación activa, pausa, preferencia reducida, compra y crédito, sin errores JS ni desbordamiento global.
+
+## Portada e inicio de sesión de demostración
+Entrada pública con explicación de la empresa, seis productores y orígenes, producto y programa de referidos. Botones llevan a acceso de ejemplo como cliente o Diego. No es autenticación real: no hay contraseñas ni permisos restringidos. Sesión en sessionStorage, salida al inicio y recarga comprobadas. Los enlaces del amigo mantienen acceso directo a su invitación. Probado en navegador: portada, ambos perfiles, recarga, salida y móvil sin desbordamiento ni errores JS. Alcance adicional solicitado por el usuario; pendiente confirmar si requiere cuentas reales.
