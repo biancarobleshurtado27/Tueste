@@ -809,3 +809,37 @@ export function buildAllReferenceResults() {
   return { ref12m, ref24m };
 }
 
+
+// Parte 2: reglas de la demostración local de referidos.
+export function referralRewardCost({ subscription = false, milestone = false } = {}) {
+  return 1.6 + 5 + (subscription ? 1.6 : 0) + (milestone ? 5.44 : 0);
+}
+export function completeReferralPurchase(state, input) {
+  const name = String(input.name || '').trim();
+  const contact = String(input.contact || '').trim().toLowerCase();
+  const inviter = state.people.find(p => p.id === input.inviterId);
+  if (!inviter || !inviter.tried) throw new Error('La invitación no está habilitada.');
+  if (name.length < 2 || name.length > 80 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) throw new Error('Escribí un nombre y un correo de ejemplo válidos.');
+  if (state.people.some(p => p.contact === contact)) throw new Error('Este correo ya pertenece a un cliente; no cuenta como amigo nuevo ni permite autorreferidos.');
+  if (!['normal', 'subscription'].includes(input.product)) throw new Error('Elegí un pedido válido.');
+  const prior = state.orders.filter(o => o.inviterId === inviter.id).length;
+  const milestone = (prior + 1) % 3 === 0;
+  const subscription = input.product === 'subscription';
+  const cost = referralRewardCost({ subscription, milestone });
+  if (cost > 25) throw new Error('La recompensa excede el límite de $25.');
+  const id = input.id;
+  if (!id || state.orders.some(o => o.id === id)) throw new Error('Este pedido ya fue registrado.');
+  const person = { id: `client-${id}`, name, contact, tried: false };
+  const order = { id, inviterId: inviter.id, buyerId: person.id, name, contact, subscription, milestone, cost, amount: subscription ? 30.6 : 34, date: input.date };
+  return { ...state, people: [...state.people, person], orders: [...state.orders, order] };
+}
+export function referralWallet(state, personId) {
+  const orders = state.orders.filter(o => o.inviterId === personId);
+  const used = state.redemptions.filter(r => r.personId === personId);
+  return {
+    count: orders.length,
+    credit: orders.length * 5 - used.reduce((s, r) => s + r.credit, 0),
+    bags: Math.floor(orders.length / 3) - used.reduce((s, r) => s + r.bags, 0),
+    samples: orders.filter(o => o.subscription).length - used.reduce((s, r) => s + r.samples, 0)
+  };
+}

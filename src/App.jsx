@@ -1,6 +1,7 @@
 import { DecisionBrief } from './components/DecisionBrief.jsx';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
+  completeReferralPurchase, referralWallet,
   PRESETS_12M,
   REFERENCE_PLANS_24M,
   computeScenario,
@@ -58,30 +59,82 @@ function readDraft() {
 }
 const initialDraft = readDraft();
 
+const REFERRAL_KEY = 'tueste.referrals.v2';
+function initialReferrals() {
+  const empty = { people: [{ id: 'demo-camila', name: 'Camila', contact: 'camila@example.test', tried: false }], orders: [], redemptions: [], events: [] };
+  try { const saved = JSON.parse(localStorage.getItem(REFERRAL_KEY)); return saved?.version === 2 && ['people','orders','redemptions','events'].every(k => Array.isArray(saved[k])) ? saved : empty; } catch { return empty; }
+}
 function ReferralInvite() {
-  const [tried, setTried] = useState(() => localStorage.getItem('tueste.referral.tried') === 'yes');
+  const [state, setState] = useState(initialReferrals);
+  const [personId, setPersonId] = useState('demo-camila');
+  const [mode, setMode] = useState(() => new URLSearchParams(location.search).has('ref') ? 'friend' : 'invite');
+  const [refId, setRefId] = useState(() => new URLSearchParams(location.search).get('ref') || 'demo-camila');
+  const [name, setName] = useState('');
+  const [contact, setContact] = useState('');
+  const [product, setProduct] = useState('normal');
   const [notice, setNotice] = useState('');
-  const referralUrl = new URL(window.location.pathname, window.location.origin);
-  referralUrl.searchParams.set('tab', 'referidos');
-  referralUrl.searchParams.set('ref', 'demo-camila');
-  const message = `Te invito a probar Tueste: recibí una muestra de café de 100 g con tu primera compra. ${referralUrl.href} (demostración simulada)`;
-  const confirmTried = () => { setTried(true); localStorage.setItem('tueste.referral.tried', 'yes'); };
-  const copy = async () => {
-    try { await navigator.clipboard.writeText(referralUrl.href); setNotice('Enlace copiado. Es una invitación de demostración local.'); }
-    catch { setNotice('No se pudo copiar automáticamente. Seleccioná el enlace y copialo manualmente.'); }
+  const [receipt, setReceipt] = useState(null);
+  const [persistError, setPersistError] = useState(false);
+  useEffect(() => {
+    try { localStorage.setItem(REFERRAL_KEY, JSON.stringify({ ...state, version: 2 })); setPersistError(false); }
+    catch { setPersistError(true); }
+  }, [state]);
+  useEffect(() => {
+    const sync = e => { if (e.key === REFERRAL_KEY) setState(initialReferrals()); };
+    window.addEventListener('storage', sync); return () => window.removeEventListener('storage', sync);
+  }, []);
+  const person = state.people.find(p => p.id === personId) || state.people[0];
+  const inviter = state.people.find(p => p.id === refId);
+  const wallet = referralWallet(state, person.id);
+  const uid = () => crypto.randomUUID();
+  const event = (type, actor = person.id) => setState(s => ({ ...s, events: [...s.events, { id: uid(), type, actor, date: new Date().toISOString() }] }));
+  const urlFor = id => { const url = new URL(location.pathname, location.origin); url.searchParams.set('tab','referidos'); url.searchParams.set('ref',id); return url.href; };
+  const link = urlFor(person.id);
+  const message = `${person.name} te invita a probar Tueste: una muestra de 100 g incluida con tu primera compra. ${link} — demostración simulada`;
+  const openFriend = id => {
+    setRefId(id); setReceipt(null); setName(''); setContact(''); setNotice(''); setMode('friend');
+    event('friend_open', id);
+    const url = new URL(location.href); url.searchParams.set('tab','referidos'); url.searchParams.set('ref',id); history.replaceState(null,'',url);
   };
+  const purchase = e => {
+    e.preventDefault();
+    try {
+      // Leer el último estado evita duplicar recompensas entre pestañas locales.
+      const latest = initialReferrals();
+      const next = completeReferralPurchase(latest, { id: uid(), inviterId: refId, name, contact, product, date: new Date().toISOString() });
+      setState(next); setReceipt(next.orders.at(-1)); setNotice('Compra simulada completada. La recompensa ya aparece en la cuenta de quien te invitó.');
+    } catch (error) { setNotice(error.message); }
+  };
+  const redeem = () => {
+    if (!wallet.credit && !wallet.bags && !wallet.samples) return;
+    if (!window.confirm('¿Simular el canje dentro de un nuevo pedido de dos bolsas? No se hará ningún cobro.')) return;
+    const latest = initialReferrals(); const balance = referralWallet(latest, person.id);
+    if (!balance.credit && !balance.bags && !balance.samples) { setState(latest); return; }
+    const credit = Math.min(34, balance.credit);
+    setState({ ...latest, redemptions: [...latest.redemptions, { id: uid(), personId: person.id, credit, bags: balance.bags, samples: balance.samples, date: new Date().toISOString() }] });
+    setNotice(`Canje simulado: $${credit.toFixed(2)} de crédito, ${balance.bags} bolsa(s) y ${balance.samples} muestra(s). Pedido $34, envío incluido; importe después del crédito: $${(34-credit).toFixed(2)}. Los regalos viajan dentro del pedido.`);
+  };
+  const uniqueEvents = type => new Set(state.events.filter(e => e.type === type).map(e => e.actor)).size;
   return <section className="referral-page" aria-labelledby="referral-title">
-    <div className="referral-heading"><span className="notebook-kicker">PARTE 2 / REGALA UNA PRIMERA TAZA</span><span className="referral-demo">Demostración simulada · paso 1</span></div>
-    <div className="referral-layout">
-      <div className="referral-story"><h1 id="referral-title">El buen café<br /><em>se comparte.</em></h1><p>Si Tueste ya es parte de tus mañanas, invitá a alguien a descubrirlo. Tu amigo recibe una muestra de 100 g con su primera compra y vos ganás $5 para tu próximo pedido.</p><div className="referral-stamp">340 g de origen.<br />Una nueva historia en cada taza.</div><p className="control-note">Cliente de ejemplo: Camila · simulado. No se han realizado compras ni emitido recompensas reales.</p></div>
-      <div className="referral-invite">
-        {!tried ? <><span className="decision-label">PRIMERO, DISFRUTALO VOS</span><h2>¿Ya recibiste y probaste tu café?</h2><p>La invitación llega después de la experiencia. En esta demostración podés confirmar la entrega y la prueba para continuar.</p><button className="btn btn-olive" onClick={confirmTried}>Sí, ya lo recibí y lo probé · simulado</button></> : <><span className="decision-label">TU INVITACIÓN ESTÁ LISTA</span><h2>Una primera taza, de tu parte.</h2><div className="referral-message">{message}</div><a className="btn btn-olive referral-share" href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">Preparar mensaje en WhatsApp ↗</a><button className="btn" onClick={copy}>Copiar mi enlace</button><label htmlFor="referral-link">Enlace personal · simulado</label><input id="referral-link" readOnly value={referralUrl.href} onFocus={e => e.target.select()} /><p className="control-note">WhatsApp abre el mensaje; vos decidís si enviarlo. Este enlace usa la dirección local: para probarlo en otro dispositivo hace falta publicar o compartir el servidor.</p><p className="control-note">La página de compra del amigo se construirá en el siguiente paso. Este enlace abre por ahora la demostración de referidos.</p></>}
-        <div role="status" aria-live="polite">{notice}</div>
-      </div>
-    </div>
-    <div className="referral-rewards"><article><span>01 / TU AMIGO</span><h3>Una muestra de 100 g</h3><p>Incluida en su primera compra. Sin envío adicional para el regalo.</p></article><article><span>02 / PARA VOS</span><h3>$5 para volver</h3><p>Al completar la compra elegible de un amigo nuevo. No se acredita por compartir.</p></article><article><span>03 / TRES AMIGOS</span><h3>Una bolsa de 340 g</h3><p>Un premio por cada ciclo de tres amigos compradores distintos, dentro de tu próximo pedido.</p></article></div>
-    <details className="notebook-details"><summary>Condiciones de esta propuesta</summary><p>Si un amigo inicia una suscripción pagada, recibís además una muestra de 100 g en tu próximo pedido. Una compra se cuenta una sola vez; no cuentan autorreferidos. Los regalos viajan dentro de pedidos y el saldo se usa en un próximo pedido. Las recompensas y el seguimiento se implementarán en la siguiente etapa.</p><p>Costo máximo conservador por referido que dispara todos los premios: $1,60 + $5 + $5,44 + $1,60 = $13,64. Tope del caso: $25. Condiciones propuestas para demostración.</p></details>
-    <button className="btn btn-text" onClick={() => { if (window.confirm('¿Reiniciar únicamente esta demostración de invitación?')) { localStorage.removeItem('tueste.referral.tried'); setTried(false); setNotice(''); } }}>Reiniciar esta demostración</button>
+    <div className="referral-heading"><span className="notebook-kicker">PARTE 2 / REGALA UNA PRIMERA TAZA</span><span className="referral-demo">Todo este recorrido es simulado · datos locales de este navegador</span></div>
+    <nav className="referral-tabs" aria-label="Recorrido de referidos"><button className="btn" onClick={() => {setMode('invite'); setNotice('');}}>Quien invita</button><button className="btn" onClick={() => openFriend(person.id)} disabled={!person.tried}>Ver como amigo</button><button className="btn" onClick={() => setMode('owner')}>Panel de Diego</button></nav>
+    {persistError && <p role="alert">El navegador bloqueó el guardado local. Mantené esta pestaña abierta: el avance podría perderse al recargar.</p>}
+    <div role="status" aria-live="polite" className="referral-notice">{notice}</div>
+    {mode === 'invite' && <>
+      <label htmlFor="ref-person">Cliente de demostración</label><select id="ref-person" value={person.id} onChange={e => {setPersonId(e.target.value);setNotice('');}}>{state.people.map(p => <option key={p.id} value={p.id}>{p.name} · simulado</option>)}</select>
+      <div className="referral-layout"><div className="referral-story"><h1 id="referral-title">El buen café<br/><em>se comparte.</em></h1><p>Tu amigo recibe una muestra de 100 g con su primera compra. Vos ganás $5 para tu próximo pedido cuando compra.</p><p>Invitamos después de recibir y probar el café. No premiamos los clics ni el envío de mensajes.</p></div><div className="referral-invite">
+        {!person.tried ? <><h2>¿Ya recibiste y probaste tu café?</h2><p>Confirmá este momento en la demostración para habilitar tu invitación.</p><button className="btn btn-olive" onClick={() => setState(s => ({...s, people:s.people.map(p => p.id === person.id ? {...p,tried:true}:p),events:[...s.events,{id:uid(),type:'eligible',actor:person.id}]}))}>Confirmar entrega y prueba · simulado</button></> : <><h2>Una primera taza, de tu parte.</h2><div className="referral-message">{message}</div><a className="btn btn-olive referral-share" href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer" onClick={() => event('prepared')}>Preparar WhatsApp ↗</a><button className="btn" onClick={async () => {try{await navigator.clipboard.writeText(link);event('copied');setNotice('Enlace copiado.');}catch{setNotice('Seleccioná y copiá el enlace manualmente.');}}}>Copiar enlace</button><button className="btn" onClick={() => {event('shared');setNotice('Envío de invitación registrado como simulado.');}}>Simular invitación enviada</button><button className="btn" onClick={() => openFriend(person.id)}>Probar la página del amigo</button><label htmlFor="ref-link">Enlace personal · simulado</label><input id="ref-link" readOnly value={link} onFocus={e=>e.target.select()}/><p className="control-note">Preparar WhatsApp no confirma un envío. Enlaces locales solo funcionan en este equipo; identidades y compras se guardan en este navegador.</p></>}
+      </div></div>
+      <div className="referral-rewards"><article><h3>${wallet.credit.toFixed(2)} de crédito</h3><p>Pendiente para próximos pedidos. El crédito no es dinero retirado.</p></article><article><h3>{wallet.count} amigos compradores</h3><progress aria-label="Progreso al próximo premio" value={wallet.count%3} max="3"/><p>{wallet.count%3}/3 para el próximo premio. {Math.floor(wallet.count/3)} ciclo(s) completado(s).</p></article><article><h3>Regalos pendientes</h3><p>{wallet.bags} bolsa(s) de 340 g y {wallet.samples} muestra(s) por suscripción. Se incluyen en un próximo pedido.</p><button className="btn" disabled={!wallet.credit&&!wallet.bags&&!wallet.samples} onClick={redeem}>Simular canje en próximo pedido</button></article></div>
+      <h2>Notificaciones · simuladas</h2>{state.orders.filter(o=>o.inviterId===person.id).length===0 ? <p>Todavía no hay compras de amigos. Compartir por sí solo no genera saldo.</p> : <ul className="referral-log">{state.orders.filter(o=>o.inviterId===person.id).map(o=><li key={o.id}>{o.name} compró {o.subscription?'una suscripción':'dos bolsas'} · ganaste $5{o.milestone?' y una bolsa de 340 g por completar tres amigos':''}{o.subscription?' y una muestra de 100 g por su suscripción':''}. Costo de recompensas de este referido: ${o.cost.toFixed(2)}. Simulado.</li>)}</ul>}
+    </>}
+    {mode === 'friend' && <div className="referral-checkout"><span className="decision-label">INVITACIÓN PERSONAL · SIMULADA</span><h1 id="referral-title">{inviter ? `${inviter.name} te regala una primera taza.`:'Esta invitación no está disponible.'}</h1>{!inviter || !inviter.tried ? <p>El enlace no existe en esta demostración o el cliente aún no ha probado el café. Volvé a «Quien invita» para crear una invitación válida.</p> : receipt ? <><h2>Tu compra simulada está lista</h2><p>Dos bolsas de 340 g + una muestra de 100 g. Total: ${receipt.amount.toFixed(2)}, envío incluido. No hubo cobro real.</p><p>El regalo se aplicó automáticamente y {inviter.name} recibió su recompensa.</p><button className="btn btn-olive" onClick={()=>{setPersonId(receipt.buyerId);setMode('invite');setNotice('Tu café aún no se ha probado. Confirmá entrega y prueba antes de invitar.');}}>Continuar el ciclo como {receipt.name}</button><button className="btn" onClick={()=>{setPersonId(inviter.id);setMode('invite');setNotice('Revisá el saldo y la notificación de la compra simulada.');}}>Ver recompensa de {inviter.name}</button></> : <form onSubmit={purchase}><p>Con tu primera compra recibís una muestra de 100 g, aplicada sin código y dentro del mismo paquete.</p><label htmlFor="friend-name">Nombre de ejemplo · simulado</label><input id="friend-name" required minLength="2" maxLength="80" value={name} onChange={e=>setName(e.target.value)}/><label htmlFor="friend-email">Correo de ejemplo para evitar duplicados</label><input id="friend-email" type="email" required placeholder="amigo@example.test" value={contact} onChange={e=>setContact(e.target.value)}/><small>Usá datos ficticios. El correo identifica al comprador únicamente en esta demo.</small><fieldset><legend>Elegí tu pedido</legend><label><input type="radio" name="product" value="normal" checked={product==='normal'} onChange={()=>setProduct('normal')}/> Dos bolsas · $34 · compra única</label><label><input type="radio" name="product" value="subscription" checked={product==='subscription'} onChange={()=>setProduct('subscription')}/> Dos bolsas al mes · $30,60 · suscripción cancelable</label></fieldset><p><strong>Regalo: muestra de 100 g · $0. Envío incluido.</strong></p><p>Total simulado: ${product==='normal'?'34,00':'30,60'}{product==='subscription'?' por mes; primer pago simulado al confirmar':''}.</p><button className="btn btn-olive" type="submit">Confirmar compra simulada</button><p>No se solicitan datos de tarjeta ni se procesa un pago real.</p></form>}</div>}
+    {mode === 'owner' && <div><h1 id="referral-title">El ciclo, en números.</h1><h2>Histórico del caso · por 1.000 primeras compras</h2><div className="table-responsive"><table><thead><tr><th>Paso</th><th>Cantidad</th><th>Conversión y base</th></tr></thead><tbody>{[['Reciben correo',1000,'Base'],['Abren correo',350,'350/1.000 = 35%'],['Entran al programa',120,'120/350 = 34,29%'],['Personas que invitan',100,'100/120 = 83,33%'],['Invitaciones',300,'3 por persona; cambia la unidad'],['Amigos abren tienda',150,'150/300 = 50%'],['Amigos compran',60,'60/150 = 40%']].map(r=><tr key={r[0]}>{r.map((v,i)=><td key={i}>{v}</td>)}</tr>)}</tbody></table></div><p>Mayor pérdida proporcional: correo abierto → programa, 65,71%. Mayor pérdida absoluta: 650 no abren. El 70% de quienes invitaron desconoce su saldo según encuesta; no es una etapa adicional del embudo.</p>
+      <h2>Actividad de esta demostración · simulada</h2><ul><li>Clientes que confirmaron entrega y prueba: {state.people.filter(p=>p.tried).length}.</li><li>Personas que prepararon WhatsApp: {uniqueEvents('prepared')}.</li><li>Personas que simularon enviar: {uniqueEvents('shared')}.</li><li>Aperturas simuladas del amigo: {state.events.filter(e=>e.type==='friend_open').length}; no equivalen a visitantes únicos.</li><li>Compradores referidos únicos: {state.orders.length}.</li><li>Recompensas comprometidas, incluido saldo sin canjear: ${state.orders.reduce((n,o)=>n+o.cost,0).toFixed(2)}.</li><li>Costo medio de recompensas: {state.orders.length ? '$'+(state.orders.reduce((n,o)=>n+o.cost,0)/state.orders.length).toFixed(2) : 'Sin compras; no aplica'} por referido. No es CAC total.</li></ul>
+      <h2>Objetivo y experimento · propuesta</h2><p>Pasar de 6 a 10 compradores referidos por cada 100 compradores iniciales. Objetivo simulado: 1.000 reciben → 450 abren → 200 entran → 160 invitan → 480 invitaciones → 240 aperturas → 100 compras. No es un resultado observado.</p><p>A/B 50/50: piloto actual frente a invitación después de probar, enlace personal, regalo aplicado y aviso. Comparar cohortes durante una ventana propuesta de 30 días. Revisar semanalmente compradores referidos por 100 clientes elegibles, con igual madurez de cohorte.</p><p>Contramétricas: recompensas ≤ $25 por referido, contribución inicial después del regalo no negativa y devoluciones/cancelaciones sin empeorar frente al control. Si falla, revisar el paso afectado y repetir antes de ampliar.</p><h3>Ciclo</h3><p>Compra → recibe y prueba → invita → amigo compra con regalo → aviso y premio → amigo recibe y prueba → nueva invitación. No se promete crecimiento autosostenido.</p><h3>Canales a 90 días · propuesta</h3><div className="table-responsive"><table><thead><tr><th>Modo / control</th><th>Propio</th><th>Externo</th></tr></thead><tbody><tr><th>Pagado</th><td>Beneficios de referidos dentro del límite</td><td>Meta a $4.000 de base; no escalar antes de validar</td></tr><tr><th>Relacional</th><td>Página, experiencia postentrega y avisos</td><td>WhatsApp y fotos voluntarias con consentimiento</td></tr></tbody></table></div><p>Días 1–30: piloto e instrumentación. Días 31–60: observar y corregir. Días 61–90: ampliar si mejora la métrica y respeta costos.</p>
+    </div>}
+    <details className="notebook-details"><summary>Recompensas, condiciones y comprobación</summary><div className="table-responsive"><table><thead><tr><th>Premio</th><th>Costo</th></tr></thead><tbody><tr><td>Muestra del amigo dentro de su pedido</td><td>$1,60</td></tr><tr><td>Crédito del invitador</td><td>$5,00</td></tr><tr><td>Bolsa al completar 3 compradores distintos</td><td>$5,44 por ciclo</td></tr><tr><td>Muestra extra por amigo suscriptor</td><td>$1,60</td></tr></tbody></table></div><p>Máximo conservador para el referido que activa todos los premios: $13,64 ≤ $25. Meta cuesta ($4.000+$1.000)/100 = $50. El piloto $8+$8 también cumple: su problema es la experiencia.</p><p>Crédito nominal completo contado como costo aunque no se canjee; regalos en un pedido posterior, sin envío independiente. Demostración local sin validación real de identidad: detectar el mismo correo no sustituye protección antifraude de producción.</p><p>Contribución del primer pedido del amigo después de muestra: $14,29 en compra única y $11,043 en suscripción; ambos positivos, antes de recompensas del invitador y costos fijos.</p></details>
+    <button className="btn btn-text" onClick={()=>{if(window.confirm('¿Borrar únicamente las compras y recompensas simuladas de referidos?')){localStorage.removeItem(REFERRAL_KEY);setState(initialReferrals());setPersonId('demo-camila');setRefId('demo-camila');setMode('invite');setReceipt(null);setNotice('Demo reiniciada. Parte 1 intacta.');const u=new URL(location.href);u.searchParams.delete('ref');history.replaceState(null,'',u);}}}>Reiniciar demo de referidos</button>
   </section>;
 }
 

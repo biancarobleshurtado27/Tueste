@@ -93,3 +93,19 @@ Después de cada etapa: prueba pertinente, commit y push a main. No modificar ca
 
 ## Pendientes
 Confirmar recompensas y objetivo con el usuario. Verificar formato de matriz usado en clase si se exige uno específico. Probar con otra persona desde celular antes de entregar. La ficha Google y la implementación no están hechas en esta etapa.
+
+## Implementación funcional · 6 de noviembre de 2026
+Se completó en los mismos archivos del proyecto: App.jsx, styles.css y modelo compartido. No se movieron archivos. Referidos es un prototipo local: no procesa pagos, no envía mensajes y no usa SQLite para compartir identidades entre equipos.
+Funciones: confirmar entrega/prueba; preparar WhatsApp, copiar enlace y registrar envío simulado; página del amigo con regalo; compra normal o suscripción simulada; comprador nuevo por correo ficticio; notificación; saldo; ciclos de tres; bonus suscripción; canje en siguiente pedido simulado; nuevo comprador continúa el ciclo; panel con histórico, actividad simulada, objetivo y experimento; reinicio solo de referidos.
+La invitación desconocida o de cliente sin prueba confirmada no permite comprar. Se distingue preparar un mensaje de haberlo enviado. La prueba de identidad por correo es limitada a una demo, no protección antifraude real. Los enlaces son locales y los datos se comparten solo entre pestañas del mismo navegador/origen.
+Pruebas realizadas: compilación; regresión Parte 1; reglas de seis compras y dos ciclos; máximo $13,64; duplicados y autorreferidos; canje. Navegador aislado con viewport móvil 390x844: tres compras, una suscripción, bolsa y muestra de premio, persistencia después de recarga, rechazo de correo repetido, canje a saldo cero y panel con tres compradores. Sin errores JavaScript en ese recorrido. Primer intento del test falló por texto esperado incompleto; se comprobó el texto real y se repitió el recorrido exitosamente.
+
+## Cuatro preguntas del cliente
+| Perspectiva | ¿Es para mí? | ¿Hace lo que quiero? | ¿Me importa ahora? | ¿Sé cómo lograrlo? |
+|---|---|---|---|---|
+| Quien invita | Cliente que ya recibió y probó Tueste | Comparte un regalo y ve sus recompensas | Regala una primera prueba después de disfrutarlo | Confirmar prueba, compartir, consultar progreso |
+| Amigo | Invitación con nombre del cliente | Muestra ya aplicada al pedido | Beneficio en la primera compra | Elegir pedido y confirmar compra simulada |
+| Recompensa | Cuenta del invitador | Crédito y regalos desglosados | Notificación al comprar el amigo | Consultar saldo y simular canje |
+
+## Pendientes reales de entrega
+Revisión por otra persona desde celular. Pulido visual posterior. Ficha de growth de una página en Google Docs o Sheets (este documento todavía no la sustituye). El prototipo es local y simulado; no prometer un sistema de referidos productivo o enlaces públicos. Si se exige una matriz con ejes del curso, confirmar esos ejes antes de entregar.

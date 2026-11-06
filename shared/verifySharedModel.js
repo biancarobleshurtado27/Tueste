@@ -76,3 +76,19 @@ const calcAgencia24 = simulate24Months(valAgencia24.data);
 assert.equal(calcAgencia24.valid, false, 'Plan Agencia 24M calculado se marca como plan inviable (valid: false)');
 
 console.log('=== TODAS LAS VERIFICACIONES DEL MÓDULO COMPARTIDO PASARON EXITOSAMENTE ===');
+
+// Parte 2: recompensas nominales, ciclos, identidad simulada y canje.
+const referralRules = await import('./tuesteModel.js');
+let referralState = { people: [{ id: 'root', name: 'Camila', contact: 'camila@example.test', tried: true }], orders: [], redemptions: [], events: [] };
+for (let i=1;i<=6;i++) referralState=referralRules.completeReferralPurchase(referralState,{id:'r'+i,inviterId:'root',name:'Amigo '+i,contact:'amigo'+i+'@example.test',product:i===3?'subscription':'normal',date:'simulado'});
+assert.equal(referralRules.referralWallet(referralState,'root').credit,30);
+assert.equal(referralRules.referralWallet(referralState,'root').bags,2);
+assert.equal(referralRules.referralWallet(referralState,'root').samples,1);
+assert.equal(referralState.orders[2].cost,13.64);
+assert.ok(referralState.orders.every(o=>o.cost<=25));
+for (const contact of ['AMIGO1@example.test','camila@example.test']) assert.throws(()=>referralRules.completeReferralPurchase(referralState,{id:'invalid',inviterId:'root',name:'Otro',contact,product:'normal'}));
+assert.throws(()=>referralRules.completeReferralPurchase(referralState,{id:'r1',inviterId:'root',name:'Otro',contact:'nuevo@example.test',product:'normal'}));
+assert.throws(()=>referralRules.completeReferralPurchase(referralState,{id:'unready',inviterId:referralState.people[1].id,name:'Otro',contact:'nuevo@example.test',product:'normal'}));
+referralState={...referralState,redemptions:[{personId:'root',credit:30,bags:2,samples:1}]};
+assert.deepEqual(referralRules.referralWallet(referralState,'root'),{count:6,credit:0,bags:0,samples:0});
+console.log('[OK] Parte 2: ciclos de tres, bonus, límite $25, duplicados, autorreferidos, prueba previa y canje.');
