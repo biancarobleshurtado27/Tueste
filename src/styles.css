@@ -1399,3 +1399,71 @@ html { scroll-padding-top:130px; }
 @media print { header.roaster-header { position:static; } .decision-method { display:block; } button { display:none!important; } }
 .referral-page{padding:1.5rem 0 3rem}.referral-heading{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:2rem}.referral-demo{font-size:.75rem;color:var(--ink-secondary);border:1px solid var(--line);padding:.3rem .7rem;border-radius:4px}.referral-layout{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start}.referral-story h1{font:400 clamp(3rem,6vw,5.5rem)/1.02 var(--font-serif);letter-spacing:-.045em;margin:.5rem 0 1.5rem}.referral-story h1 em{color:var(--olive)}.referral-story p{max-width:49ch;line-height:1.8}.referral-stamp{display:inline-block;border-left:3px solid var(--copper);padding:.5rem 1rem;margin:2rem 0;font-family:var(--font-serif);font-size:1.2rem}.referral-invite{padding:2rem;background:var(--espresso);color:var(--cream);border-radius:6px}.referral-invite h2{font:400 2rem/1.2 var(--font-serif);margin:.75rem 0 1rem}.referral-invite p{line-height:1.75;margin:1rem 0}.referral-invite .decision-label{color:#D9C9B6}.referral-invite .control-note{color:#D9C9B6}.referral-invite .btn{margin:.4rem .6rem .4rem 0}.referral-invite .btn:not(.btn-olive){background:transparent;color:var(--cream);border-color:#B39B81}.referral-invite label{display:block;margin:1.3rem 0 .5rem;font-size:.8rem}.referral-invite input{width:100%;padding:.8rem;border:1px solid #A28C73;border-radius:4px;font-size:.85rem}.referral-message{padding:1rem;border:1px solid #67523F;line-height:1.75;margin:1rem 0;overflow-wrap:anywhere}.referral-share{display:inline-block;text-decoration:none}.referral-rewards{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;border-top:1px solid var(--line);margin:3rem 0 2rem;padding-top:2rem}.referral-rewards span{font-size:.7rem;letter-spacing:.12em;color:var(--olive)}.referral-rewards h3{font:400 1.6rem var(--font-serif);margin:.7rem 0}.referral-rewards p{line-height:1.75}.referral-page details p{margin:1rem;line-height:1.8}@media(max-width:800px){.referral-layout,.referral-rewards{grid-template-columns:1fr;gap:1.6rem}.referral-invite{padding:1.4rem}.roaster-nav{flex-wrap:wrap}}
 .referral-tabs{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem}.referral-notice:empty{display:none}.referral-notice{padding:1rem;border:1px solid var(--olive);background:var(--olive-soft);margin:1rem 0;line-height:1.7}.referral-page select{padding:.7rem;margin:.5rem 0 1.5rem;max-width:100%;border:1px solid var(--line);background:var(--bg-paper)}.referral-checkout{max-width:720px;margin:2rem auto;padding:2rem;background:var(--bg-paper);border:1px solid var(--line)}.referral-checkout h1{font:400 2.5rem var(--font-serif);margin:1rem 0}.referral-checkout label{display:block;margin:1rem 0 .4rem}.referral-checkout input:not([type=radio]){width:100%;padding:.8rem;border:1px solid var(--line)}.referral-checkout fieldset{padding:1rem;margin:1.5rem 0;border:1px solid var(--line)}.referral-checkout p,.referral-page li{line-height:1.8;margin:.65rem 0}.referral-log{padding-left:1.3rem}.referral-page h2{margin:1.5rem 0 .75rem}.referral-page progress{width:100%;accent-color:var(--olive)}.referral-checkout button{margin:.5rem .5rem .5rem 0}.referral-page .table-responsive{margin:1rem 0}.referral-page th,.referral-page td{padding:1rem}.referral-page ul{padding-left:1.3rem}
+
+/* Referidos: composición editorial, acciones legibles y compra móvil. */
+.referral-page{max-width:1240px;margin:auto;padding:1rem 0 3rem}
+.referral-heading{margin-bottom:1.25rem;align-items:center}
+.referral-demo{font-size:.64rem;letter-spacing:.13em;border:0;border-left:2px solid var(--copper);border-radius:0;padding:.35rem .7rem;color:var(--ink-secondary)}
+.referral-tabs{border-bottom:1px solid var(--line);gap:1.5rem;margin-bottom:1.8rem;padding:0}
+.referral-tabs .btn{border:0;border-radius:0;background:transparent;padding:1rem .15rem;color:var(--ink-secondary);font-size:.9rem;position:relative}
+.referral-tabs .btn[aria-pressed=true]{color:var(--ink);box-shadow:inset 0 -3px var(--olive);font-weight:700}
+.referral-tabs .btn:hover:not(:disabled){color:var(--olive-dark);background:transparent}
+.referral-tabs .btn:disabled{opacity:.45}
+.referral-person-label{font-size:.72rem;letter-spacing:.04em;color:var(--ink-secondary);margin-right:.6rem}
+.referral-page #ref-person{font-size:.82rem;padding:.45rem .7rem;border-radius:4px;margin-bottom:2rem}
+.referral-layout{gap:4rem;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:center}
+.referral-eyebrow{font-size:.65rem;font-weight:700;letter-spacing:.17em;color:var(--olive)}
+.referral-story h1{font-size:clamp(3rem,5.5vw,5rem);margin:1rem 0 1.4rem}
+.referral-story>p{font-size:1rem;line-height:1.9;max-width:44ch}
+.referral-story p.referral-story-note{font:italic 1.2rem var(--font-serif);color:var(--olive);margin:1rem 0}
+.referral-art{width:100%;max-width:400px;height:auto;display:block;margin-top:1.5rem}
+.referral-art-note{display:block;font-size:.65rem;color:var(--ink-muted);margin:.3rem 0}
+.referral-invite{padding:2.2rem;border-top:4px solid var(--copper);border-radius:6px;min-width:0}
+.referral-invite h2{font-size:clamp(1.65rem,2.3vw,2.2rem);margin:.4rem 0 1rem}
+.referral-invite .btn{padding:.75rem 1rem;line-height:1.45;min-height:44px;font-size:.83rem}
+.referral-invite .btn-olive{background:#D9E2C9;color:#26301E;border-color:#D9E2C9;font-weight:700}
+.referral-invite .btn-olive:hover{background:#EDF3E2}
+.referral-message{font-family:var(--font-serif);font-size:1.05rem;padding:1.2rem;border-color:#6B5742;border-radius:4px;background:#30271F}
+.referral-invite input{color:var(--ink);background:#F8F3E8;min-height:44px}
+.referral-notice{border:0;border-left:3px solid var(--olive);font-size:.9rem;border-radius:0;padding:1rem 1.25rem}
+.referral-rewards{gap:0;counter-reset:rewards;border-bottom:1px solid var(--line);padding:1.5rem 0;margin:2.5rem 0}
+.referral-rewards article{padding:1rem 1.6rem;border-right:1px solid var(--line);min-width:0;counter-increment:rewards}
+.referral-rewards article:first-child{padding-left:0}
+.referral-rewards article:last-child{border:0}
+.referral-rewards article::before{content:'0' counter(rewards) ' / TU CUADERNO';display:block;font-size:.62rem;letter-spacing:.13em;color:var(--olive);margin-bottom:.8rem}
+.referral-rewards h3{font-size:1.8rem;margin:.4rem 0 .7rem;overflow-wrap:anywhere}
+.referral-rewards p{font-size:.85rem;color:var(--ink-secondary)}
+.referral-rewards progress{height:9px;border-radius:4px;overflow:hidden;margin:.5rem 0}
+.referral-section-title{font:400 1.65rem var(--font-serif)}
+.referral-section-title small{display:block;font:400 .72rem var(--font-sans);color:var(--ink-secondary);margin-top:.5rem}
+.referral-log{list-style:none;padding:0!important;margin:1rem 0 2rem}
+.referral-log li{padding:1rem 1.2rem;border-bottom:1px solid var(--line);background:var(--bg-paper);font-size:.9rem}
+.referral-checkout{max-width:740px;padding:2.2rem 2.5rem;border:1px solid var(--line);border-top:4px solid var(--olive);border-radius:6px;margin:2rem auto;background:#FFFCF6}
+.referral-checkout h1{font-size:clamp(2rem,3.5vw,3rem);letter-spacing:-.035em;line-height:1.15}
+.referral-checkout form>p:first-child{color:var(--ink-secondary);font-size:1rem;line-height:1.8}
+.referral-checkout label{font-size:.85rem;font-weight:600;margin-top:1.4rem}
+.referral-checkout input:not([type=radio]){border-radius:4px;background:white;font:400 1rem var(--font-sans);min-height:48px}
+.referral-checkout small{display:block;line-height:1.6;color:var(--ink-secondary);margin-top:.5rem}
+.referral-checkout fieldset{border:0;padding:0;margin:1.75rem 0}
+.referral-checkout legend{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;color:var(--olive)}
+.referral-checkout fieldset label{display:flex;gap:.8rem;align-items:center;border:1px solid var(--line);padding:1.1rem;border-radius:4px;font-size:.9rem;margin:.6rem 0;font-weight:400;line-height:1.5}
+.referral-checkout fieldset label:has(input:checked){border-color:var(--olive);background:#EDF0E7}
+.referral-checkout input[type=radio]{accent-color:var(--olive);width:18px;height:18px;flex-shrink:0}
+.referral-checkout button[type=submit]{width:100%;min-height:50px;margin:1rem 0;font-size:.95rem}
+.referral-owner{max-width:1000px;margin:2rem auto}
+.referral-owner h1{font:400 clamp(2.5rem,4vw,4rem) var(--font-serif);letter-spacing:-.04em;margin:1rem 0 2rem}
+.referral-owner h2{font:400 1.65rem var(--font-serif);margin:2.5rem 0 1rem;padding-top:1rem;border-top:1px solid var(--line)}
+.referral-owner h3{font:400 1.3rem var(--font-serif);margin:2rem 0 .8rem}
+.referral-owner p{line-height:1.85;color:var(--ink-secondary);max-width:85ch;margin:1rem 0}
+.referral-owner ul{padding:1.25rem 2rem;background:var(--bg-paper);border:1px solid var(--line);border-radius:4px}
+.referral-page .table-responsive{border-radius:4px;max-width:100%;overflow:auto}
+.referral-page table{font-size:.85rem;min-width:540px}
+.referral-page th{font-size:.7rem;letter-spacing:.055em;padding:1rem 1.2rem;text-align:left;line-height:1.6}
+.referral-page td{padding:1rem 1.2rem;line-height:1.7}
+.referral-page .notebook-details{margin:2rem 0 1rem}
+.referral-page details p{font-size:.85rem;line-height:1.85;margin:1rem 1.2rem}
+@media(max-width:800px){.referral-layout{grid-template-columns:1fr;gap:1.5rem}.referral-story h1{font-size:3.5rem}.referral-art{max-width:280px;margin-top:.5rem}.referral-rewards{grid-template-columns:1fr;padding:.5rem 0}.referral-rewards article,.referral-rewards article:first-child{border-right:0;border-bottom:1px solid var(--line);padding:1.4rem .2rem}.referral-tabs{gap:1rem}.referral-tabs .btn{font-size:.8rem}.referral-checkout{padding:1.5rem 1.2rem;margin:1.5rem 0}.referral-invite{padding:1.5rem}.referral-page{padding-top:.5rem}.referral-demo{font-size:.58rem}.referral-owner h1{font-size:2.8rem}.referral-page #ref-person{display:block;margin-top:.5rem}.referral-heading{gap:.6rem}.referral-owner ul{padding:1rem 1rem 1rem 2rem}}
+/* Mantener el ancho del panel móvil; las tablas desplazan solo su contenedor. */
+.referral-page,.referral-owner{min-width:0;width:100%;max-width:100%}
+.referral-page .table-responsive{display:block;width:100%;min-width:0;max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain}
+.referral-owner>p,.referral-owner li{overflow-wrap:anywhere}
