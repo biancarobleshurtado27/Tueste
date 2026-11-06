@@ -26,3 +26,6 @@ IA Y DEMOSTRACIÓN
 Confusión real: se trabajó primero con Agendo por adjunto equivocado; se corrigió con el PDF de Tueste y se recalcularon embudo y tope. No se atribuye a un error de fórmulas.
 Demo de 3 minutos: invitar→compra simulada→premio/progreso→panel y costo. Fuente: Tueste Parte 2, pp. 2–6; adquisición: Parte 1. Nombres, compras, avisos y panel de demo son simulados. Prototipo local; pendiente prueba por otra persona.
 
+
+Documento nativo de entrega (Google Docs): https://docs.google.com/document/d/13r52rwXl35SfpXwvNIb-UrR99Upb_CwVPjG85dj6MbI/edit
+Verificación: contenido leído de vuelta y PDF exportado de una página, revisado visualmente el 6 de noviembre de 2026.
