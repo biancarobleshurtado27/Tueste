@@ -3,3 +3,7 @@ dist/
 *.log
 .DS_Store
 
+
+/data/admin-auth.json
+/data/acceso-diego.txt
+.env

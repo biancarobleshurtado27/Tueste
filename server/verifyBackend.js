@@ -1,15 +1,26 @@
+import { randomBytes } from 'node:crypto';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import { createApp } from './app.js';
 import { closeDb, getDbPath } from './db.js';
 import { PRESETS_12M, REFERENCE_PLANS_24M } from '../shared/tuesteModel.js';
 
+process.env.TUESTE_ADMIN_PASSWORD = randomBytes(24).toString('hex');
+let authCookie = '';
+
 function startServer(port = 0) {
   const app = createApp();
   return new Promise((resolve, reject) => {
     const server = http.createServer(app);
-    server.listen(port, '127.0.0.1', () => {
+    server.listen(port, '127.0.0.1', async () => {
       const addr = server.address();
+      const base = `http://127.0.0.1:${addr.port}`;
+      try {
+        assert.equal((await fetch(base+'/api/scenarios')).status,401);
+        const login = await fetch(base+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:'diego',password:process.env.TUESTE_ADMIN_PASSWORD})});
+        assert.equal(login.status,200);
+        authCookie = login.headers.get('set-cookie').split(';')[0];
+      } catch(error) {server.close(); reject(error); return;}
       resolve({
         server,
         baseUrl: `http://127.0.0.1:${addr.port}`,
@@ -23,7 +34,7 @@ function startServer(port = 0) {
 async function reqJson(baseUrl, method, path, body = undefined) {
   const res = await fetch(`${baseUrl}${path}`, {
     method,
-    headers: body !== undefined ? { 'Content-Type': 'application/json' } : {},
+    headers: { Cookie: authCookie, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
     body: body !== undefined ? JSON.stringify(body) : undefined
   });
   const data = await res.json();

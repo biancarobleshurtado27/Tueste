@@ -14,6 +14,7 @@ async function fetchWithFallback(path, options = {}) {
     try {
       const res = await fetch(url, {
         ...options,
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
