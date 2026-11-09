@@ -1591,3 +1591,12 @@ html,body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;f
 .login-card label:has(input:checked){background:#E6EAE0;border-color:#566148}
 .login-card input{accent-color:#566148}
 .client-welcome{padding:3rem 0}.client-welcome h1{font-size:clamp(2.5rem,4.5vw,4.5rem);font-weight:200;letter-spacing:-.06em;line-height:1.1;margin:1.4rem 0}.client-welcome h1 strong{font-weight:500;color:#566148}.client-welcome>p{max-width:60ch;line-height:1.9}.client-portal .referral-person-label{margin:1rem 0 2rem}.public-admin-link{padding:0 5vw 1.5rem;background:#F4F0E7}.public-admin-link button{background:none;border:0;text-decoration:underline;color:#575046;cursor:pointer;font-size:.68rem}.login-card>input{width:100%;padding:.8rem;border:1px solid #DDD3C4;border-radius:4px;font-size:1rem;margin:.5rem 0 1rem}.login-card>label{display:block;border:0;padding:0;margin:.7rem 0 .2rem;font-size:.8rem}.client-portal .public-header nav{gap:.75rem}@media(max-width:650px){.client-portal .public-header{flex-wrap:wrap}.client-portal .public-header nav{width:100%;display:flex;gap:.4rem}.client-portal .public-header nav .btn{font-size:.65rem;padding:.6rem;flex:1}.client-portal .public-logo{font-size:1.2rem}}
+
+/* Acceso reconocible de Diego, separado del portal de clientes. */
+.public-header nav .public-diego-access{background:#566148;color:#FFFCF6;border-color:#566148}
+.public-header nav .public-diego-access:hover{background:#3F4834}
+.private-workspace-intro{display:flex;align-items:center;justify-content:space-between;gap:2rem;padding:1.5rem 0 2rem;border-bottom:1px solid #DDD3C4;margin-bottom:1rem}
+.private-workspace-intro h1{font:300 clamp(1.7rem,3vw,2.7rem)/1.15 Inter,sans-serif;letter-spacing:-.045em;color:#241C17;margin:.6rem 0}
+.private-workspace-intro p{max-width:65ch;line-height:1.8;color:#575046;font-size:.85rem}
+.private-access-tag{background:#E6EAE0;color:#3F4834;border:1px solid #BDB3A2;border-radius:4px;padding:.55rem .8rem;font-size:.68rem;white-space:nowrap}
+@media(max-width:800px){.tueste-public>.public-header{flex-wrap:wrap}.tueste-public>.public-header nav{gap:.5rem}.public-header nav .btn{font-size:.65rem;padding:.65rem .7rem}.private-workspace-intro{align-items:flex-start;flex-direction:column;gap:.8rem}.private-workspace-intro h1{font-size:2rem}}
